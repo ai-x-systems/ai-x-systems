@@ -1,0 +1,26 @@
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0f0f10"/>
+  <!-- subtle grid texture, matches the site's quiet, non-gradient dark aesthetic -->
+  <g opacity="0.05" stroke="#f7f7f7" stroke-width="1">
+    <line x1="0" y1="157" x2="1200" y2="157"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="472" x2="1200" y2="472"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+  </g>
+
+  <g transform="translate(100,220)">
+    <rect width="72" height="72" rx="16" fill="#0f0f10" stroke="#27272a" stroke-width="1.5"/>
+    <g transform="translate(36,36)">
+      <rect x="-23" y="-5.5" width="46" height="11" rx="5.5" fill="#3b82f6" transform="rotate(45)"/>
+      <rect x="-23" y="-5.5" width="46" height="11" rx="5.5" fill="#3b82f6" transform="rotate(-45)"/>
+      <circle r="4.6" fill="#f7f7f7"/>
+    </g>
+  </g>
+
+  <text x="100" y="370" font-family="Poppins, Inter, Helvetica, Arial, sans-serif" font-size="30" font-weight="600" fill="#3b82f6">AI x Systems</text>
+  <text x="100" y="430" font-family="Poppins, Inter, Helvetica, Arial, sans-serif" font-size="56" font-weight="600" letter-spacing="-1.5" fill="#f7f7f7">Never Miss Another</text>
+  <text x="100" y="495" font-family="Poppins, Inter, Helvetica, Arial, sans-serif" font-size="56" font-weight="600" letter-spacing="-1.5" fill="#f7f7f7">Customer Call.</text>
+  <text x="100" y="545" font-family="Poppins, Inter, Helvetica, Arial, sans-serif" font-size="24" fill="#a1a1aa">AI Receptionists for local businesses — live 24/7.</text>
+</svg>
