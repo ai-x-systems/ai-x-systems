@@ -1,0 +1,91 @@
+{
+  "id": "ai-x-systems",
+  "name": "AI X Systems",
+  "industry": "AI Automation Agency",
+  "phoneNumber": "+1XXXXXXXXXX",
+  "timezone": "America/Chicago",
+  "demo": false,
+  "contact": {
+    "website": "https://aixsystems.com",
+    "email": "hello@aixsystems.com"
+  },
+  "hours": {
+    "monday": { "open": "09:00", "close": "18:00" },
+    "tuesday": { "open": "09:00", "close": "18:00" },
+    "wednesday": { "open": "09:00", "close": "18:00" },
+    "thursday": { "open": "09:00", "close": "18:00" },
+    "friday": { "open": "09:00", "close": "18:00" },
+    "saturday": { "open": "", "close": "", "closed": true },
+    "sunday": { "open": "", "close": "", "closed": true }
+  },
+  "knowledge": {
+    "services": [
+      {
+        "id": "ai-receptionist",
+        "name": "AI Receptionist",
+        "description": "A phone-answering AI employee that handles calls, answers FAQs, books appointments, and logs leads — live 24/7.",
+        "durationMinutes": 0,
+        "price": "One-time setup $300–$1,000 + monthly subscription"
+      },
+      {
+        "id": "ai-website-assistant",
+        "name": "AI Website Assistant",
+        "description": "A chat widget for your site using the same knowledge and prompt as your phone receptionist, so your business sounds consistent everywhere.",
+        "durationMinutes": 0,
+        "price": "Bundled with AI Receptionist or standalone"
+      },
+      {
+        "id": "discovery-call",
+        "name": "Discovery Call",
+        "description": "A 20-minute call to understand the business, see if there's a fit, and scope a custom demo.",
+        "durationMinutes": 20,
+        "price": "Free"
+      }
+    ],
+    "faqs": [
+      {
+        "question": "What exactly is an AI receptionist?",
+        "answer": "It's an AI employee that answers your business phone line — handling FAQs, booking appointments straight into your calendar, and logging every lead — so calls get answered even when your team is busy or after hours."
+      },
+      {
+        "question": "How much does it cost?",
+        "answer": "There's a one-time setup fee, typically $300 to $1,000 depending on complexity, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on your business — that's what the discovery call is for."
+      },
+      {
+        "question": "How long does setup take?",
+        "answer": "Most businesses are live within a week of the discovery call, once we have your hours, services, and FAQs."
+      },
+      {
+        "question": "Does it replace my staff?",
+        "answer": "No — it handles the repetitive front-desk work like answering common questions and booking, so your team can focus on customers who are already in front of them."
+      },
+      {
+        "question": "Can it work with my existing calendar and CRM?",
+        "answer": "Yes, it connects to Google Calendar for booking and can log leads to a sheet or CRM depending on your setup."
+      }
+    ],
+    "policies": {
+      "general": [
+        "Never quote a final price on a call — always describe the range and route to a discovery call for an exact quote.",
+        "If asked for a live example, offer to text or email a link to try the demo receptionist directly."
+      ]
+    }
+  },
+  "voice": {
+    "assistantName": "Alex",
+    "tone": "professional",
+    "language": "en-US",
+    "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
+  },
+  "booking": {
+    "enabled": true,
+    "appointmentTypes": ["discovery-call"],
+    "bufferMinutes": 10,
+    "timezone": "America/Chicago"
+  },
+  "integrations": {
+    "googleCalendarId": "aixsystems-discovery@group.calendar.google.com",
+    "leadSheetId": "REPLACE_WITH_SHEET_ID",
+    "notifyEmail": "hello@aixsystems.com"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "id": "smile-dental-clinic",
+  "name": "Smile Dental Clinic",
+  "industry": "Dental Practice",
+  "phoneNumber": "+1XXXXXXXXXX",
+  "timezone": "America/Chicago",
+  "demo": true,
+  "contact": {
+    "address": "123 Main St, Springfield, IL",
+    "website": "https://smiledentalclinic-demo.com",
+    "email": "front-desk@smiledentalclinic-demo.com"
+  },
+  "hours": {
+    "monday": { "open": "08:00", "close": "17:00" },
+    "tuesday": { "open": "08:00", "close": "17:00" },
+    "wednesday": { "open": "08:00", "close": "17:00" },
+    "thursday": { "open": "08:00", "close": "17:00" },
+    "friday": { "open": "08:00", "close": "14:00" },
+    "saturday": { "open": "", "close": "", "closed": true },
+    "sunday": { "open": "", "close": "", "closed": true }
+  },
+  "knowledge": {
+    "services": [
+      {
+        "id": "cleaning",
+        "name": "Routine Cleaning & Checkup",
+        "description": "Standard cleaning, exam, and X-rays if needed.",
+        "durationMinutes": 45,
+        "price": "$120"
+      },
+      {
+        "id": "whitening",
+        "name": "Teeth Whitening",
+        "description": "In-office whitening treatment.",
+        "durationMinutes": 60,
+        "price": "$250"
+      },
+      {
+        "id": "filling",
+        "name": "Cavity Filling",
+        "description": "Tooth-colored composite filling.",
+        "durationMinutes": 40,
+        "price": "Starting at $180"
+      },
+      {
+        "id": "emergency-visit",
+        "name": "Emergency Visit",
+        "description": "Same-day visit for pain, breakage, or trauma.",
+        "durationMinutes": 30,
+        "price": "Varies — assessed at visit"
+      }
+    ],
+    "faqs": [
+      {
+        "question": "Do you accept insurance?",
+        "answer": "We accept most major PPO dental insurance plans. Bring your insurance card to your visit and we'll verify coverage before treatment."
+      },
+      {
+        "question": "Do you offer payment plans?",
+        "answer": "Yes, we offer CareCredit financing for treatments over $500."
+      },
+      {
+        "question": "What if I'm a new patient?",
+        "answer": "New patients should arrive 15 minutes early to complete intake paperwork, or we can email it in advance."
+      }
+    ],
+    "policies": {
+      "emergency": "If the caller describes severe pain, swelling, bleeding that won't stop, or facial trauma, treat this as urgent: offer the next same-day emergency slot and tell them to go to the ER if there are signs of a serious infection (fever, difficulty swallowing/breathing).",
+      "insurance": "We accept most major PPO plans. We do not accept Medicaid at this time.",
+      "cancellation": "24-hour notice is required to cancel or reschedule without a $25 fee."
+    }
+  },
+  "voice": {
+    "assistantName": "Ava",
+    "tone": "friendly",
+    "language": "en-US",
+    "greeting": "Thanks for calling Smile Dental Clinic, this is Ava — how can I help you today?"
+  },
+  "booking": {
+    "enabled": true,
+    "appointmentTypes": ["cleaning", "whitening", "filling", "emergency-visit"],
+    "bufferMinutes": 10,
+    "timezone": "America/Chicago"
+  },
+  "integrations": {
+    "googleCalendarId": "smile-dental-demo@group.calendar.google.com",
+    "leadSheetId": "REPLACE_WITH_SHEET_ID",
+    "notifyEmail": "owner@smiledentalclinic-demo.com"
+  }
+}
