@@ -1,12 +1,18 @@
 import { NextRequest } from "next/server";
 import { getBusinessById } from "@/config/businesses";
 import { buildSystemPrompt } from "@/lib/prompt/prompt-builder";
-import { getChatCompletion, LlmMessage } from "@/lib/llm/groq-client";
+import { getChatCompletion } from "@/lib/llm/groq-client";
 import { executeToolCall } from "@/lib/tools/execute-tool-call";
 import { TOOL_DEFINITIONS } from "@/lib/tools/tool-definitions";
 import { ChatRequestSchema } from "@/lib/chat/chat-request-schema";
 import { isRateLimited } from "@/lib/chat/rate-limit";
 import { chatSuccessResponse, chatErrorResponse } from "@/lib/chat/chat-response";
+import {
+  normalizeMessages,
+  limitHistory,
+  appendMessage,
+  prepareForLlm,
+} from "@/lib/chat/conversation";
 
 /**
  * app/api/chat/[businessId]/route.ts
@@ -33,7 +39,6 @@ import { chatSuccessResponse, chatErrorResponse } from "@/lib/chat/chat-response
 export const runtime = "nodejs";
 
 const MAX_TOOL_ROUNDS = 2; // safety cap so a confused model can't loop indefinitely
-const MAX_CONVERSATION_MESSAGES = 20; // trims oldest turns before calling the LLM, bounds cost + context size
 
 function corsHeaders(origin: string | null, allowedOrigin?: string) {
   const allow = allowedOrigin && origin?.includes(allowedOrigin) ? origin! : allowedOrigin ?? "*";
@@ -46,17 +51,6 @@ function corsHeaders(origin: string | null, allowedOrigin?: string) {
 
 function clientKey(req: NextRequest): string {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
-
-/**
- * Caps how much conversation gets sent per request. The system prompt is
- * not part of this array (getChatCompletion takes it separately), so
- * trimming is a plain slice from the oldest end — no "keep index 0"
- * special case needed.
- */
-function trimConversation(messages: LlmMessage[]): LlmMessage[] {
-  if (messages.length <= MAX_CONVERSATION_MESSAGES) return messages;
-  return messages.slice(messages.length - MAX_CONVERSATION_MESSAGES);
 }
 
 export async function OPTIONS(
@@ -92,7 +86,7 @@ export async function POST(
     );
   }
 
-  let body: { messages: LlmMessage[] };
+  let body: { messages: Array<{ role: "user" | "assistant"; content: string }> };
   try {
     const json = await req.json();
     const parsed = ChatRequestSchema.safeParse(json);
@@ -110,7 +104,7 @@ export async function POST(
     return chatErrorResponse(400, "invalid_json", "Request body must be valid JSON.", headers);
   }
 
-  const messages = trimConversation(body.messages);
+  let history = limitHistory(normalizeMessages(body.messages));
 
   try {
     let finalText = "";
@@ -118,7 +112,7 @@ export async function POST(
     for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
       const result = await getChatCompletion({
         systemPrompt: buildSystemPrompt(business),
-        messages,
+        messages: prepareForLlm(history),
         tools: TOOL_DEFINITIONS,
       });
 
@@ -143,7 +137,7 @@ export async function POST(
         break;
       }
 
-      messages.push({ role: "assistant", content, tool_calls: toolCalls });
+      history = appendMessage(history, { role: "assistant", content, tool_calls: toolCalls });
 
       for (const call of toolCalls) {
         let args: Record<string, unknown> = {};
@@ -160,7 +154,7 @@ export async function POST(
           { name: call.function.name, arguments: args },
           business.id
         );
-        messages.push({ role: "tool", tool_call_id: call.id, content: toolResult });
+        history = appendMessage(history, { role: "tool", tool_call_id: call.id, content: toolResult });
       }
 
       if (round === MAX_TOOL_ROUNDS) {
