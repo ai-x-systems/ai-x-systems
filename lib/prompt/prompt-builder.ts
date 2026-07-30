@@ -1,71 +1,51 @@
 import { BusinessConfig } from "@/lib/config/business-schema";
+import { buildBusinessKnowledge, getKnowledgeSection } from "@/lib/knowledge/knowledge-builder";
+import { BusinessKnowledge, KnowledgeSectionId } from "@/types/knowledge";
 
-const DAY_ORDER = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-] as const;
-
-function formatHours(config: BusinessConfig): string {
-  return DAY_ORDER.map((day) => {
-    const h = config.hours[day];
-    const label = day[0].toUpperCase() + day.slice(1);
-    if (h.closed) return `${label}: Closed`;
-    return `${label}: ${h.open} – ${h.close}`;
-  }).join("\n");
-}
-
-function formatServices(config: BusinessConfig): string {
-  return config.knowledge.services
-    .map((s) => {
-      const price = s.price ? ` (${s.price})` : "";
-      return `- ${s.name}${price}, ~${s.durationMinutes} min — ${s.description}`;
-    })
-    .join("\n");
-}
-
-function formatFaqs(config: BusinessConfig): string {
-  if (config.knowledge.faqs.length === 0) return "None on file.";
-  return config.knowledge.faqs
-    .map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-    .join("\n\n");
-}
-
-function formatPolicies(config: BusinessConfig): string {
-  const p = config.knowledge.policies;
-  const lines: string[] = [];
-  if (p.emergency) lines.push(`Emergency: ${p.emergency}`);
-  if (p.insurance) lines.push(`Insurance: ${p.insurance}`);
-  if (p.cancellation) lines.push(`Cancellation: ${p.cancellation}`);
-  if (p.general) lines.push(...p.general);
-  return lines.length ? lines.join("\n") : "None on file.";
+/**
+ * Sources a section's text from the Knowledge Builder, falling back to
+ * "None on file." when a section has no data — the exact wording this
+ * prompt used before the Knowledge Builder existed. This function changes
+ * *where* the text comes from, not what the prompt ever says.
+ */
+function textOrFallback(knowledge: BusinessKnowledge, id: KnowledgeSectionId): string {
+  const found = getKnowledgeSection(knowledge, id);
+  return !found || found.isEmpty ? "None on file." : found.text;
 }
 
 /**
  * Builds the full system prompt sent to the LLM for every turn, on both
  * the voice channel and the chat channel. Keep this deterministic and free
  * of per-call state — call-specific facts live in the conversation, not here.
+ *
+ * Business knowledge (hours, services, FAQs, policies) is sourced from
+ * lib/knowledge/knowledge-builder.ts rather than formatted here directly.
+ * That module also builds "company", "pricing", and "booking" sections,
+ * not used in this prompt today — see its file header for why.
  */
 export function buildSystemPrompt(config: BusinessConfig): string {
+  const knowledge = buildBusinessKnowledge(config);
+
+  const hours = textOrFallback(knowledge, "hours");
+  const services = textOrFallback(knowledge, "services");
+  const faqs = textOrFallback(knowledge, "faqs");
+  const policies = textOrFallback(knowledge, "policies");
+
   return `You are ${config.voice.assistantName}, the AI phone receptionist for ${config.name}, a ${config.industry.toLowerCase()}.
 
 TONE: Speak in a ${config.voice.tone} tone. Keep responses short and natural — this is a phone call or live chat, not an essay. One or two sentences per turn unless asked for detail.
 
 BUSINESS HOURS (${config.timezone}):
-${formatHours(config)}
+${hours}
 
 SERVICES:
-${formatServices(config)}
+${services}
 
 FREQUENTLY ASKED QUESTIONS:
-${formatFaqs(config)}
+${faqs}
 
 POLICIES:
-${formatPolicies(config)}
+${policies}
 
 WHAT YOU CAN DO:
 1. Answer questions using only the information above. If you don't know something, say you'll have the team follow up — never guess or invent details (prices, medical advice, availability).
