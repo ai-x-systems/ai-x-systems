@@ -33,5 +33,33 @@ export function loadAllBusinesses(): BusinessConfig[] {
     return parsed.data;
   });
 
+  // TEMPORARY DEBUG LOGGING — remove after diagnosing the unknown_business issue.
+  console.log({
+    DATA_DIR,
+    files,
+    businessIds: cache.map((b) => b.id),
+  });
+
   return cache;
+}
+
+/**
+ * Convenience lookup, calling loadAllBusinesses() internally. Note:
+ * config/businesses/index.ts already exposes an equivalent
+ * getBusinessById — that's what app/api/chat currently imports and
+ * continues to import unchanged. This export exists for any future
+ * caller that wants to go through the loader directly.
+ */
+export function getBusinessById(id: string): BusinessConfig | undefined {
+  return loadAllBusinesses().find((b) => b.id === id);
+}
+
+/**
+ * Convenience lookup by phone number, calling loadAllBusinesses()
+ * internally. Added for future use by the Vapi voice channel, which will
+ * need to resolve an incoming call's business by its phone number rather
+ * than by businessId.
+ */
+export function getBusinessByPhone(phone: string): BusinessConfig | undefined {
+  return loadAllBusinesses().find((b) => b.phoneNumber === phone);
 }
