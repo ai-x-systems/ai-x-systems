@@ -85,7 +85,7 @@
   },
   "integrations": {
     "googleCalendarId": "aixsystems-discovery@group.calendar.google.com",
-    "leadSheetId": "REPLACE_WITH_SHEET_ID",
+    "leadSheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P",
     "notifyEmail": "hello@aixsystems.com"
   }
 }
