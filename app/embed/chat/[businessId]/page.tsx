@@ -7,11 +7,12 @@ interface Message {
   content: string;
 }
 
-export default function EmbeddedChatPage({
+export default async function EmbeddedChatPage({
   params,
 }: {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }) {
+  const { businessId } = await params;
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hi! How can I help you today?" },
   ]);
@@ -27,7 +28,7 @@ export default function EmbeddedChatPage({
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/chat/${params.businessId}`, {
+      const res = await fetch(`/api/chat/${businessId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: nextMessages }),
