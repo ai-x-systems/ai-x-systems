@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-export default async function EmbeddedChatPage({
-  params,
-}: {
-  params: Promise<{ businessId: string }>;
-}) {
-  const { businessId } = await params;
+export default function EmbeddedChatPage() {
+  const { businessId } = useParams<{ businessId: string }>();
+
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hi! How can I help you today?" },
+    {
+      role: "assistant",
+      content: "Hi! How can I help you today?",
+    },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
