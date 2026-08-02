@@ -134,6 +134,11 @@ export async function POST(
 
       const { content, toolCalls } = result.message;
 
+      console.log("[LLM RESPONSE]", {
+      content,
+      toolCalls,
+      });
+
       if (!toolCalls || toolCalls.length === 0) {
         finalText = content;
         break;
