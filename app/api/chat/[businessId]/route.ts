@@ -55,9 +55,10 @@ function clientKey(req: NextRequest): string {
 
 export async function OPTIONS(
   req: NextRequest,
-  { params }: { params: { businessId: string } }
+  context: { params: Promise<{ businessId: string }> }
 ) {
-  const business = getBusinessById(params.businessId);
+  const { businessId } = await context.params;
+  const business = getBusinessById(businessId);
   const origin = req.headers.get("origin");
   return new Response(null, {
     status: 204,
@@ -67,9 +68,10 @@ export async function OPTIONS(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { businessId: string } }
+  context: { params: Promise<{ businessId: string }> }
 ) {
-  const business = getBusinessById(params.businessId);
+  const { businessId } = await context.params;
+  const business = getBusinessById(businessId);
   const origin = req.headers.get("origin");
   const headers = corsHeaders(origin, business?.contact.website);
 
