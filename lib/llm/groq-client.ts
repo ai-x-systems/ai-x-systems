@@ -245,6 +245,7 @@ async function callGroq(
       model,
       messages,
       tools,
+      tool_choice: "auto",
       temperature,
       max_tokens: maxTokens,
     }),
