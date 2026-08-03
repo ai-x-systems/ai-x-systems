@@ -231,10 +231,11 @@ async function callGroq(
   // that yields chunks) won't require changing any consumer of this
   // function — it would be a pure addition, not a breaking change.
   console.log("[GROQ REQUEST]", {
-  model,
-  toolCount: tools?.length ?? 0,
-  tools,
-}); 
+    model,
+    hasTools: !!tools,
+    toolCount: tools?.length,
+    tools,
+  }); 
   const res = await fetch(GROQ_ENDPOINT, {
     method: "POST",
     headers: {
