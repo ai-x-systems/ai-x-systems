@@ -49,7 +49,11 @@ export async function executeToolCall(
       const service = business.knowledge.services.find((s) => s.id === a.serviceId);
 
       // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
-      console.log("[MATCHED SERVICE]", service);
+      console.log("[SERVICE LOOKUP]", {
+        requested: a.serviceId,
+        available: business.knowledge.services.map((s) => s.id),
+        matched: service,
+     });
 
       if (!service) {
         return `That service isn't recognized. Available: ${business.knowledge.services
