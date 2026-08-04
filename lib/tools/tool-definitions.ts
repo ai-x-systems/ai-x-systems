@@ -16,7 +16,11 @@ export const TOOL_DEFINITIONS = [
         properties: {
           callerName: { type: "string" },
           callerPhone: { type: "string" },
-          serviceId: { type: "string", description: "Must match a configured service id." },
+          serviceId: {
+            type: "string",
+            description:
+              "The service's internal id shown as [serviceId: ...] next to each service in the system prompt — not the service's display name.",
+          },
           preferredStartTimeISO: {
             type: "string",
             description: "ISO 8601 datetime in the business's local timezone.",
