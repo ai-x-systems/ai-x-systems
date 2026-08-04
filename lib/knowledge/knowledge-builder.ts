@@ -74,7 +74,7 @@ function buildServicesSection(config: BusinessConfig): KnowledgeSection {
   const text = config.knowledge.services
     .map((s) => {
       const price = s.price ? ` (${s.price})` : "";
-      return `- ${s.name}${price}, ~${s.durationMinutes} min — ${s.description}`;
+      return `- ${s.name}${price}, ~${s.durationMinutes} min — ${s.description} [serviceId: ${s.id}]`;
     })
     .join("\n");
   return section("services", "Services", text);
