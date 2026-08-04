@@ -34,7 +34,23 @@ export async function executeToolCall(
         preferredStartTimeISO: string;
       };
 
+      // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
+      console.log("[BOOK APPOINTMENT INPUT]", {
+        callerName: a.callerName,
+        callerPhone: a.callerPhone,
+        serviceId: a.serviceId,
+        preferredStartTimeISO: a.preferredStartTimeISO,
+      });
+      console.log(
+        "[AVAILABLE SERVICES]",
+        business.knowledge.services.map((s) => ({ id: s.id, name: s.name }))
+      );
+
       const service = business.knowledge.services.find((s) => s.id === a.serviceId);
+
+      // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
+      console.log("[MATCHED SERVICE]", service);
+
       if (!service) {
         return `That service isn't recognized. Available: ${business.knowledge.services
           .map((s) => s.name)
@@ -54,6 +70,14 @@ export async function executeToolCall(
         timezone: business.booking.timezone,
         attendeeName: a.callerName,
         attendeePhone: a.callerPhone,
+      });
+
+      // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
+      console.log("[BOOKING RESULT]", {
+        success: booking.success,
+        error: booking.error,
+        eventId: booking.eventId,
+        confirmedStartTimeISO: booking.confirmedStartTimeISO,
       });
 
       if (!booking.success) {
