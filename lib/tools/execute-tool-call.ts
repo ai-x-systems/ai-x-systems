@@ -9,6 +9,99 @@ export interface ToolCallArgs {
 }
 
 /**
+ * Collapses a string to a case/whitespace/punctuation-insensitive key, so
+ * "Discovery Call", "discovery call", "DiscoveryCall", "discovery-call",
+ * and "DISCOVERY CALL" all normalize identically.
+ */
+function normalizeServiceKey(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+/**
+ * True for genuinely missing data: undefined/null, empty/whitespace-only,
+ * or a common placeholder a model will sometimes supply for a required
+ * field it doesn't actually have a value for yet, rather than omitting
+ * the field (which would fail JSON Schema validation on the
+ * required-fields list). Not exhaustive — any new placeholder pattern
+ * observed in practice is a one-line addition to this set.
+ */
+const PLACEHOLDER_VALUES = new Set(["unknown", "n/a", "none", "null"]);
+
+function isMissingOrPlaceholder(value: string | undefined | null): boolean {
+  if (!value) return true;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return true;
+  if (PLACEHOLDER_VALUES.has(trimmed.toLowerCase())) return true;
+  return false;
+}
+
+/**
+ * Beyond "not missing," a real name is at least a couple characters —
+ * catches single-character/garbage values without being strict about
+ * what a legitimate name can contain (no assumptions about scripts,
+ * length, or format beyond this minimal sanity floor).
+ */
+function isValidCallerName(value: string | undefined | null): boolean {
+  if (isMissingOrPlaceholder(value)) return false;
+  return (value as string).trim().length >= 2;
+}
+
+function countDigits(value: string): number {
+  return (value.match(/\d/g) ?? []).length;
+}
+
+/**
+ * Loose sanity check, not real phone validation (no libphonenumber-style
+ * dependency, per "do not introduce new dependencies") — just enough
+ * digits to rule out garbage/placeholder values while staying agnostic
+ * to country code, formatting, or length conventions. 7 is the shortest
+ * digit count a real local number is likely to have.
+ */
+function isValidPhoneNumber(value: string | undefined | null): boolean {
+  if (isMissingOrPlaceholder(value)) return false;
+  return countDigits(value as string) >= 7;
+}
+
+/** True only for a value that is present, not a placeholder, AND parses to a real date. */
+function isValidIsoDateTime(value: string | undefined | null): boolean {
+  if (isMissingOrPlaceholder(value)) return false;
+  const parsed = new Date(value as string);
+  return !Number.isNaN(parsed.getTime());
+}
+
+/**
+ * Resolves a model-supplied serviceId to a configured service.
+ *
+ * Two-tier lookup, defense in depth:
+ * 1. Exact id match — the fast, common path every existing business
+ *    already relies on when the model sends the id correctly.
+ * 2. Normalized fallback, matching against BOTH each service's id and
+ *    its display name — so this self-heals even if the model sends the
+ *    name instead of the id, in any casing/spacing variant, without
+ *    depending on prompt compliance. This is the backend half of a
+ *    two-layer fix; the prompt/tool-schema changes (see
+ *    lib/knowledge/knowledge-builder.ts and lib/prompt/prompt-builder.ts)
+ *    are the other half — making the id visible and explicit, which
+ *    reduces how often this fallback is even needed. Neither layer alone
+ *    is sufficient: prompts can't guarantee model output, and matching
+ *    without ever showing the id would work only by accident.
+ */
+function findService<T extends { id: string; name: string }>(
+  services: T[],
+  requestedId: string
+): T | undefined {
+  const exact = services.find((s) => s.id === requestedId);
+  if (exact) return exact;
+
+  const normalizedRequest = normalizeServiceKey(requestedId);
+  return services.find(
+    (s) =>
+      normalizeServiceKey(s.id) === normalizedRequest ||
+      normalizeServiceKey(s.name) === normalizedRequest
+  );
+}
+
+/**
  * Single source of truth for "what happens when the AI decides to book an
  * appointment or log a lead." Both the voice webhook and the chat endpoint
  * call this instead of each having their own copy.
@@ -34,31 +127,25 @@ export async function executeToolCall(
         preferredStartTimeISO: string;
       };
 
-      // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
-      console.log("[BOOK APPOINTMENT INPUT]", {
-        callerName: a.callerName,
-        callerPhone: a.callerPhone,
-        serviceId: a.serviceId,
-        preferredStartTimeISO: a.preferredStartTimeISO,
-      });
-      console.log(
-        "[AVAILABLE SERVICES]",
-        business.knowledge.services.map((s) => ({ id: s.id, name: s.name }))
-      );
+      // Reject incomplete/placeholder tool calls before they ever reach
+      // service resolution or Calendar — the model is not always going to
+      // wait for real data before calling the tool (see prompt-builder.ts
+      // for the corresponding instruction change), so this is the backend
+      // guarantee that nothing invalid gets further than this point.
+      const missingFields: string[] = [];
+      if (!isValidCallerName(a.callerName)) missingFields.push("your name");
+      if (!isValidPhoneNumber(a.callerPhone)) missingFields.push("a valid phone number");
+      if (isMissingOrPlaceholder(a.serviceId)) missingFields.push("which service"); // exact match handled next
+      if (!isValidIsoDateTime(a.preferredStartTimeISO)) missingFields.push("a preferred date and time");
 
-      const service = business.knowledge.services.find((s) => s.id === a.serviceId);
+      if (missingFields.length > 0) {
+        return `Before I can book that, I still need ${missingFields.join(", ")}. Could you share that?`;
+      }
 
-      // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
-      console.log("[SERVICE LOOKUP]", {
-        requested: a.serviceId,
-        available: business.knowledge.services.map((s) => s.id),
-        matched: service,
-     });
+      const service = findService(business.knowledge.services, a.serviceId);
 
       if (!service) {
-        return `That service isn't recognized. Available: ${business.knowledge.services
-          .map((s) => s.name)
-          .join(", ")}.`;
+        return "I'm having trouble matching that service. Let me confirm which service you'd like to book.";
       }
 
       if (business.demo) {
@@ -74,14 +161,6 @@ export async function executeToolCall(
         timezone: business.booking.timezone,
         attendeeName: a.callerName,
         attendeePhone: a.callerPhone,
-      });
-
-      // TEMPORARY DEBUG LOGGING — remove after diagnosing the tool-call-loop issue.
-      console.log("[BOOKING RESULT]", {
-        success: booking.success,
-        error: booking.error,
-        eventId: booking.eventId,
-        confirmedStartTimeISO: booking.confirmedStartTimeISO,
       });
 
       if (!booking.success) {
