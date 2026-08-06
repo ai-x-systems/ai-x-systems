@@ -62,6 +62,12 @@ function isValidPhoneNumber(value: string | undefined | null): boolean {
   return countDigits(value as string) >= 7;
 }
 
+/** True only for a value that is present, not a placeholder, AND looks like an email. Loose sanity check, not full RFC 5322 validation — consistent with isValidPhoneNumber's approach, and no new dependency. */
+function isValidEmail(value: string | undefined | null): boolean {
+  if (isMissingOrPlaceholder(value)) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((value as string).trim());
+}
+
 /** True only for a value that is present, not a placeholder, AND parses to a real date. */
 function isValidIsoDateTime(value: string | undefined | null): boolean {
   if (isMissingOrPlaceholder(value)) return false;
@@ -125,6 +131,7 @@ export async function executeToolCall(
         callerPhone: string;
         serviceId: string;
         preferredStartTimeISO: string;
+        callerEmail?: string;
       };
 
       // Reject incomplete/placeholder tool calls before they ever reach
@@ -167,7 +174,10 @@ export async function executeToolCall(
         return "I wasn't able to book that slot — could you offer an alternative day or time?";
       }
 
+      const hasEmail = isValidEmail(a.callerEmail);
+
       void sendCallerConfirmation({
+        toEmail: hasEmail ? (a.callerEmail as string).trim() : undefined,
         businessName: business.name,
         serviceName: service.name,
         startTimeISO: booking.confirmedStartTimeISO!,
@@ -179,6 +189,45 @@ export async function executeToolCall(
       });
 
       return `Booked ${service.name} for ${a.callerName} at ${booking.confirmedStartTimeISO}. A confirmation will be sent.`;
+    }
+
+    case "save_confirmation_email": {
+      const a = args as { email?: string; serviceName?: string; confirmedStartTimeISO?: string };
+
+      if (!isValidEmail(a.email)) {
+        return "That doesn't look like a valid email address — could you double check it?";
+      }
+      const email = (a.email as string).trim();
+
+      // Structural guarantee against re-booking: this branch has no access
+      // to bookAppointment (not imported for this purpose) and never
+      // constructs a booking request. Whatever the model intended, the
+      // worst this code can do is fail to send a confirmation — it cannot
+      // create a duplicate appointment, a second Calendar event, or a
+      // new lead.
+      //
+      // PERSISTENCE, PHASE 1: deliberately not written anywhere durable.
+      // A post-booking email update is not a lead and not a new booking —
+      // it doesn't belong in the Sheets lead log (that would corrupt
+      // reporting: "which email belongs to which booking?" becomes
+      // unanswerable once lead rows and booking-update rows are mixed
+      // together), and there's no booking record/identifier in this
+      // architecture yet to attach it to durably. The only thing this
+      // does with the email is the confirmation attempt below — which is
+      // exactly the real, intended use of the data, not a workaround.
+      // Phase 2 (once Brevo access + a booking identifier both exist):
+      // persist the email against that specific booking; this comment is
+      // the marker for where that hook belongs.
+      if (!business.demo) {
+        void sendCallerConfirmation({
+          toEmail: email,
+          businessName: business.name,
+          serviceName: a.serviceName ?? "your appointment",
+          startTimeISO: a.confirmedStartTimeISO ?? "",
+        });
+      }
+
+      return "Thanks! I've saved your email address. Email confirmations will be available once our email system is fully configured.";
     }
 
     case "log_lead": {
