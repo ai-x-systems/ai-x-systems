@@ -129,9 +129,9 @@ export async function executeToolCall(
       const a = args as {
         callerName: string;
         callerPhone: string;
+        callerEmail?: string;
         serviceId: string;
         preferredStartTimeISO: string;
-        callerEmail?: string;
       };
 
       // Reject incomplete/placeholder tool calls before they ever reach
