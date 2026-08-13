@@ -112,21 +112,11 @@ export async function POST(
     let finalText = "";
 
     for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-      console.log("[CHAT ROUTE]", {
-      toolCount: TOOL_DEFINITIONS.length,
-      toolNames: TOOL_DEFINITIONS.map((t) => t.function.name),
-    });
-
-    console.log("[CHAT ROUTE]", {
-      toolCount: TOOL_DEFINITIONS.length,
-      toolNames: TOOL_DEFINITIONS.map((t) => t.function.name),
-    });
-
-    const result = await getChatCompletion({
-      systemPrompt: buildSystemPrompt(business),
-      messages: prepareForLlm(history),
-      tools: TOOL_DEFINITIONS,
-    });
+      const result = await getChatCompletion({
+        systemPrompt: buildSystemPrompt(business),
+        messages: prepareForLlm(history),
+        tools: TOOL_DEFINITIONS,
+      });
 
       if (!result.success) {
         console.error("[chat] llm request failed", {
@@ -143,11 +133,6 @@ export async function POST(
       }
 
       const { content, toolCalls } = result.message;
-
-      console.log("[LLM RESPONSE]", {
-      content,
-      toolCalls,
-      });
 
       if (!toolCalls || toolCalls.length === 0) {
         finalText = content;

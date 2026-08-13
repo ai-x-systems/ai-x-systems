@@ -33,13 +33,6 @@ export function loadAllBusinesses(): BusinessConfig[] {
     return parsed.data;
   });
 
-  // TEMPORARY DEBUG LOGGING — remove after diagnosing the unknown_business issue.
-  console.log({
-    DATA_DIR,
-    files,
-    businessIds: cache.map((b) => b.id),
-  });
-
   return cache;
 }
 
