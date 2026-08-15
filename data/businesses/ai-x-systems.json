@@ -33,13 +33,6 @@
         "description": "A chat widget for your site using the same knowledge and prompt as your phone receptionist, so your business sounds consistent everywhere.",
         "durationMinutes": 0,
         "price": "Bundled with AI Receptionist or standalone"
-      },
-      {
-        "id": "discovery-call",
-        "name": "Discovery Call",
-        "description": "A 20-minute call to understand the business, see if there's a fit, and scope a custom demo.",
-        "durationMinutes": 20,
-        "price": "Free"
       }
     ],
     "faqs": [
@@ -49,11 +42,11 @@
       },
       {
         "question": "How much does it cost?",
-        "answer": "There's a one-time setup fee, typically $300 to $1,000 depending on complexity, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on your business — that's what the discovery call is for."
+        "answer": "There's a one-time setup fee, typically $300 to $1,000 depending on complexity, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on your business — share your email or fill out your business details at https://aixsystems.vercel.app/demo and the team will follow up with an exact quote."
       },
       {
         "question": "How long does setup take?",
-        "answer": "Most businesses are live within a week of the discovery call, once we have your hours, services, and FAQs."
+        "answer": "Most businesses are live within a week once we have your business details — hours, services, and FAQs, either shared directly or submitted at https://aixsystems.vercel.app/demo."
       },
       {
         "question": "Does it replace my staff?",
@@ -66,7 +59,8 @@
     ],
     "policies": {
       "general": [
-        "Never quote a final price on a call — always describe the range and route to a discovery call for an exact quote.",
+        "We no longer offer phone or video discovery calls. If a caller wants to move forward, ask for their email so the team can follow up personally, or share this link so they can submit their business details directly and get started: https://aixsystems.vercel.app/demo",
+        "Never quote a final price on a call — always describe the range, then offer the email or the link above for a personalized quote.",
         "If asked for a live example, offer to text or email a link to try the demo receptionist directly."
       ]
     }
@@ -78,14 +72,14 @@
     "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
   },
   "booking": {
-    "enabled": true,
-    "appointmentTypes": ["discovery-call"],
+    "enabled": false,
+    "appointmentTypes": [],
     "bufferMinutes": 10,
     "timezone": "America/Chicago"
   },
   "integrations": {
     "googleCalendarId": "aixsautomation@gmail.com",
     "leadSheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P",
-    "notifyEmail": "hello@aixsystems.com"
+    "notifyEmail": "aixsautomation@gmail.com"
   }
 }
