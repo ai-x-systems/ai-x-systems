@@ -5,78 +5,176 @@
   "phoneNumber": "+1XXXXXXXXXX",
   "timezone": "America/Chicago",
   "demo": false,
+
   "contact": {
     "website": "https://aixsystems.com",
-    "email": "hello@aixsystems.com"
+    "email": "hello@aixsystems.com",
+    "demoUrl": "https://aixsystems.vercel.app/demo"
   },
+
   "hours": {
-    "monday": { "open": "09:00", "close": "18:00" },
-    "tuesday": { "open": "09:00", "close": "18:00" },
-    "wednesday": { "open": "09:00", "close": "18:00" },
-    "thursday": { "open": "09:00", "close": "18:00" },
-    "friday": { "open": "09:00", "close": "18:00" },
-    "saturday": { "open": "", "close": "", "closed": true },
-    "sunday": { "open": "", "close": "", "closed": true }
+    "monday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "tuesday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "wednesday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "thursday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "friday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "saturday": {
+      "open": "",
+      "close": "",
+      "closed": true
+    },
+    "sunday": {
+      "open": "",
+      "close": "",
+      "closed": true
+    }
   },
+
   "knowledge": {
+    "company": {
+      "description": "AI X Systems is an AI Automation Agency that provides AI-powered receptionist and website assistant solutions for businesses.",
+      "primaryGoal": "Help businesses handle customer conversations, answer questions, capture leads, and automate appointment booking."
+    },
+
     "services": [
       {
         "id": "ai-receptionist",
         "name": "AI Receptionist",
-        "description": "A phone-answering AI employee that handles calls, answers FAQs, books appointments, and logs leads — live 24/7.",
+        "description": "A phone-answering AI employee that handles incoming calls, answers FAQs, books appointments, and logs leads. It can operate 24/7.",
         "durationMinutes": 0,
-        "price": "One-time setup $300–$1,000 + monthly subscription"
+        "price": "One-time setup $300–$1,000 + monthly subscription",
+        "features": [
+          "Answers incoming business calls",
+          "Answers frequently asked questions",
+          "Books appointments",
+          "Logs leads",
+          "Works 24/7",
+          "Can connect to Google Calendar",
+          "Can transfer calls according to configured rules",
+          "Can take a message when it cannot answer a question"
+        ]
       },
       {
         "id": "ai-website-assistant",
         "name": "AI Website Assistant",
-        "description": "A chat widget for your site using the same knowledge and prompt as your phone receptionist, so your business sounds consistent everywhere.",
+        "description": "A website chat assistant that uses the same business knowledge and instructions as the AI Receptionist, allowing businesses to respond to website visitors consistently.",
         "durationMinutes": 0,
-        "price": "Bundled with AI Receptionist or standalone"
+        "price": "Bundled with AI Receptionist or available standalone",
+        "features": [
+          "Answers website visitor questions",
+          "Uses the same business knowledge as the AI Receptionist",
+          "Captures leads",
+          "Can help with appointment booking",
+          "Provides instant responses"
+        ]
       }
     ],
+
     "faqs": [
       {
         "question": "What exactly is an AI receptionist?",
-        "answer": "It's an AI employee that answers your business phone line — handling FAQs, booking appointments straight into your calendar, and logging every lead — so calls get answered even when your team is busy or after hours."
+        "answer": "It's an AI employee that answers your business phone line, handles common questions, books appointments into your calendar, and logs leads so calls can be handled even when your team is busy or after hours."
       },
       {
         "question": "How much does it cost?",
-        "answer": "There's a one-time setup fee, typically $300 to $1,000 depending on complexity, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on your business — share your email or fill out your business details at https://aixsystems.vercel.app/demo and the team will follow up with an exact quote."
+        "answer": "There is a one-time setup fee, typically $300 to $1,000 depending on the complexity of the setup, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on the business and its requirements. For a personalized quote, submit your business details at https://aixsystems.vercel.app/demo or provide your email so the team can follow up."
       },
       {
         "question": "How long does setup take?",
-        "answer": "Most businesses are live within a week once we have your business details — hours, services, and FAQs, either shared directly or submitted at https://aixsystems.vercel.app/demo."
+        "answer": "Most businesses are live within a week once AI X Systems receives the necessary business details, including services, hours, and FAQs. Businesses can provide these details directly or submit them through https://aixsystems.vercel.app/demo."
       },
       {
         "question": "Does it replace my staff?",
-        "answer": "No — it handles the repetitive front-desk work like answering common questions and booking, so your team can focus on customers who are already in front of them."
+        "answer": "No. The AI handles repetitive front-desk work such as answering common questions and booking appointments, allowing your team to focus on customers who need human attention."
       },
       {
         "question": "Can it work with my existing calendar and CRM?",
-        "answer": "Yes, it connects to Google Calendar for booking and can log leads to a sheet or CRM depending on your setup."
+        "answer": "Yes. The system can connect to Google Calendar for appointment booking and can log leads to a spreadsheet or CRM depending on the setup."
+      },
+      {
+        "question": "Can the AI answer calls after business hours?",
+        "answer": "Yes. The AI Receptionist can handle calls 24/7, including nights, weekends, and holidays."
+      },
+      {
+        "question": "Can the AI transfer calls to a real person?",
+        "answer": "Yes. Call-transfer rules can be configured for situations such as urgent requests, specific customer types, or questions that require a human."
+      },
+      {
+        "question": "What happens if the AI cannot answer a question?",
+        "answer": "Depending on the configured rules, the AI can take a message or transfer the call to a person. The team can then receive the relevant lead or call information."
+      },
+      {
+        "question": "Do you offer phone or video discovery calls?",
+        "answer": "No. AI X Systems no longer offers phone or video discovery calls. Customers who want to move forward should provide their email for a personal follow-up or submit their business details directly at https://aixsystems.vercel.app/demo."
       }
     ],
+
+    "answeringPolicy": {
+      "general": [
+        "Answer customer questions using all available business knowledge, not only the exact FAQ questions.",
+        "Understand different ways customers may phrase the same question and provide the relevant known answer.",
+        "Use the company information, services, service descriptions, features, pricing information, FAQs, integrations, and policies as the source of truth.",
+        "Do not require the customer's question to exactly match an FAQ before answering.",
+        "If the available business knowledge clearly answers the question, answer it directly and naturally.",
+        "If the available business knowledge does not contain enough information to answer confidently, do not guess, invent, or assume.",
+        "Never make up technical capabilities, integrations, pricing, discounts, guarantees, or services.",
+        "Never claim that an integration is supported unless it is confirmed in the business knowledge.",
+        "Never promise a feature that is not explicitly supported by the business knowledge.",
+        "For personalized pricing questions, provide the general setup range of $300–$1,000 plus a monthly subscription, then explain that exact pricing depends on the business and setup requirements.",
+        "For questions requiring confirmation from the team, collect the customer's email or direct them to https://aixsystems.vercel.app/demo.",
+        "If a customer asks something outside the business scope, politely explain that you can provide information about AI X Systems and its services, but do not invent an answer.",
+        "Keep answers concise, natural, and conversational.",
+        "Do not overwhelm customers with unnecessary technical details unless they specifically ask."
+      ],
+
+      "unknownQuestionResponse": "I don't have confirmed information on that yet, and I don't want to give you the wrong answer. If you'd like, I can take your email and have the AI X Systems team follow up with you.",
+
+      "personalizedQuoteResponse": "Pricing depends on your business and setup requirements. The typical one-time setup is $300–$1,000 plus a monthly subscription. For an exact quote, you can submit your business details at https://aixsystems.vercel.app/demo or provide your email and the team can follow up."
+    },
+
     "policies": {
       "general": [
-        "We no longer offer phone or video discovery calls. If a caller wants to move forward, ask for their email so the team can follow up personally, or share this link so they can submit their business details directly and get started: https://aixsystems.vercel.app/demo",
-        "Never quote a final price on a call — always describe the range, then offer the email or the link above for a personalized quote.",
-        "If asked for a live example, offer to text or email a link to try the demo receptionist directly."
+        "AI X Systems does not currently offer phone or video discovery calls.",
+        "If a caller wants to move forward, ask for their email so the team can follow up personally, or provide https://aixsystems.vercel.app/demo so they can submit their business details.",
+        "Never quote a final personalized price on a call. Only provide the general setup range of $300–$1,000 plus a monthly subscription, and explain that exact pricing depends on the business and setup requirements.",
+        "If asked for a live example, offer to text or email a link where the customer can try the demo receptionist directly.",
+        "Do not claim that an appointment or discovery call has been booked with AI X Systems.",
+        "Do not claim that a human representative is available for an immediate sales call.",
+        "Collect the customer's email when they want a personalized quote or want the team to follow up."
       ]
     }
   },
+
   "voice": {
     "assistantName": "Alex",
     "tone": "professional",
     "language": "en-US",
     "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
   },
+
   "booking": {
     "enabled": false,
     "appointmentTypes": [],
     "bufferMinutes": 10,
-    "timezone": "America/Chicago"
+    "timezone": "America/Chicago",
+    "note": "AI X Systems does not currently use the phone assistant to book sales or discovery appointments. Customer appointment booking is a capability of the AI Receptionist when configured for a client's business."
   },
+
   "integrations": {
     "googleCalendarId": "aixsautomation@gmail.com",
     "leadSheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P",
