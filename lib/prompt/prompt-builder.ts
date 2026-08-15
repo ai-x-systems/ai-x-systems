@@ -14,6 +14,29 @@ function textOrFallback(knowledge: BusinessKnowledge, id: KnowledgeSectionId): s
 }
 
 /**
+ * Today's date rendered in the business's timezone, e.g. "Saturday, August
+ * 15, 2026". The LLM has no reliable knowledge of the current date on its
+ * own (observed: it booked a "next Tuesday" request for the wrong year), so
+ * the prompt must state it explicitly for the model to resolve relative
+ * dates ("today", "next Tuesday", "August 18th") against a real calendar.
+ * Falls back to a UTC date string if the business timezone is somehow
+ * invalid, so a bad config can never break prompt construction.
+ */
+function formatTodayInBusinessTimezone(timezone: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: timezone,
+    }).format(new Date());
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+
+/**
  * Builds the full system prompt sent to the LLM for every turn, on both
  * the voice channel and the chat channel. Keep this deterministic and free
  * of per-call state — call-specific facts live in the conversation, not here.
@@ -32,6 +55,8 @@ export function buildSystemPrompt(config: BusinessConfig): string {
   const policies = textOrFallback(knowledge, "policies");
 
   return `You are ${config.voice.assistantName}, the AI phone receptionist for ${config.name}, a ${config.industry.toLowerCase()}.
+
+TODAY'S DATE (${config.timezone}): ${formatTodayInBusinessTimezone(config.timezone)}. Resolve every date the caller mentions ("today", "tomorrow", "next Tuesday", "August 18th") against this actual date and year — never guess or assume a different year.
 
 TONE: Speak in a ${config.voice.tone} tone. Keep responses short and natural — this is a phone call or live chat, not an essay. One or two sentences per turn unless asked for detail.
 
