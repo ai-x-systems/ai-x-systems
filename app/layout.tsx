@@ -55,6 +55,10 @@ export default function RootLayout({
     <html lang="en" className={`bg-background ${inter.variable}`}>
       <body className="antialiased">
         {children}
+        {/* Website AI Receptionist widget — Client #1 dogfood (see docs/EMBED.md).
+            Relative same-origin src so the snippet works from any origin the site
+            is served from (Vercel preview/production, custom domain later). */}
+        <script src="/widget.js" data-business-id="ai-x-systems" defer />
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <script
           type="application/ld+json"
