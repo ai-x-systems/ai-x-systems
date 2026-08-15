@@ -16,12 +16,25 @@
  * this IIFE and the only global created is window.AIXWidget (a tiny API:
  * open/close/toggle/version).
  *
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 (function (global) {
   "use strict";
 
-  var VERSION = "1.0.0";
+  var VERSION = "1.0.1";
+
+  // -------------------------------------------------------------------------
+  // 0. Early guard: never self-embed on the chat embed page.
+  //    The host site's layout can inject this widget on every page — including
+  //    /embed/chat/<businessId>, the very page the widget loads inside its own
+  //    panel iframe. Without this guard the embed page renders a second
+  //    launcher + panel (chat-inside-chat) that also interferes with the chat
+  //    send flow. The embed page must stay free of widget chrome, so silently
+  //    no-op there. Matches /embed/chat/<id> with or without a trailing slash.
+  // -------------------------------------------------------------------------
+  if ((global.location.pathname || "").indexOf("/embed/chat/") === 0) {
+    return;
+  }
 
   // -------------------------------------------------------------------------
   // 1. Find this script tag and read its configuration.
@@ -42,6 +55,22 @@
       "[AI X Systems widget] Missing data-business-id attribute on the widget.js script tag. " +
         'Add one, e.g. <script src="/widget.js" data-business-id="ai-x-systems" defer></script>. ' +
         "The widget was not loaded."
+    );
+    return;
+  }
+
+  // Skip if this business's widget is already loaded on the page. The
+  // window.AIXWidget guard below is the global duplicate protection; this
+  // id-specific check gives a precise message for the same-business case and
+  // stays correct if a page ever hosts widgets for several businesses.
+  if (
+    global.AIXWidget &&
+    global.AIXWidget.loadedBusinessIds &&
+    global.AIXWidget.loadedBusinessIds.indexOf(businessId) !== -1
+  ) {
+    console.warn(
+      '[AI X Systems widget] Widget for business "' + businessId +
+        '" is already loaded on this page. Skipping duplicate load.'
     );
     return;
   }
@@ -238,4 +267,9 @@
       if (panel) toggle();
     },
   };
+  // Record this business as loaded so a later duplicate script for the same
+  // business id is skipped (see the id-specific guard above).
+  global.AIXWidget.loadedBusinessIds = (
+    global.AIXWidget.loadedBusinessIds || []
+  ).concat([businessId]);
 })(window);
