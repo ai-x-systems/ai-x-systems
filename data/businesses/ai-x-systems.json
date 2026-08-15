@@ -55,12 +55,15 @@
       {
         "id": "ai-receptionist",
         "name": "AI Receptionist",
-        "description": "A phone-answering AI employee that handles incoming calls, answers FAQs, books appointments, and logs leads. It can operate 24/7.",
+        "type": "voice_ai",
+        "description": "A voice AI receptionist that answers business phone calls, speaks naturally with customers, answers FAQs, qualifies leads, books appointments, and logs leads. It can operate 24/7.",
         "durationMinutes": 0,
         "price": "One-time setup $300–$1,000 + monthly subscription",
         "features": [
-          "Answers incoming business calls",
+          "Answers incoming business phone calls",
+          "Speaks naturally with callers",
           "Answers frequently asked questions",
+          "Qualifies leads",
           "Books appointments",
           "Logs leads",
           "Works 24/7",
@@ -72,15 +75,16 @@
       {
         "id": "ai-website-assistant",
         "name": "AI Website Assistant",
-        "description": "A website chat assistant that uses the same business knowledge and instructions as the AI Receptionist, allowing businesses to respond to website visitors consistently.",
+        "type": "website_chat_ai",
+        "description": "An AI chat assistant for a business website that uses the same business knowledge and instructions as the AI Receptionist, allowing website visitors to receive instant answers and businesses to capture leads.",
         "durationMinutes": 0,
         "price": "Bundled with AI Receptionist or available standalone",
         "features": [
           "Answers website visitor questions",
           "Uses the same business knowledge as the AI Receptionist",
           "Captures leads",
-          "Can help with appointment booking",
-          "Provides instant responses"
+          "Provides instant responses",
+          "Can help with appointment booking"
         ]
       }
     ],
@@ -88,7 +92,15 @@
     "faqs": [
       {
         "question": "What exactly is an AI receptionist?",
-        "answer": "It's an AI employee that answers your business phone line, handles common questions, books appointments into your calendar, and logs leads so calls can be handled even when your team is busy or after hours."
+        "answer": "It's a voice AI employee that answers your business phone line, speaks naturally with callers, handles common questions, books appointments into your calendar, qualifies leads, and logs leads so calls can be handled even when your team is busy or after hours."
+      },
+      {
+        "question": "What is the AI Receptionist?",
+        "answer": "The AI Receptionist is the voice AI. It answers your business phone calls and has conversations with customers just like a receptionist would. It can answer FAQs, qualify leads, book appointments, and log lead information."
+      },
+      {
+        "question": "Is the AI Receptionist the website chatbot?",
+        "answer": "No. The AI Receptionist is the voice AI that handles phone calls. The AI Website Assistant is the separate website chat AI that handles conversations with visitors on a business website."
       },
       {
         "question": "How much does it cost?",
@@ -123,33 +135,57 @@
         "answer": "Depending on the configured rules, the AI can take a message or transfer the call to a person. The team can then receive the relevant lead or call information."
       },
       {
-        "question": "Do you offer phone or video discovery calls?",
-        "answer": "No. AI X Systems no longer offers phone or video discovery calls. Customers who want to move forward can provide their email for a personal follow-up or submit their business details through the business details form."
+        "question": "Can I try the AI Receptionist?",
+        "answer": "Yes. AI X Systems has a live AI Receptionist demo on its website. The live demo lets you experience the voice AI and see how it handles a business conversation."
       },
       {
-        "question": "Can I try the AI before getting one for my business?",
-        "answer": "Yes. There is a live AI receptionist demo available on the AI X Systems website that lets you experience how the receptionist works. The live demo is separate from the business details form."
+        "question": "How do I try the demo?",
+        "answer": "You can try the live AI Receptionist directly on the AI X Systems website using the live demo experience."
+      },
+      {
+        "question": "Do I need to book a demo call?",
+        "answer": "No. You don't need to book a call just to try the live AI Receptionist demo. You can experience the voice AI directly on the website."
+      },
+      {
+        "question": "Can I get an AI Receptionist for my own business?",
+        "answer": "Yes. If you want an AI Receptionist built for your business, AI X Systems first needs your business details so the system can be configured around your services, hours, FAQs, and preferred call-handling process."
+      },
+      {
+        "question": "Where do I submit my business details?",
+        "answer": "You can submit your business details through the AI X Systems business details form at https://aixsystems.vercel.app/demo."
+      },
+      {
+        "question": "Is the business details form the live demo?",
+        "answer": "No. They are separate. The live demo lets you experience the AI Receptionist voice AI. The business details form collects the information AI X Systems needs to build and customize an AI Receptionist for your business."
+      },
+      {
+        "question": "Do you offer phone or video discovery calls?",
+        "answer": "No. AI X Systems no longer offers phone or video discovery calls. Customers who want to move forward can provide their email for a personal follow-up or submit their business details through the business details form."
       }
     ],
 
     "demo": {
       "liveDemoAvailable": true,
+      "liveDemoType": "voice_ai",
+      "liveDemoName": "AI Receptionist Live Demo",
       "liveDemoLocation": "AI X Systems website",
-      "liveDemoDescription": "The live demo allows potential customers to interact with and experience the AI receptionist directly.",
-      "liveDemoPurpose": "The live demo is for experiencing how the AI receptionist works. It is not a sales call, discovery call, or business-details submission form.",
+      "liveDemoDescription": "A live experience where potential customers can interact with the AI Receptionist voice AI and see how it handles a business conversation.",
+      "liveDemoPurpose": "The live demo allows potential customers to experience the Voice AI / AI Receptionist before deciding whether they want one built for their own business.",
 
       "businessDetailsForm": {
         "url": "https://aixsystems.vercel.app/demo",
-        "purpose": "Collect the business information required for AI X Systems to create and customize an AI receptionist for the customer's business.",
+        "purpose": "Collect the business information required to create and customize the customer's AI Receptionist.",
         "informationNeeded": [
           "Business information",
           "Services",
           "Business hours",
           "FAQs",
           "Preferred call-handling process",
-          "Other information needed to configure the AI receptionist"
+          "Other information needed to configure the AI Receptionist"
         ]
-      }
+      },
+
+      "distinction": "The live demo is the Voice AI / AI Receptionist experience. The business details form is for customers who want AI X Systems to build and customize an AI Receptionist for their own business."
     },
 
     "answeringPolicy": {
@@ -177,49 +213,59 @@
 
     "demoPolicy": {
       "liveDemo": [
-        "If a customer asks to see a demo, explain that they can try the AI receptionist live on the AI X Systems website.",
-        "The live demo is for experiencing how the AI receptionist works.",
-        "Do not describe the live demo as a sales call or discovery call.",
-        "Do not say that the customer needs to book an appointment to try the live demo.",
+        "The live demo is the AI Receptionist voice AI.",
+        "If a customer asks to see or try the demo, explain that they can interact with the AI Receptionist live on the AI X Systems website.",
+        "The live demo is for experiencing how the Voice AI / AI Receptionist works.",
+        "The live demo is not a sales call or discovery call.",
+        "The customer does not need to book an appointment to try the live demo.",
+        "Do not describe the live demo as the website chatbot.",
         "Do not confuse the live demo with the business details form."
       ],
 
       "businessDetails": [
-        "If a customer wants an AI receptionist built for their own business, explain that AI X Systems needs their business details first.",
+        "If a customer wants an AI Receptionist built for their own business, explain that AI X Systems needs their business details first.",
         "The business details form is used to collect information such as services, business hours, FAQs, and the customer's preferred call-handling process.",
         "Direct customers who want to move forward to https://aixsystems.vercel.app/demo.",
         "Do not describe the business details form as the live demo.",
         "Do not describe the live demo as the business details form."
       ],
 
-      "demoResponses": {
-        "wantsDemo": "Absolutely. You can try our AI receptionist live on the AI X Systems website and see how it handles customer conversations.",
+      "responses": {
+        "wantsDemo": "Absolutely. You can try our AI Receptionist live on the AI X Systems website and experience the voice AI yourself.",
 
-        "asksHowToTryDemo": "You can try the live AI receptionist directly on our website. Look for the live demo or 'See It Answer Live' option.",
+        "asksHowToTryDemo": "You can try the live AI Receptionist directly on our website using the live demo experience.",
 
-        "wantsDemoAppointment": "You don't need to book a call just to try the live demo. You can experience the AI receptionist directly on our website.",
+        "wantsDemoAppointment": "You don't need to book a call just to try the live demo. You can experience the AI Receptionist voice AI directly on our website.",
 
-        "wantsReceptionistForBusiness": "Great. To build the receptionist around your business, we first need some details about your business, services, hours, FAQs, and how you want calls handled. You can submit those details here: https://aixsystems.vercel.app/demo.",
+        "wantsReceptionistForBusiness": "Absolutely. To build the AI Receptionist around your business, we first need some details about your business, services, hours, FAQs, and how you want calls handled. You can submit those details here: https://aixsystems.vercel.app/demo.",
 
-        "wantsBoth": "Absolutely. You can first try the AI receptionist live on our website. If you like what you see and want one built for your business, submit your business details here: https://aixsystems.vercel.app/demo.",
+        "wantsBoth": "Absolutely. You can first try the AI Receptionist voice AI live on our website. If you like what you see and want one built for your business, submit your business details here: https://aixsystems.vercel.app/demo.",
 
-        "asksDifference": "The live demo lets you experience the AI receptionist. The business details form is for customers who want AI X Systems to build and customize a receptionist for their own business."
+        "asksDifference": "The live demo lets you experience the AI Receptionist voice AI. The business details form is for customers who want AI X Systems to build and customize a receptionist for their own business.",
+
+        "asksIfDemoIsVoiceAI": "Yes. The live demo is the AI Receptionist, which is our voice AI. It lets you experience how the AI handles a real business phone conversation.",
+
+        "asksIfDemoIsChatbot": "No. The live demo is the Voice AI / AI Receptionist. The AI Website Assistant is a separate product designed for website chat."
       }
     },
 
     "policies": {
       "general": [
         "AI X Systems does not currently offer phone or video discovery calls.",
-        "The live receptionist demo is available on the AI X Systems website and does not require a discovery call.",
-        "The business details form is separate from the live demo and is used to collect information needed to build and customize a customer's AI receptionist.",
-        "If a caller wants to move forward with getting an AI receptionist for their business, ask for their email so the team can follow up personally, or provide https://aixsystems.vercel.app/demo.",
+        "The live AI Receptionist demo is available on the AI X Systems website and does not require a discovery call.",
+        "The AI Receptionist is the Voice AI product.",
+        "The AI Website Assistant is the website chat product.",
+        "The live demo demonstrates the AI Receptionist Voice AI.",
+        "The business details form is separate from the live demo and is used to collect information needed to build and customize a customer's AI Receptionist.",
+        "If a caller wants to move forward with getting an AI Receptionist for their business, ask for their email so the team can follow up personally, or provide https://aixsystems.vercel.app/demo.",
         "Never quote a final personalized price on a call. Only provide the general setup range of $300–$1,000 plus a monthly subscription, and explain that exact pricing depends on the business and setup requirements.",
-        "If asked for a live example, direct the customer to the live demo on the AI X Systems website.",
+        "If asked for a live example, direct the customer to the live AI Receptionist demo on the AI X Systems website.",
         "Do not claim that an appointment or discovery call has been booked with AI X Systems.",
         "Do not claim that a human representative is available for an immediate sales call.",
         "Collect the customer's email when they want a personalized quote or want the team to follow up.",
-        "Do not claim that the business details form is a demo.",
-        "Do not claim that the live demo submits or collects the customer's business information."
+        "Do not claim that the business details form is the live demo.",
+        "Do not claim that the live demo submits or collects the customer's business information.",
+        "Do not confuse the AI Receptionist Voice AI with the AI Website Assistant."
       ]
     }
   },
