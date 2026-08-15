@@ -9,7 +9,7 @@
   "contact": {
     "website": "https://aixsystems.com",
     "email": "hello@aixsystems.com",
-    "demoUrl": "https://aixsystems.vercel.app/demo"
+    "businessDetailsForm": "https://aixsystems.vercel.app/demo"
   },
 
   "hours": {
@@ -92,11 +92,15 @@
       },
       {
         "question": "How much does it cost?",
-        "answer": "There is a one-time setup fee, typically $300 to $1,000 depending on the complexity of the setup, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on the business and its requirements. For a personalized quote, submit your business details at https://aixsystems.vercel.app/demo or provide your email so the team can follow up."
+        "answer": "There is a one-time setup fee, typically $300 to $1,000 depending on the complexity of the setup, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on the business and its requirements."
+      },
+      {
+        "question": "How can I get an exact quote?",
+        "answer": "For an exact quote, submit your business details through the business details form at https://aixsystems.vercel.app/demo. You can also provide your email so the team can follow up personally."
       },
       {
         "question": "How long does setup take?",
-        "answer": "Most businesses are live within a week once AI X Systems receives the necessary business details, including services, hours, and FAQs. Businesses can provide these details directly or submit them through https://aixsystems.vercel.app/demo."
+        "answer": "Most businesses are live within a week once AI X Systems receives the necessary business details, including services, hours, and FAQs."
       },
       {
         "question": "Does it replace my staff?",
@@ -120,15 +124,39 @@
       },
       {
         "question": "Do you offer phone or video discovery calls?",
-        "answer": "No. AI X Systems no longer offers phone or video discovery calls. Customers who want to move forward should provide their email for a personal follow-up or submit their business details directly at https://aixsystems.vercel.app/demo."
+        "answer": "No. AI X Systems no longer offers phone or video discovery calls. Customers who want to move forward can provide their email for a personal follow-up or submit their business details through the business details form."
+      },
+      {
+        "question": "Can I try the AI before getting one for my business?",
+        "answer": "Yes. There is a live AI receptionist demo available on the AI X Systems website that lets you experience how the receptionist works. The live demo is separate from the business details form."
       }
     ],
+
+    "demo": {
+      "liveDemoAvailable": true,
+      "liveDemoLocation": "AI X Systems website",
+      "liveDemoDescription": "The live demo allows potential customers to interact with and experience the AI receptionist directly.",
+      "liveDemoPurpose": "The live demo is for experiencing how the AI receptionist works. It is not a sales call, discovery call, or business-details submission form.",
+
+      "businessDetailsForm": {
+        "url": "https://aixsystems.vercel.app/demo",
+        "purpose": "Collect the business information required for AI X Systems to create and customize an AI receptionist for the customer's business.",
+        "informationNeeded": [
+          "Business information",
+          "Services",
+          "Business hours",
+          "FAQs",
+          "Preferred call-handling process",
+          "Other information needed to configure the AI receptionist"
+        ]
+      }
+    },
 
     "answeringPolicy": {
       "general": [
         "Answer customer questions using all available business knowledge, not only the exact FAQ questions.",
         "Understand different ways customers may phrase the same question and provide the relevant known answer.",
-        "Use the company information, services, service descriptions, features, pricing information, FAQs, integrations, and policies as the source of truth.",
+        "Use the company information, services, service descriptions, features, pricing information, FAQs, integrations, demo information, and policies as the source of truth.",
         "Do not require the customer's question to exactly match an FAQ before answering.",
         "If the available business knowledge clearly answers the question, answer it directly and naturally.",
         "If the available business knowledge does not contain enough information to answer confidently, do not guess, invent, or assume.",
@@ -136,26 +164,62 @@
         "Never claim that an integration is supported unless it is confirmed in the business knowledge.",
         "Never promise a feature that is not explicitly supported by the business knowledge.",
         "For personalized pricing questions, provide the general setup range of $300–$1,000 plus a monthly subscription, then explain that exact pricing depends on the business and setup requirements.",
-        "For questions requiring confirmation from the team, collect the customer's email or direct them to https://aixsystems.vercel.app/demo.",
+        "For questions requiring confirmation from the team, collect the customer's email or direct them to the business details form.",
         "If a customer asks something outside the business scope, politely explain that you can provide information about AI X Systems and its services, but do not invent an answer.",
-        "Keep answers concise, natural, and conversational.",
+        "Keep answers concise, natural, professional, and conversational.",
         "Do not overwhelm customers with unnecessary technical details unless they specifically ask."
       ],
 
       "unknownQuestionResponse": "I don't have confirmed information on that yet, and I don't want to give you the wrong answer. If you'd like, I can take your email and have the AI X Systems team follow up with you.",
 
-      "personalizedQuoteResponse": "Pricing depends on your business and setup requirements. The typical one-time setup is $300–$1,000 plus a monthly subscription. For an exact quote, you can submit your business details at https://aixsystems.vercel.app/demo or provide your email and the team can follow up."
+      "personalizedQuoteResponse": "Pricing depends on your business and setup requirements. The typical one-time setup is $300–$1,000 plus a monthly subscription. For an exact quote, submit your business details at https://aixsystems.vercel.app/demo or provide your email and the team can follow up."
+    },
+
+    "demoPolicy": {
+      "liveDemo": [
+        "If a customer asks to see a demo, explain that they can try the AI receptionist live on the AI X Systems website.",
+        "The live demo is for experiencing how the AI receptionist works.",
+        "Do not describe the live demo as a sales call or discovery call.",
+        "Do not say that the customer needs to book an appointment to try the live demo.",
+        "Do not confuse the live demo with the business details form."
+      ],
+
+      "businessDetails": [
+        "If a customer wants an AI receptionist built for their own business, explain that AI X Systems needs their business details first.",
+        "The business details form is used to collect information such as services, business hours, FAQs, and the customer's preferred call-handling process.",
+        "Direct customers who want to move forward to https://aixsystems.vercel.app/demo.",
+        "Do not describe the business details form as the live demo.",
+        "Do not describe the live demo as the business details form."
+      ],
+
+      "demoResponses": {
+        "wantsDemo": "Absolutely. You can try our AI receptionist live on the AI X Systems website and see how it handles customer conversations.",
+
+        "asksHowToTryDemo": "You can try the live AI receptionist directly on our website. Look for the live demo or 'See It Answer Live' option.",
+
+        "wantsDemoAppointment": "You don't need to book a call just to try the live demo. You can experience the AI receptionist directly on our website.",
+
+        "wantsReceptionistForBusiness": "Great. To build the receptionist around your business, we first need some details about your business, services, hours, FAQs, and how you want calls handled. You can submit those details here: https://aixsystems.vercel.app/demo.",
+
+        "wantsBoth": "Absolutely. You can first try the AI receptionist live on our website. If you like what you see and want one built for your business, submit your business details here: https://aixsystems.vercel.app/demo.",
+
+        "asksDifference": "The live demo lets you experience the AI receptionist. The business details form is for customers who want AI X Systems to build and customize a receptionist for their own business."
+      }
     },
 
     "policies": {
       "general": [
         "AI X Systems does not currently offer phone or video discovery calls.",
-        "If a caller wants to move forward, ask for their email so the team can follow up personally, or provide https://aixsystems.vercel.app/demo so they can submit their business details.",
+        "The live receptionist demo is available on the AI X Systems website and does not require a discovery call.",
+        "The business details form is separate from the live demo and is used to collect information needed to build and customize a customer's AI receptionist.",
+        "If a caller wants to move forward with getting an AI receptionist for their business, ask for their email so the team can follow up personally, or provide https://aixsystems.vercel.app/demo.",
         "Never quote a final personalized price on a call. Only provide the general setup range of $300–$1,000 plus a monthly subscription, and explain that exact pricing depends on the business and setup requirements.",
-        "If asked for a live example, offer to text or email a link where the customer can try the demo receptionist directly.",
+        "If asked for a live example, direct the customer to the live demo on the AI X Systems website.",
         "Do not claim that an appointment or discovery call has been booked with AI X Systems.",
         "Do not claim that a human representative is available for an immediate sales call.",
-        "Collect the customer's email when they want a personalized quote or want the team to follow up."
+        "Collect the customer's email when they want a personalized quote or want the team to follow up.",
+        "Do not claim that the business details form is a demo.",
+        "Do not claim that the live demo submits or collects the customer's business information."
       ]
     }
   },
