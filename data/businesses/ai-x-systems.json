@@ -5,81 +5,402 @@
   "phoneNumber": "+1XXXXXXXXXX",
   "timezone": "America/Chicago",
   "demo": false,
+
   "contact": {
     "website": "https://aixsystems.com",
-    "email": "hello@aixsystems.com"
+    "email": "hello@aixsystems.com",
+    "businessDetailsForm": "https://aixsystems.vercel.app/demo"
   },
+
   "hours": {
-    "monday": { "open": "09:00", "close": "18:00" },
-    "tuesday": { "open": "09:00", "close": "18:00" },
-    "wednesday": { "open": "09:00", "close": "18:00" },
-    "thursday": { "open": "09:00", "close": "18:00" },
-    "friday": { "open": "09:00", "close": "18:00" },
-    "saturday": { "open": "", "close": "", "closed": true },
-    "sunday": { "open": "", "close": "", "closed": true }
+    "monday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "tuesday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "wednesday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "thursday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "friday": {
+      "open": "09:00",
+      "close": "18:00"
+    },
+    "saturday": {
+      "open": "",
+      "close": "",
+      "closed": true
+    },
+    "sunday": {
+      "open": "",
+      "close": "",
+      "closed": true
+    }
   },
+
   "knowledge": {
+    "company": {
+      "description": "AI X Systems is an AI Automation Agency that provides AI-powered receptionist and website assistant solutions for businesses.",
+      "primaryGoal": "Help businesses handle customer conversations, answer questions, capture leads, and automate appointment booking."
+    },
+
     "services": [
       {
         "id": "ai-receptionist",
         "name": "AI Receptionist",
-        "description": "A phone-answering AI employee that handles calls, answers FAQs, books appointments, and logs leads — live 24/7.",
+        "type": "voice_ai",
+        "description": "A voice AI receptionist that answers business phone calls, speaks naturally with customers, answers FAQs, qualifies leads, books appointments, and logs leads. It can operate 24/7.",
         "durationMinutes": 0,
-        "price": "One-time setup $300–$1,000 + monthly subscription"
+        "price": "One-time setup $300–$1,000 + monthly subscription",
+        "features": [
+          "Answers incoming business phone calls",
+          "Speaks naturally with callers",
+          "Answers frequently asked questions",
+          "Qualifies leads",
+          "Captures lead information",
+          "Books appointments when a compatible customer booking system is configured",
+          "Logs leads into the customer's configured lead-management system",
+          "Works 24/7",
+          "Can work with the customer's existing calendar or booking system when configured",
+          "Can work with the customer's CRM or lead-management system when configured",
+          "Can transfer calls according to configured rules",
+          "Can take a message when it cannot answer a question"
+        ]
       },
       {
         "id": "ai-website-assistant",
         "name": "AI Website Assistant",
-        "description": "A chat widget for your site using the same knowledge and prompt as your phone receptionist, so your business sounds consistent everywhere.",
+        "type": "website_chat_ai",
+        "description": "An AI chat assistant for a business website that uses the same business knowledge and instructions as the AI Receptionist, allowing website visitors to receive instant answers and businesses to capture leads.",
         "durationMinutes": 0,
-        "price": "Bundled with AI Receptionist or standalone"
+        "price": "Bundled with AI Receptionist or available standalone",
+        "features": [
+          "Answers website visitor questions",
+          "Uses the same business knowledge as the AI Receptionist",
+          "Captures leads",
+          "Provides instant responses",
+          "Can help with appointment booking when configured",
+          "Can connect to the customer's configured business systems"
+        ]
       }
     ],
+
     "faqs": [
       {
         "question": "What exactly is an AI receptionist?",
-        "answer": "It's an AI employee that answers your business phone line — handling FAQs, booking appointments straight into your calendar, and logging every lead — so calls get answered even when your team is busy or after hours."
+        "answer": "It's a voice AI employee that answers your business phone line, speaks naturally with callers, handles common questions, qualifies leads, books appointments when configured with a compatible booking system, and captures lead information so calls can be handled even when your team is busy or after hours."
+      },
+      {
+        "question": "What is the AI Receptionist?",
+        "answer": "The AI Receptionist is the voice AI. It answers your business phone calls and has conversations with customers like a receptionist would. It can answer FAQs, qualify leads, capture customer information, book appointments when the appropriate customer system is configured, and transfer calls according to your rules."
+      },
+      {
+        "question": "Is the AI Receptionist the website chatbot?",
+        "answer": "No. The AI Receptionist is the voice AI that handles phone calls. The AI Website Assistant is the separate website chat AI that handles conversations with visitors on a business website."
       },
       {
         "question": "How much does it cost?",
-        "answer": "There's a one-time setup fee, typically $300 to $1,000 depending on complexity, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on your business — share your email or fill out your business details at https://aixsystems.vercel.app/demo and the team will follow up with an exact quote."
+        "answer": "There is a one-time setup fee, typically $300 to $1,000 depending on the complexity of the setup, plus a monthly subscription that covers hosting, voice minutes, and support. Exact pricing depends on the business and its requirements."
+      },
+      {
+        "question": "How can I get an exact quote?",
+        "answer": "For an exact quote, submit your business details through the business details form at https://aixsystems.vercel.app/demo. You can also provide your email so the team can follow up personally."
       },
       {
         "question": "How long does setup take?",
-        "answer": "Most businesses are live within a week once we have your business details — hours, services, and FAQs, either shared directly or submitted at https://aixsystems.vercel.app/demo."
+        "answer": "Most businesses are live within a week once AI X Systems receives the necessary business details, including services, hours, and FAQs."
       },
       {
         "question": "Does it replace my staff?",
-        "answer": "No — it handles the repetitive front-desk work like answering common questions and booking, so your team can focus on customers who are already in front of them."
+        "answer": "No. The AI handles repetitive front-desk work such as answering common questions, qualifying leads, and booking appointments when configured, allowing your team to focus on customers who need human attention."
       },
       {
-        "question": "Can it work with my existing calendar and CRM?",
-        "answer": "Yes, it connects to Google Calendar for booking and can log leads to a sheet or CRM depending on your setup."
+        "question": "Can it work with my existing calendar?",
+        "answer": "The AI Receptionist can be configured to work with a customer's existing calendar or booking system. The exact setup depends on the tools the business already uses."
+      },
+      {
+        "question": "Can it work with my existing CRM?",
+        "answer": "The AI Receptionist can be configured around different CRM and lead-management systems. The exact integration depends on the CRM the business uses and how that system is configured."
+      },
+      {
+        "question": "Can it work with my booking system?",
+        "answer": "Yes, appointment booking can be configured around the customer's existing booking system when the system is compatible and properly connected. The exact setup depends on the tools the business uses."
+      },
+      {
+        "question": "Can it answer calls after business hours?",
+        "answer": "Yes. The AI Receptionist can operate 24/7, including nights, weekends, and holidays."
+      },
+      {
+        "question": "Can the AI transfer calls to a real person?",
+        "answer": "Yes. Call-transfer rules can be configured for situations such as urgent requests, specific customer types, or questions that require a human."
+      },
+      {
+        "question": "What happens if the AI cannot answer a question?",
+        "answer": "Depending on the configured rules, the AI can take a message or transfer the call to a person. The relevant information can then be passed to the configured lead-management or notification system."
+      },
+      {
+        "question": "Can I try the AI Receptionist?",
+        "answer": "Yes. AI X Systems has a live AI Receptionist demo on its website. The live demo lets you experience the voice AI and see how it handles a business conversation."
+      },
+      {
+        "question": "How do I try the demo?",
+        "answer": "You can try the live AI Receptionist directly on the AI X Systems website using the live demo experience."
+      },
+      {
+        "question": "Do I need to book a demo call?",
+        "answer": "No. You don't need to book a call just to try the live AI Receptionist demo. You can experience the voice AI directly on the website."
+      },
+      {
+        "question": "Can I get an AI Receptionist for my own business?",
+        "answer": "Yes. If you want an AI Receptionist built for your business, AI X Systems first needs your business details so the system can be configured around your services, hours, FAQs, preferred call-handling process, and the tools your business uses."
+      },
+      {
+        "question": "Where do I submit my business details?",
+        "answer": "You can submit your business details through the AI X Systems business details form at https://aixsystems.vercel.app/demo."
+      },
+      {
+        "question": "Is the business details form the live demo?",
+        "answer": "No. They are separate. The live demo lets you experience the AI Receptionist voice AI. The business details form collects the information AI X Systems needs to build and customize an AI Receptionist for your business."
+      },
+      {
+        "question": "Do you offer phone or video discovery calls?",
+        "answer": "No. AI X Systems no longer offers phone or video discovery calls. Customers who want to move forward can provide their email for a personal follow-up or submit their business details through the business details form."
       }
     ],
+
+    "demo": {
+      "liveDemoAvailable": true,
+      "liveDemoType": "voice_ai",
+      "liveDemoName": "AI Receptionist Live Demo",
+      "liveDemoLocation": "AI X Systems website",
+      "liveDemoDescription": "A live experience where potential customers can interact with the AI Receptionist voice AI and see how it handles a business conversation.",
+      "liveDemoPurpose": "The live demo allows potential customers to experience the Voice AI / AI Receptionist before deciding whether they want one built for their own business.",
+
+      "businessDetailsForm": {
+        "url": "https://aixsystems.vercel.app/demo",
+        "purpose": "Collect the business information required to create and customize the customer's AI Receptionist.",
+        "informationNeeded": [
+          "Business information",
+          "Services",
+          "Business hours",
+          "FAQs",
+          "Preferred call-handling process",
+          "Current CRM",
+          "Current booking system",
+          "Current calendar system",
+          "Current lead-management system",
+          "Other tools or software the business wants the AI to work with",
+          "Other information needed to configure the AI Receptionist"
+        ]
+      },
+
+      "distinction": "The live demo is the Voice AI / AI Receptionist experience. The business details form is for customers who want AI X Systems to build and customize an AI Receptionist for their own business."
+    },
+
+    "integrations": {
+      "principle": "Integrations are configured per customer. AI X Systems does not assume that every customer uses the same CRM, calendar, booking platform, lead-management system, phone system, or other software.",
+
+      "leadManagement": {
+        "enabled": false,
+        "provider": "client_configured",
+        "system": null,
+        "description": "Lead capture and lead management depend on the customer's existing CRM, lead-management platform, spreadsheet, or other configured system."
+      },
+
+      "crm": {
+        "enabled": false,
+        "provider": "client_configured",
+        "system": null,
+        "description": "CRM integration depends on the customer's existing CRM and the configuration required for that system."
+      },
+
+      "booking": {
+        "enabled": false,
+        "provider": "client_configured",
+        "system": null,
+        "description": "Appointment booking depends on the customer's existing booking platform or scheduling system."
+      },
+
+      "calendar": {
+        "enabled": false,
+        "provider": "client_configured",
+        "system": null,
+        "description": "Calendar integration depends on the customer's existing calendar or scheduling system."
+      },
+
+      "phoneSystem": {
+        "enabled": false,
+        "provider": "client_configured",
+        "system": null,
+        "description": "Phone-system configuration depends on the customer's existing phone setup and deployment requirements."
+      }
+    },
+
+    "answeringPolicy": {
+      "general": [
+        "Answer customer questions using all available business knowledge, not only the exact FAQ questions.",
+        "Understand different ways customers may phrase the same question and provide the relevant known answer.",
+        "Use the company information, services, service descriptions, features, pricing information, FAQs, integrations, demo information, and policies as the source of truth.",
+        "Do not require the customer's question to exactly match an FAQ before answering.",
+        "If the available business knowledge clearly answers the question, answer it directly and naturally.",
+        "If the available business knowledge does not contain enough information to answer confidently, do not guess, invent, or assume.",
+        "Never make up technical capabilities, integrations, pricing, discounts, guarantees, or services.",
+        "Never claim that a specific CRM, calendar, booking platform, phone system, or other software is supported unless that integration has been confirmed or configured.",
+        "Explain that CRM, booking, calendar, lead-management, and other integrations depend on the customer's existing tools and configuration.",
+        "For personalized pricing questions, provide the general setup range of $300–$1,000 plus a monthly subscription, then explain that exact pricing depends on the business and setup requirements.",
+        "For questions requiring confirmation from the team, collect the customer's email or direct them to the business details form.",
+        "If a customer asks something outside the business scope, politely explain that you can provide information about AI X Systems and its services, but do not invent an answer.",
+        "Keep answers concise, natural, professional, and conversational.",
+        "Do not overwhelm customers with unnecessary technical details unless they specifically ask."
+      ],
+
+      "integrationPolicy": [
+        "Do not assume a customer uses Google Calendar.",
+        "Do not assume a customer uses Google Sheets.",
+        "Do not assume a customer uses a particular CRM.",
+        "Do not assume a customer uses a particular booking platform.",
+        "Do not assume a customer uses a particular phone system.",
+        "Do not promise compatibility with a specific third-party system unless it is confirmed.",
+        "When a customer names a CRM or tool that is not confirmed, explain that compatibility depends on their setup and that the team can review it after receiving their business details.",
+        "When a customer asks generally about CRM, booking, calendar, or lead-management integration, explain that the AI can be configured around different systems depending on what the business already uses."
+      ],
+
+      "unknownQuestionResponse": "I don't have confirmed information on that yet, and I don't want to give you the wrong answer. If you'd like, I can take your email and have the AI X Systems team follow up with you.",
+
+      "unknownIntegrationResponse": "The exact integration depends on the tools your business uses and how they're configured. I don't want to promise compatibility without confirming it. If you include the system you use in your business details, the team can review it and confirm what's possible.",
+
+      "personalizedQuoteResponse": "Pricing depends on your business and setup requirements. The typical one-time setup is $300–$1,000 plus a monthly subscription. For an exact quote, submit your business details at https://aixsystems.vercel.app/demo or provide your email and the team can follow up."
+    },
+
+    "demoPolicy": {
+      "liveDemo": [
+        "The live demo is the AI Receptionist voice AI.",
+        "If a customer asks to see or try the demo, explain that they can interact with the AI Receptionist live on the AI X Systems website.",
+        "The live demo is for experiencing how the Voice AI / AI Receptionist works.",
+        "The live demo is not a sales call or discovery call.",
+        "The customer does not need to book an appointment to try the live demo.",
+        "Do not describe the live demo as the website chatbot.",
+        "Do not confuse the live demo with the business details form."
+      ],
+
+      "businessDetails": [
+        "If a customer wants an AI Receptionist built for their own business, explain that AI X Systems needs their business details first.",
+        "The business details form is used to collect information such as services, business hours, FAQs, preferred call-handling process, CRM, booking system, calendar, and lead-management tools.",
+        "Direct customers who want to move forward to https://aixsystems.vercel.app/demo.",
+        "Do not describe the business details form as the live demo.",
+        "Do not describe the live demo as the business details form."
+      ],
+
+      "responses": {
+        "wantsDemo": "Absolutely. You can try our AI Receptionist live on the AI X Systems website and experience the voice AI yourself.",
+
+        "asksHowToTryDemo": "You can try the live AI Receptionist directly on our website using the live demo experience.",
+
+        "wantsDemoAppointment": "You don't need to book a call just to try the live demo. You can experience the AI Receptionist voice AI directly on our website.",
+
+        "wantsReceptionistForBusiness": "Absolutely. To build the AI Receptionist around your business, we first need some details about your business, services, hours, FAQs, and the systems you currently use. You can submit those details here: https://aixsystems.vercel.app/demo.",
+
+        "wantsBoth": "Absolutely. You can first try the AI Receptionist voice AI live on our website. If you like what you see and want one built for your business, submit your business details here: https://aixsystems.vercel.app/demo.",
+
+        "asksDifference": "The live demo lets you experience the AI Receptionist voice AI. The business details form is for customers who want AI X Systems to build and customize a receptionist for their own business.",
+
+        "asksIfDemoIsVoiceAI": "Yes. The live demo is the AI Receptionist, which is our voice AI. It lets you experience how the AI handles a real business phone conversation.",
+
+        "asksIfDemoIsChatbot": "No. The live demo is the Voice AI / AI Receptionist. The AI Website Assistant is a separate product designed for website chat.",
+
+        "wantsToGetStarted": "Great. The next step is to submit your business details so we can understand your services, hours, FAQs, call-handling preferences, and the tools your business currently uses. You can submit those details here: https://aixsystems.vercel.app/demo.",
+
+        "asksAboutCrm": "The AI can be configured around different CRM and lead-management systems. The exact integration depends on the CRM your business currently uses and how it's configured.",
+
+        "asksAboutBooking": "Yes, appointment booking can be configured around your existing booking or scheduling system. The exact setup depends on the tools your business currently uses.",
+
+        "asksAboutCalendar": "The AI Receptionist can be configured to work with your existing calendar or scheduling system. The exact setup depends on what your business currently uses.",
+
+        "asksAboutSpecificIntegration": "The exact integration depends on your setup, so I don't want to promise compatibility without confirming it. If you include the system you use in your business details, the team can review it and confirm what's possible.",
+
+        "wantsSalesCall": "We don't currently offer phone or video discovery calls, but I can take your email so the team can follow up personally. You can also submit your business details here: https://aixsystems.vercel.app/demo."
+      }
+    },
+
     "policies": {
       "general": [
-        "We no longer offer phone or video discovery calls. If a caller wants to move forward, ask for their email so the team can follow up personally, or share this link so they can submit their business details directly and get started: https://aixsystems.vercel.app/demo",
-        "Never quote a final price on a call — always describe the range, then offer the email or the link above for a personalized quote.",
-        "If asked for a live example, offer to text or email a link to try the demo receptionist directly."
+        "AI X Systems does not currently offer phone or video discovery calls.",
+        "The live AI Receptionist demo is available on the AI X Systems website and does not require a discovery call.",
+        "The AI Receptionist is the Voice AI product.",
+        "The AI Website Assistant is the website chat product.",
+        "The live demo demonstrates the AI Receptionist Voice AI.",
+        "The business details form is separate from the live demo and is used to collect information needed to build and customize a customer's AI Receptionist.",
+        "If a caller wants to move forward with getting an AI Receptionist for their business, ask for their email so the team can follow up personally, or provide https://aixsystems.vercel.app/demo.",
+        "Never quote a final personalized price on a call. Only provide the general setup range of $300–$1,000 plus a monthly subscription, and explain that exact pricing depends on the business and setup requirements.",
+        "If asked for a live example, direct the customer to the live AI Receptionist demo on the AI X Systems website.",
+        "Do not claim that an appointment or discovery call has been booked with AI X Systems.",
+        "Do not claim that a human representative is available for an immediate sales call.",
+        "Collect the customer's email when they want a personalized quote or want the team to follow up.",
+        "Do not claim that the business details form is the live demo.",
+        "Do not claim that the live demo submits or collects the customer's business information.",
+        "Do not confuse the AI Receptionist Voice AI with the AI Website Assistant.",
+        "CRM, booking, calendar, lead-management, phone-system, and other integrations are configured per customer.",
+        "Never expose internal integration IDs, internal lead-sheet IDs, internal calendar IDs, or internal system configuration to prospective customers."
       ]
     }
   },
+
   "voice": {
     "assistantName": "Alex",
     "tone": "professional",
     "language": "en-US",
     "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
   },
+
   "booking": {
     "enabled": false,
+    "purpose": "ai_x_systems_sales_booking",
     "appointmentTypes": [],
     "bufferMinutes": 10,
-    "timezone": "America/Chicago"
+    "timezone": "America/Chicago",
+    "note": "AI X Systems does not currently use the phone assistant to book sales or discovery appointments. This setting does not represent the appointment-booking capability of the AI Receptionist product for client businesses."
   },
+
+  "leadManagement": {
+    "enabled": false,
+    "purpose": "ai_x_systems_internal_lead_management",
+    "provider": "client_configured",
+    "system": null,
+    "note": "Customer lead capture and CRM configuration must be defined separately for each client deployment."
+  },
+
   "integrations": {
-    "googleCalendarId": "aixsautomation@gmail.com",
-    "leadSheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P",
-    "notifyEmail": "aixsautomation@gmail.com"
+    "leadManagement": {
+      "enabled": false,
+      "provider": "client_configured",
+      "system": null
+    },
+    "crm": {
+      "enabled": false,
+      "provider": "client_configured",
+      "system": null
+    },
+    "booking": {
+      "enabled": false,
+      "provider": "client_configured",
+      "system": null
+    },
+    "calendar": {
+      "enabled": false,
+      "provider": "client_configured",
+      "system": null
+    },
+    "phoneSystem": {
+      "enabled": false,
+      "provider": "client_configured",
+      "system": null
+    }
   }
 }
