@@ -358,55 +358,152 @@
     }
   },
 
-  "voice": {
-    "assistantName": "Alex",
-    "tone": "professional",
-    "language": "en-US",
-    "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
+"client": {
+  "id": "ai-x-systems",
+  "name": "AI X Systems",
+  "status": "active",
+  "clientNumber": 1,
+  "deploymentType": "client_deployment"
+},
+
+"voice": {
+  "assistantName": "Alex",
+  "tone": "professional",
+  "language": "en-US",
+  "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
+},
+
+"booking": {
+  "enabled": true,
+  "purpose": "ai_x_systems_client_booking",
+  "appointmentTypes": [],
+  "bufferMinutes": 10,
+  "timezone": "America/Chicago",
+  "provider": "google_calendar",
+  "calendarId": "aixsautomation@gmail.com",
+  "note": "AI X Systems is Client #1 and currently uses its configured Google Calendar for booking. This booking configuration belongs specifically to AI X Systems and must not be used as the default for future clients. Each future client will have their own booking system configured according to their CRM, scheduling platform, calendar, and business requirements."
+},
+
+"leadManagement": {
+  "enabled": true,
+  "purpose": "ai_x_systems_client_lead_management",
+  "provider": "google_sheets",
+  "system": "lead_sheet",
+  "sheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P",
+  "notifyEmail": "aixsautomation@gmail.com",
+  "note": "AI X Systems is Client #1 and currently uses its configured Google Sheet for lead management and the configured email for lead notifications. These integrations belong specifically to AI X Systems and must not be used as defaults for future clients."
+},
+
+"integrations": {
+  "leadManagement": {
+    "enabled": true,
+    "provider": "google_sheets",
+    "system": "lead_sheet",
+    "sheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P"
+  },
+
+  "crm": {
+    "enabled": false,
+    "provider": "not_configured",
+    "system": null,
+    "note": "AI X Systems does not currently have a separate CRM configured. Future clients will provide their CRM during onboarding."
   },
 
   "booking": {
-    "enabled": false,
-    "purpose": "ai_x_systems_sales_booking",
-    "appointmentTypes": [],
-    "bufferMinutes": 10,
-    "timezone": "America/Chicago",
-    "note": "AI X Systems does not currently use the phone assistant to book its own sales or discovery appointments. This does not mean the AI Receptionist or AI Website Assistant products cannot book appointments for customer businesses when their booking system is configured."
+    "enabled": true,
+    "provider": "google_calendar",
+    "system": "google_calendar",
+    "calendarId": "aixsautomation@gmail.com"
   },
 
-  "leadManagement": {
+  "calendar": {
+    "enabled": true,
+    "provider": "google_calendar",
+    "calendarId": "aixsautomation@gmail.com"
+  },
+
+  "phoneSystem": {
     "enabled": false,
-    "purpose": "ai_x_systems_internal_lead_management",
-    "provider": "client_configured",
+    "provider": "not_configured",
     "system": null,
-    "note": "Customer lead capture and CRM configuration are defined separately for each client deployment."
+    "note": "The phone system for AI X Systems is not currently represented by a configured third-party integration in this JSON. Future client phone-system integrations will be configured separately."
   },
 
-  "integrations": {
-    "leadManagement": {
-      "enabled": false,
-      "provider": "client_configured",
-      "system": null
+  "notifications": {
+    "enabled": true,
+    "provider": "email",
+    "email": "aixsautomation@gmail.com"
+  }
+},
+
+"clientOnboarding": {
+  "enabled": true,
+
+  "currentClient": {
+    "clientId": "ai-x-systems",
+    "clientNumber": 1,
+    "status": "active",
+    "description": "AI X Systems is currently the first client deployment and uses its own configured calendar, lead-management, booking, and notification integrations."
+  },
+
+  "futureClients": {
+    "enabled": true,
+
+    "integrationCollection": {
+      "methods": [
+        "business_setup_form",
+        "live_chat"
+      ],
+      "description": "Integration requirements for future clients are collected through the business setup form and, when appropriate, through the live AI Website Assistant chat."
     },
-    "crm": {
-      "enabled": false,
-      "provider": "client_configured",
-      "system": null
-    },
-    "booking": {
-      "enabled": false,
-      "provider": "client_configured",
-      "system": null
-    },
-    "calendar": {
-      "enabled": false,
-      "provider": "client_configured",
-      "system": null
-    },
-    "phoneSystem": {
-      "enabled": false,
-      "provider": "client_configured",
-      "system": null
-    }
+
+    "requiredInformation": [
+      {
+        "id": "crm",
+        "name": "CRM",
+        "question": "What CRM or customer management system does your business currently use?"
+      },
+      {
+        "id": "leadManagement",
+        "name": "Lead Management",
+        "question": "Where do you currently store and manage your leads?"
+      },
+      {
+        "id": "calendar",
+        "name": "Calendar",
+        "question": "What calendar or scheduling system does your business currently use?"
+      },
+      {
+        "id": "booking",
+        "name": "Booking System",
+        "question": "What booking or appointment system does your business currently use?"
+      },
+      {
+        "id": "phoneSystem",
+        "name": "Phone System",
+        "question": "What phone system or business phone provider does your business currently use?"
+      },
+      {
+        "id": "otherIntegrations",
+        "name": "Other Integrations",
+        "question": "Are there any other tools or software you want the AI to connect with?"
+      }
+    ],
+
+    "deploymentProcess": [
+      "Collect the client's business knowledge.",
+      "Collect the services the client wants.",
+      "Collect the client's CRM and lead-management information.",
+      "Collect the client's calendar and booking-system information.",
+      "Collect the client's phone-system information.",
+      "Collect any additional integration requirements.",
+      "Create a client-specific JSON configuration.",
+      "Configure the required client integrations.",
+      "Connect the client configuration to the backend.",
+      "Test the client's complete workflow.",
+      "Activate the client deployment."
+    ],
+
+    "integrationRule": "Never assume a future client uses the same CRM, calendar, booking system, lead-management platform, phone system, or other software as AI X Systems. Every future client receives their own configuration based on their actual systems and business requirements."
   }
 }
