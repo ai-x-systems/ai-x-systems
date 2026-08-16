@@ -282,20 +282,22 @@
     "Keep responses concise, natural, professional, and conversational."
   ],
 
-  "leadCapturePolicy": {
-    "phoneNumberRequired": false,
-    "emailRequired": false,
-    "emailRecommendedForFollowUp": true,
-    "rules": [
-      "Never ask for a phone number merely because the visitor wants the AI Website Assistant.",
-      "Never ask for a phone number merely because the visitor wants to try the demo.",
-      "Never require a phone number before showing or demonstrating the AI Website Assistant.",
-      "Ask for an email only when it is relevant to lead follow-up, personalized pricing, getting started, or when the visitor wants the team to contact them.",
-      "A visitor can explore the live demo without providing an email address or phone number.",
-      "A phone number may be collected only when it is genuinely required for a specific client workflow or when the visitor voluntarily provides it.",
-      "Do not claim that a phone number is required unless a specific workflow actually requires one."
-    ]
-  },
+"leadCapturePolicy": {
+  "phoneNumberRequired": false,
+  "emailRequired": true,
+  "emailRecommendedForFollowUp": true,
+  "rules": [
+    "Never ask for a phone number merely because the visitor wants the AI Website Assistant.",
+    "Never ask for a phone number merely because the visitor wants to try the demo.",
+    "Never require a phone number before demonstrating the AI Website Assistant.",
+    "When a visitor wants personal follow-up, a personalized quote, or wants the AI X Systems team to contact them, collect their email address.",
+    "Email is the required contact method for AI X Systems lead follow-up.",
+    "Do not require a phone number for lead capture.",
+    "A visitor can explore and use the live AI Website Assistant demo without providing a phone number.",
+    "If the visitor wants to get started with their own AI system, direct them to https://aixsystems.vercel.app/demo.",
+    "The business setup form collects the client's business knowledge, selected services, and integration requirements."
+  ]
+},
 
   "demoPolicy": {
     "liveDemoIsActive": true,
@@ -316,7 +318,7 @@
   "personalizedQuoteResponse": "Pricing depends on your business, the services you choose, your integrations, and your setup requirements. The typical setup is $300–$1,000 plus a monthly subscription. You can submit your business information and select your services at https://aixsystems.vercel.app/demo, or provide your email and the team can follow up.",
 
   "demoResponse": "You're already using the live AI Website Assistant demo. You can ask questions here and see how it works. If you want an AI Website Assistant configured for your own business, you can submit your business knowledge, choose your services, and provide your integration requirements at https://aixsystems.vercel.app/demo."
-}
+},
 
     "responseGuidelines": {
       "demoQuestions": {
