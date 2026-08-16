@@ -4,12 +4,20 @@
   "industry": "AI Automation Agency",
   "phoneNumber": "+1XXXXXXXXXX",
   "timezone": "America/Chicago",
-  "demo": false,
+  "demo": true,
 
   "contact": {
     "website": "https://aixsystems.com",
-    "email": "hello@aixsystems.com",
-    "businessSetupForm": "https://aixsystems.vercel.app/demo"
+    "email": "hello@aixsystems.com"
+  },
+
+  "client": {
+    "id": "ai-x-systems",
+    "name": "AI X Systems",
+    "status": "active",
+    "clientNumber": 1,
+    "deploymentType": "client_deployment",
+    "description": "AI X Systems is currently the first client deployment using the AI X Systems platform."
   },
 
   "hours": {
@@ -47,8 +55,9 @@
 
   "knowledge": {
     "company": {
-      "description": "AI X Systems is an AI Automation Agency that provides AI-powered receptionist and website assistant solutions for businesses.",
-      "primaryGoal": "Help businesses handle customer conversations, answer questions, capture leads, book appointments, and automate repetitive front-desk tasks."
+      "name": "AI X Systems",
+      "description": "AI X Systems provides AI-powered receptionist and website assistant solutions for businesses.",
+      "website": "https://aixsystems.com"
     },
 
     "services": [
@@ -56,360 +65,190 @@
         "id": "ai-receptionist",
         "name": "AI Receptionist",
         "type": "voice_ai",
-        "description": "A voice AI receptionist that answers business phone calls, speaks naturally with customers, answers FAQs, qualifies leads, captures lead information, books appointments when configured with a compatible customer booking system, and can transfer calls according to configured rules.",
+        "description": "A voice AI receptionist that can answer business calls, answer questions using the business's knowledge, qualify leads, help with bookings, capture lead information, and handle customer conversations according to the business's configured workflow.",
         "durationMinutes": 0,
-        "price": "One-time setup $300–$1,000 + monthly subscription",
-        "features": [
-          "Answers incoming business phone calls",
-          "Speaks naturally with callers",
-          "Answers frequently asked questions",
-          "Qualifies leads",
-          "Captures lead information",
-          "Books appointments when a compatible customer booking system is configured",
-          "Works with customer-configured CRM and lead-management systems",
-          "Can work with customer-configured calendar systems",
-          "Works 24/7",
-          "Can transfer calls according to configured rules",
-          "Can take messages",
-          "Can escalate conversations to a human when configured"
-        ]
+        "price": "One-time setup $300–$1,000 plus monthly subscription",
+        "availability": "24/7 when configured and deployed"
       },
       {
         "id": "ai-website-assistant",
         "name": "AI Website Assistant",
         "type": "website_chat_ai",
-        "description": "An AI chat assistant that appears on the business website and interacts directly with website visitors. It answers questions using the business's configured knowledge, helps visitors understand services, captures leads, and can allow visitors to book services or appointments when the appropriate customer booking system is configured.",
+        "description": "An AI chat assistant placed on a business website that uses the business's configured knowledge to answer visitor questions, explain services, capture leads, and support booking when the appropriate booking system is configured.",
         "durationMinutes": 0,
-        "price": "Bundled with AI Receptionist or available standalone",
-        "features": [
-          "Live chat on the business website",
-          "Answers website visitor questions",
-          "Uses the business's configured knowledge",
-          "Explains services",
-          "Captures leads",
-          "Can help visitors choose a service",
-          "Can allow visitors to book services when configured",
-          "Can support appointment booking when configured",
-          "Can work with customer-configured CRM and lead-management systems",
-          "Can work with customer-configured booking systems",
-          "Provides instant responses"
-        ]
+        "price": "Bundled with AI Receptionist or available standalone"
       }
     ],
 
     "demo": {
       "liveDemoAvailable": true,
+      "liveDemoType": "ai_website_assistant",
+      "description": "The live chat available throughout the AI X Systems website is the real AI Website Assistant demo. Visitors can interact with it directly and ask questions to see how the assistant works.",
+      "website": "https://aixsystems.vercel.app/demo",
+      "rules": [
+        "The live website chat is the real AI Website Assistant demo.",
+        "Visitors do not need to provide a phone number to try the demo.",
+        "Visitors do not need to provide an email address just to try the demo.",
+        "If a visitor asks for a demo, explain that they are already interacting with the live AI Website Assistant.",
+        "Do not describe the business setup form as the demo itself.",
+        "The form on the /demo page is used to collect a business's knowledge, selected services, and integration requirements for a potential client deployment."
+      ]
+    },
 
-      "websiteChatDemo": {
-        "type": "website_chat_ai",
-        "name": "AI Website Assistant Live Chat Demo",
-        "location": "Available on every page of the AI X Systems website",
-        "description": "The live chat available on the AI X Systems website is the real working demo of the AI Website Assistant. Visitors can interact with it directly, ask questions, learn about services, and experience how the website AI assistant works.",
-        "purpose": "Allow potential customers to experience the AI Website Assistant before purchasing or requesting an AI system for their own business.",
-        "booking": "The live website chat can allow visitors to choose and book services when the appropriate booking configuration is enabled."
-      },
-
-      "businessSetupForm": {
-        "url": "https://aixsystems.vercel.app/demo",
-        "purpose": "The form on the /demo page is for businesses that want AI X Systems to configure an AI system for their own business.",
-        "description": "Businesses use the form to submit their business knowledge and select the AI services they want.",
-        "informationNeeded": [
-          "Business information",
-          "Business knowledge",
-          "Services",
-          "Business hours",
-          "FAQs",
-          "Preferred call-handling process",
-          "Current CRM",
-          "Current booking system",
-          "Current calendar system",
-          "Current lead-management system",
-          "Other tools or software the business wants the AI to work with",
-          "AI services the business wants"
-        ]
-      },
-
-      "importantDistinction": "The live chat available throughout the website is the real demo of the AI Website Assistant. The AI Receptionist is the separate Voice AI product that handles phone calls. The /demo page also contains a business setup form where a business can submit its knowledge and select the AI services it wants."
+    "businessSetupForm": {
+      "url": "https://aixsystems.vercel.app/demo",
+      "purpose": "client_onboarding",
+      "description": "The form on the /demo page is used by a business to submit its business knowledge, choose the AI services it wants, and provide information about the systems and integrations it currently uses.",
+      "collects": [
+        "business_information",
+        "business_knowledge",
+        "services",
+        "crm",
+        "lead_management",
+        "calendar",
+        "booking_system",
+        "phone_system",
+        "other_integrations",
+        "contact_information"
+      ]
     },
 
     "faqs": [
       {
-        "question": "What is an AI Receptionist?",
-        "answer": "The AI Receptionist is a Voice AI that answers business phone calls, speaks naturally with callers, answers FAQs, qualifies leads, captures information, and can book appointments when the customer's booking system is configured."
+        "question": "What exactly is an AI Receptionist?",
+        "answer": "It's a voice AI receptionist that can answer your business calls, answer customer questions using your business knowledge, qualify leads, capture information, and support appointment booking when your booking or calendar system is configured."
       },
       {
         "question": "What is the AI Website Assistant?",
-        "answer": "The AI Website Assistant is a website chat AI that interacts with visitors directly on a business website. It answers questions, explains services, captures leads, and can help visitors book services or appointments when configured."
+        "answer": "It's an AI chat assistant for your website. It can answer visitor questions, explain your services, capture leads, and support booking when the appropriate booking system is connected."
       },
       {
         "question": "Can I try the AI Website Assistant?",
-        "answer": "Yes. The live chat available throughout the AI X Systems website is the real working demo of the AI Website Assistant. You can interact with it directly and ask questions."
+        "answer": "Yes. The live chat available throughout the AI X Systems website is the real AI Website Assistant demo. You're welcome to interact with it directly and ask questions."
       },
       {
-        "question": "Where is the live demo?",
-        "answer": "The live AI Website Assistant chat is available throughout the AI X Systems website. You can interact with it directly on any page."
-      },
-      {
-        "question": "Is the live chat the demo?",
-        "answer": "Yes. The live chat you're interacting with is the real demo of the AI Website Assistant."
-      },
-      {
-        "question": "Can the website chat book services?",
-        "answer": "Yes. The AI Website Assistant can be configured to help visitors choose and book services or appointments, depending on the business's booking system and configuration."
-      },
-      {
-        "question": "What is the form on the demo page?",
-        "answer": "The form on the /demo page is for businesses that want to get started with AI X Systems. It allows a business to submit its business knowledge and select the AI services it wants."
-      },
-      {
-        "question": "Can I get this for my business?",
-        "answer": "Yes. You can submit your business knowledge and select the services you want through the form on https://aixsystems.vercel.app/demo."
-      },
-      {
-        "question": "How do I get started?",
-        "answer": "You can get started by submitting your business knowledge and selecting the AI services you want through the form at https://aixsystems.vercel.app/demo."
+        "question": "Where do I submit my business information?",
+        "answer": "You can submit your business knowledge, select the services you want, and provide your integration requirements through the business setup form at https://aixsystems.vercel.app/demo."
       },
       {
         "question": "How much does it cost?",
-        "answer": "There is a one-time setup fee, typically $300 to $1,000 depending on the complexity of the setup, plus a monthly subscription. Exact pricing depends on the business, services, integrations, and setup requirements."
-      },
-      {
-        "question": "How can I get an exact quote?",
-        "answer": "You can submit your business information and select the services you want at https://aixsystems.vercel.app/demo. The team can then review the requirements and provide a personalized quote. You can also provide your email for a personal follow-up."
+        "answer": "The typical setup is $300 to $1,000 plus a monthly subscription. Exact pricing depends on your business requirements, selected services, integrations, and complexity."
       },
       {
         "question": "How long does setup take?",
-        "answer": "Most businesses are live within a week once AI X Systems receives the necessary business information and configuration details."
+        "answer": "Most businesses can be configured and launched within about a week once the required business information, services, and integration details have been provided."
       },
       {
         "question": "Does it replace my staff?",
-        "answer": "No. The AI handles repetitive front-desk and customer communication tasks so your team can focus on customers and work that requires human attention."
+        "answer": "No. The AI is designed to handle repetitive customer-facing tasks such as answering common questions, capturing leads, and supporting bookings, allowing your team to focus on customers and work that requires a person."
       },
       {
-        "question": "Can the AI Receptionist answer calls after hours?",
-        "answer": "Yes. The AI Receptionist can operate 24/7, including nights, weekends, and holidays."
-      },
-      {
-        "question": "Can the AI book appointments?",
-        "answer": "Yes. Appointment booking can be configured for a customer's business when the appropriate calendar or booking system is connected."
-      },
-      {
-        "question": "Can the AI work with my CRM?",
-        "answer": "The AI can be configured around different CRM and lead-management systems. The exact integration depends on the system your business uses and how it is configured."
+        "question": "Can it work with my existing CRM?",
+        "answer": "It can be configured around the tools your business already uses. The exact setup depends on your CRM and its available integration options, so we don't assume a specific CRM until you provide your system details."
       },
       {
         "question": "Can it work with my existing calendar?",
-        "answer": "Yes, the AI can be configured to work with a customer's existing calendar or scheduling system. The exact setup depends on the tools the business uses."
+        "answer": "Yes, calendar and booking workflows can be configured according to the calendar or scheduling system your business uses."
       },
       {
-        "question": "Can it work with my booking system?",
-        "answer": "The AI can be configured around different booking systems. The exact integration depends on the booking platform your business uses."
+        "question": "Can it book appointments?",
+        "answer": "Yes. The AI can support appointment booking when your calendar or booking system is configured and connected to the deployment."
       },
       {
-        "question": "Can the AI transfer calls to a real person?",
-        "answer": "Yes. Call-transfer rules can be configured for situations where a human should take over."
+        "question": "Does it work with my existing phone system?",
+        "answer": "Phone-system setup depends on the phone provider and workflow your business currently uses. Your phone-system details can be submitted during onboarding so the required configuration can be reviewed."
       },
       {
-        "question": "What happens if the AI does not know the answer?",
-        "answer": "Depending on the configured business rules, the AI can take a message, capture the customer's information, or transfer the conversation to a human."
+        "question": "Can it capture leads?",
+        "answer": "Yes. Lead capture can be configured according to how your business manages leads, including your CRM, lead-management system, spreadsheet, or another supported workflow."
       },
       {
-        "question": "Do you offer phone or video discovery calls?",
-        "answer": "AI X Systems does not currently offer phone or video discovery calls. Customers can submit their business information through https://aixsystems.vercel.app/demo or provide their email so the team can follow up."
+        "question": "Does it work after business hours?",
+        "answer": "Yes. The AI Receptionist and AI Website Assistant can operate outside normal business hours when deployed and configured for your business."
+      },
+      {
+        "question": "Does it send notifications?",
+        "answer": "Notifications can be configured according to the business's workflow and the systems connected to the deployment."
       }
     ],
 
-    "integrations": {
-      "principle": "All CRM, lead-management, booking, calendar, phone-system, and other third-party integrations are configured per customer. AI X Systems does not assume that every customer uses the same tools.",
+    "answeringPolicy": {
+      "general": [
+        "Answer questions using all available business knowledge, not only the exact FAQ wording.",
+        "Understand different ways customers may ask the same question.",
+        "Use the company information, services, features, pricing, demo information, business setup form, integrations, FAQs, and policies as the source of truth.",
+        "If the information is known, answer directly and naturally.",
+        "If the information is not known, do not guess.",
+        "Never invent pricing, features, integrations, guarantees, discounts, or technical capabilities.",
+        "Never promise compatibility with a specific third-party system unless compatibility has been confirmed.",
+        "When discussing CRM, booking, calendar, lead-management, phone systems, or other integrations, explain that the setup depends on the customer's existing tools and requirements.",
+        "For personalized pricing, provide the general setup range of $300–$1,000 plus monthly subscription and explain that exact pricing depends on requirements.",
+        "For customers who want to get started, direct them to the business setup form at https://aixsystems.vercel.app/demo.",
+        "For customers who want personal follow-up or a personalized quote, collect their email address.",
+        "Do not ask for a phone number simply because a visitor is interested in the AI Website Assistant.",
+        "Do not ask for a phone number simply because a visitor wants to try the demo.",
+        "Do not require a phone number for lead capture.",
+        "Email is the required contact method when Alex is collecting a lead for follow-up.",
+        "Do not require contact information before allowing a visitor to interact with the live AI Website Assistant demo.",
+        "Keep responses concise, natural, professional, and conversational."
+      ],
 
-      "leadManagement": {
-        "enabled": false,
-        "provider": "client_configured",
-        "system": null,
-        "description": "Lead capture and management depend on the customer's CRM, lead platform, spreadsheet, or other configured system."
+      "leadCapturePolicy": {
+        "phoneNumberRequired": false,
+        "emailRequired": true,
+        "emailRequiredForFollowUp": true,
+        "rules": [
+          "Never ask for a phone number merely because the visitor wants the AI Website Assistant.",
+          "Never ask for a phone number merely because the visitor wants to try the demo.",
+          "Never require a phone number before demonstrating the AI Website Assistant.",
+          "When a visitor wants personal follow-up, a personalized quote, or wants the AI X Systems team to contact them, collect their email address.",
+          "Email is the required contact method for AI X Systems lead follow-up.",
+          "A visitor can explore the live AI Website Assistant demo without providing a phone number.",
+          "A phone number may only be collected when it is genuinely required for a specific workflow or when the visitor voluntarily provides it.",
+          "Never claim that a phone number is required unless a specific workflow actually requires it."
+        ]
       },
 
-      "crm": {
-        "enabled": false,
-        "provider": "client_configured",
-        "system": null,
-        "description": "CRM integration depends on the customer's existing CRM and configuration."
+      "demoPolicy": {
+        "liveDemoIsActive": true,
+        "liveDemoType": "ai_website_assistant",
+        "rules": [
+          "If a visitor asks for a demo, tell them they are already using the live AI Website Assistant demo.",
+          "Do not require an email or phone number to use the live demo.",
+          "Demonstrate capabilities conversationally when the visitor asks to see what the assistant can do.",
+          "The live chat is the product demonstration.",
+          "The /demo form is for business onboarding and configuration, not for accessing the live chat demo."
+        ]
       },
 
-      "booking": {
-        "enabled": false,
-        "provider": "client_configured",
-        "system": null,
-        "description": "Booking and service scheduling depend on the customer's existing booking or scheduling platform."
-      },
+      "unknownQuestionResponse": "I don't have confirmed information on that yet, and I don't want to give you the wrong answer. I can collect your email and have the AI X Systems team follow up with you.",
 
-      "calendar": {
-        "enabled": false,
-        "provider": "client_configured",
-        "system": null,
-        "description": "Calendar integration depends on the customer's existing calendar or scheduling system."
-      },
+      "unknownIntegrationResponse": "The exact integration depends on the tools your business uses and how they're configured. I don't want to promise compatibility without confirming it. You can include the systems you use in your business information at https://aixsystems.vercel.app/demo and the team can review the requirements.",
 
-      "phoneSystem": {
-        "enabled": false,
-        "provider": "client_configured",
-        "system": null,
-        "description": "Phone-system configuration depends on the customer's existing phone infrastructure and deployment requirements."
-      }
-    },
+      "personalizedQuoteResponse": "Pricing depends on your business, the services you choose, your integrations, and your setup requirements. The typical setup is $300–$1,000 plus a monthly subscription. You can submit your business information and select your services at https://aixsystems.vercel.app/demo, or provide your email and the team can follow up.",
 
-"answeringPolicy": {
-  "general": [
-    "Answer questions using all available business knowledge, not only the exact FAQ wording.",
-    "Understand different ways customers may ask the same question.",
-    "Use the company information, services, features, pricing, demo information, integrations, FAQs, and policies as the source of truth.",
-    "If the information is known, answer directly and naturally.",
-    "If the information is not known, do not guess.",
-    "Never invent pricing, features, integrations, guarantees, discounts, or technical capabilities.",
-    "Never promise compatibility with a specific third-party system unless that compatibility is confirmed.",
-    "When discussing CRM, booking, calendar, lead-management, phone systems, or other integrations, explain that the setup depends on the customer's existing tools and requirements.",
-    "For personalized pricing, provide the general setup range of $300–$1,000 plus monthly subscription and explain that exact pricing depends on the required services, integrations, and complexity.",
-    "For customers who want to get started, direct them to the business setup form at https://aixsystems.vercel.app/demo.",
-    "For customers who want personal follow-up or a personalized quote, collect their email.",
-    "Do not ask for a phone number simply because a visitor is interested in the AI Website Assistant.",
-    "A phone number is not required to try the live AI Website Assistant demo.",
-    "A phone number is not required to ask questions about the services.",
-    "Do not require contact information before allowing a visitor to interact with the live AI Website Assistant.",
-    "The live chat available throughout the website is the real AI Website Assistant demo, so visitors should be encouraged to try it directly.",
-    "If a visitor asks for a demo, explain that they are already interacting with the live AI Website Assistant.",
-    "If a visitor wants to see what the AI Website Assistant can do, demonstrate its capabilities through the conversation instead of asking for contact information first.",
-    "If a visitor wants to purchase or get an AI system for their own business, direct them to the business setup form where they can submit their business knowledge, select services, and provide their integration requirements.",
-    "Keep responses concise, natural, professional, and conversational."
-  ],
-
-"leadCapturePolicy": {
-  "phoneNumberRequired": false,
-  "emailRequired": true,
-  "emailRecommendedForFollowUp": true,
-  "rules": [
-    "Never ask for a phone number merely because the visitor wants the AI Website Assistant.",
-    "Never ask for a phone number merely because the visitor wants to try the demo.",
-    "Never require a phone number before demonstrating the AI Website Assistant.",
-    "When a visitor wants personal follow-up, a personalized quote, or wants the AI X Systems team to contact them, collect their email address.",
-    "Email is the required contact method for AI X Systems lead follow-up.",
-    "Do not require a phone number for lead capture.",
-    "A visitor can explore and use the live AI Website Assistant demo without providing a phone number.",
-    "If the visitor wants to get started with their own AI system, direct them to https://aixsystems.vercel.app/demo.",
-    "The business setup form collects the client's business knowledge, selected services, and integration requirements."
-  ]
-},
-
-  "demoPolicy": {
-    "liveDemoIsActive": true,
-    "description": "The live chat available throughout the AI X Systems website is the real AI Website Assistant demo.",
-    "rules": [
-      "If a visitor asks for a demo, tell them they are already using the live demo.",
-      "Do not send them away from the live chat simply to experience the demo.",
-      "Do not require a phone number or email to use the demo.",
-      "Demonstrate capabilities conversationally when the visitor asks to see what the assistant can do.",
-      "The AI Website Assistant can answer questions, explain services, capture leads, and support booking when the appropriate client systems are configured."
-    ]
-  },
-
-  "unknownQuestionResponse": "I don't have confirmed information on that yet, and I don't want to give you the wrong answer. I can collect your email and have the AI X Systems team follow up with you.",
-
-  "unknownIntegrationResponse": "The exact integration depends on the tools your business uses and how they're configured. I don't want to promise compatibility without confirming it. You can include the systems you use in your business information at https://aixsystems.vercel.app/demo and the team can review the requirements.",
-
-  "personalizedQuoteResponse": "Pricing depends on your business, the services you choose, your integrations, and your setup requirements. The typical setup is $300–$1,000 plus a monthly subscription. You can submit your business information and select your services at https://aixsystems.vercel.app/demo, or provide your email and the team can follow up.",
-
-  "demoResponse": "You're already using the live AI Website Assistant demo. You can ask questions here and see how it works. If you want an AI Website Assistant configured for your own business, you can submit your business knowledge, choose your services, and provide your integration requirements at https://aixsystems.vercel.app/demo."
-},
-
-    "responseGuidelines": {
-      "demoQuestions": {
-        "customerSays": [
-          "Can I try the demo?",
-          "Where is the demo?",
-          "Is this the demo?",
-          "Can I test it?",
-          "Can I try the chat?"
-        ],
-        "response": "Yes — you're already interacting with the live AI Website Assistant demo. You can ask questions here and see how it works."
-      },
-
-      "businessSetupQuestions": {
-        "customerSays": [
-          "I want this for my business.",
-          "How do I get started?",
-          "I want to build one.",
-          "Can I get this for my company?",
-          "Where do I submit my business information?"
-        ],
-        "response": "Absolutely. You can submit your business knowledge and choose the AI services you want through the form at https://aixsystems.vercel.app/demo."
-      },
-
-      "bookingQuestions": {
-        "customerSays": [
-          "Can I book a service?",
-          "Can the chat book appointments?",
-          "Can customers book through the chat?"
-        ],
-        "response": "Yes. The AI Website Assistant can be configured to help visitors choose and book services or appointments, depending on the business's booking system and setup."
-      },
-
-      "crmQuestions": {
-        "customerSays": [
-          "Can it connect to my CRM?",
-          "Can it work with Salesforce?",
-          "Can it work with HubSpot?",
-          "Can it use my CRM?"
-        ],
-        "response": "The AI can be configured around different CRM and lead-management systems. The exact integration depends on the system your business uses and how it is configured."
-      },
-
-      "salesCallQuestions": {
-        "customerSays": [
-          "Can I book a call?",
-          "Can someone call me?",
-          "Can I schedule a consultation?",
-          "Can I book a demo call?"
-        ],
-        "response": "AI X Systems doesn't currently offer phone or video discovery calls. You can submit your business information through https://aixsystems.vercel.app/demo, or provide your email and the team can follow up personally."
-      }
+      "demoResponse": "You're already using the live AI Website Assistant demo. You can ask questions here and see how it works. If you want an AI system configured for your own business, you can submit your business knowledge, choose your services, and provide your integration requirements at https://aixsystems.vercel.app/demo."
     },
 
     "policies": {
       "general": [
-        "The live chat available throughout the AI X Systems website is the real demo of the AI Website Assistant.",
-        "The AI Website Assistant is the website chat AI product.",
-        "The AI Receptionist is the Voice AI product that handles business phone calls.",
-        "Do not describe the live website chat as the Voice AI.",
-        "Do not describe the AI Receptionist as the website chat.",
-        "The /demo page contains the business setup form.",
-        "The business setup form allows businesses to submit their business knowledge and select the AI services they want.",
-        "The live chat demo and business setup form are separate functions even though they are available on the same /demo page.",
-        "Visitors can interact with the live website chat without booking a call.",
-        "The website chat can help visitors choose and book services when the appropriate customer booking configuration is enabled.",
         "AI X Systems does not currently offer phone or video discovery calls.",
-        "Do not book sales or discovery appointments for AI X Systems.",
-        "Do not claim that a discovery call has been scheduled.",
-        "For customers who want to get started, direct them to https://aixsystems.vercel.app/demo.",
-        "For customers who want a personalized quote, direct them to the business setup form or collect their email.",
-        "CRM, booking, calendar, lead-management, phone-system, and other integrations are configured per customer.",
-        "Never expose internal IDs, internal calendar IDs, internal CRM information, internal lead-sheet IDs, or internal system configuration to customers.",
-        "Never invent unsupported integrations or capabilities."
+        "If a customer wants to move forward, direct them to https://aixsystems.vercel.app/demo or collect their email for personal follow-up.",
+        "Never quote a final personalized price. Provide the general setup range of $300–$1,000 plus monthly subscription and explain that exact pricing depends on requirements.",
+        "The live chat on the AI X Systems website is the real AI Website Assistant demo.",
+        "The form at https://aixsystems.vercel.app/demo is for businesses to submit their business knowledge, select services, and provide integration requirements.",
+        "Do not confuse the live chat demo with the business setup form.",
+        "Do not require a phone number for demo access or general lead capture.",
+        "Email should be collected when a visitor requests personal follow-up or a personalized quote."
       ]
     }
-  },
-
-  "client": {
-    "id": "ai-x-systems",
-    "name": "AI X Systems",
-    "status": "active",
-    "clientNumber": 1,
-    "deploymentType": "client_deployment"
   },
 
   "voice": {
     "assistantName": "Alex",
     "tone": "professional",
     "language": "en-US",
-    "greeting": "Thanks for calling AI X Systems, this is Alex — are you exploring an AI receptionist for your business?"
+    "greeting": "Thanks for calling AI X Systems, this is Alex — how can I help you today?"
   },
 
   "booking": {
@@ -420,7 +259,7 @@
     "timezone": "America/Chicago",
     "provider": "google_calendar",
     "calendarId": "aixsautomation@gmail.com",
-    "note": "AI X Systems is Client #1 and currently uses its configured Google Calendar for booking. This booking configuration belongs specifically to AI X Systems and must not be used as the default for future clients. Each future client will have their own booking system configured according to their CRM, scheduling platform, calendar, and business requirements."
+    "note": "AI X Systems is Client #1 and currently uses its configured Google Calendar. This booking configuration belongs specifically to AI X Systems and must not be used as the default for future clients."
   },
 
   "leadManagement": {
@@ -429,8 +268,7 @@
     "provider": "google_sheets",
     "system": "lead_sheet",
     "sheetId": "1meM5eVHyw1PQYaNiSB3p6798ykzmAotCrjguJe1P",
-    "notifyEmail": "aixsautomation@gmail.com",
-    "note": "AI X Systems is Client #1 and currently uses its configured Google Sheet for lead management and the configured email for lead notifications. These integrations belong specifically to AI X Systems and must not be used as defaults for future clients."
+    "notifyEmail": "aixsautomation@gmail.com"
   },
 
   "integrations": {
@@ -470,73 +308,44 @@
 
   "clientOnboarding": {
     "enabled": true,
-
     "currentClient": {
       "clientId": "ai-x-systems",
       "clientNumber": 1,
-      "status": "active",
-      "description": "AI X Systems is currently the first client deployment and uses its own configured calendar, lead-management, booking, and notification integrations."
+      "status": "active"
     },
-
     "futureClients": {
       "enabled": true,
-
       "integrationCollection": {
         "methods": [
           "business_setup_form",
           "live_chat"
         ],
-        "description": "Integration requirements for future clients are collected through the business setup form and, when appropriate, through the live AI Website Assistant chat."
+        "description": "Future client integration requirements are collected during onboarding through the business setup form and, when appropriate, through the live AI Website Assistant."
       },
-
       "requiredInformation": [
-        {
-          "id": "crm",
-          "name": "CRM",
-          "question": "What CRM or customer management system does your business currently use?"
-        },
-        {
-          "id": "leadManagement",
-          "name": "Lead Management",
-          "question": "Where do you currently store and manage your leads?"
-        },
-        {
-          "id": "calendar",
-          "name": "Calendar",
-          "question": "What calendar or scheduling system does your business currently use?"
-        },
-        {
-          "id": "booking",
-          "name": "Booking System",
-          "question": "What booking or appointment system does your business currently use?"
-        },
-        {
-          "id": "phoneSystem",
-          "name": "Phone System",
-          "question": "What phone system or business phone provider does your business currently use?"
-        },
-        {
-          "id": "otherIntegrations",
-          "name": "Other Integrations",
-          "question": "Are there any other tools or software you want the AI to connect with?"
-        }
+        "business_knowledge",
+        "selected_services",
+        "crm",
+        "lead_management",
+        "calendar",
+        "booking_system",
+        "phone_system",
+        "other_integrations"
       ],
-
       "deploymentProcess": [
-        "Collect the client's business knowledge.",
+        "Collect the client's business information and knowledge.",
         "Collect the services the client wants.",
         "Collect the client's CRM and lead-management information.",
         "Collect the client's calendar and booking-system information.",
         "Collect the client's phone-system information.",
-        "Collect any additional integration requirements.",
+        "Collect additional integration requirements.",
         "Create a client-specific JSON configuration.",
         "Configure the required client integrations.",
         "Connect the client configuration to the backend.",
-        "Test the client's complete workflow.",
+        "Test the complete client workflow.",
         "Activate the client deployment."
       ],
-
-      "integrationRule": "Never assume a future client uses the same CRM, calendar, booking system, lead-management platform, phone system, or other software as AI X Systems. Every future client receives their own configuration based on their actual systems and business requirements."
+      "integrationRule": "Never assume a future client uses the same CRM, calendar, booking system, lead-management platform, phone system, or other software as AI X Systems. Every future client receives an independent configuration based on its actual systems and business requirements."
     }
   }
 }
