@@ -22,6 +22,9 @@ const ServiceSchema = z.object({
   description: z.string(),
   durationMinutes: z.number(),
   price: z.string().optional(),
+  /** Distinguishes AI X Systems' own two products in its own knowledge base — optional, not meaningful for a client business's own services (e.g. Smile Dental Clinic's cleanings/whitening). */
+  type: z.enum(["voice_ai", "website_chat_ai"]).optional(),
+  availability: z.string().optional(),
 });
 
 const FaqSchema = z.object({
