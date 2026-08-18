@@ -70,11 +70,18 @@ function buildHoursSection(config: BusinessConfig): KnowledgeSection {
   return section("hours", "Business Hours", text);
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  voice_ai: "Voice AI",
+  website_chat_ai: "Website Chat AI",
+};
+
 function buildServicesSection(config: BusinessConfig): KnowledgeSection {
   const text = config.knowledge.services
     .map((s) => {
       const price = s.price ? ` (${s.price})` : "";
-      return `- ${s.name}${price}, ~${s.durationMinutes} min — ${s.description} [serviceId: ${s.id}]`;
+      const typeTag = s.type ? ` [${TYPE_LABELS[s.type]}]` : "";
+      const availability = s.availability ? ` Availability: ${s.availability}.` : "";
+      return `- ${s.name}${typeTag}${price}, ~${s.durationMinutes} min — ${s.description}${availability} [serviceId: ${s.id}]`;
     })
     .join("\n");
   return section("services", "Services", text);
