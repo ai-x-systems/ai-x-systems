@@ -109,11 +109,11 @@ export async function executeToolCall(
       }
 
       const a = args as {
-        callerName: string;
-        callerPhone: string;
-        serviceId: string;
-        preferredStartTimeISO: string;
-        callerEmail?: string;
+        callerName?: string | null;
+        callerPhone?: string | null;
+        serviceId?: string | null;
+        preferredStartTimeISO?: string | null;
+        callerEmail?: string | null;
       };
 
       // Reject incomplete/placeholder tool calls before they ever reach
@@ -127,8 +127,13 @@ export async function executeToolCall(
       if (missingFields.length > 0) {
         return `Before I can book that, I still need ${missingFields.join(", ")}. Could you share that?`;
       }
+      // Validated non-empty/non-null above — narrow to plain strings so
+      // downstream calls (bookAppointment, etc.) get the types they expect.
+      const callerName = a.callerName as string;
+      const callerPhone = a.callerPhone as string;
+      const preferredStartTimeISO = a.preferredStartTimeISO as string;
 
-      const service = findService(business.knowledge.services, a.serviceId);
+      const service = findService(business.knowledge.services, a.serviceId as string);
 
       if (!service) {
         return "I'm having trouble matching that service. Let me confirm which service you'd like to book.";
@@ -149,21 +154,21 @@ export async function executeToolCall(
         console.log("[demo] simulated booking", { business: business.id, ...a });
         void recordActivity(businessId, "booking", {
           serviceName: service.name,
-          callerName: a.callerName,
-          startTimeISO: a.preferredStartTimeISO,
+          callerName,
+          startTimeISO: preferredStartTimeISO,
           demo: true,
         });
-        return `Booked ${service.name} for ${a.callerName} at ${a.preferredStartTimeISO}. A confirmation will be sent.`;
+        return `Booked ${service.name} for ${callerName} at ${preferredStartTimeISO}. A confirmation will be sent.`;
       }
 
       const booking = await bookAppointment({
         calendarId: business.integrations.googleCalendarId ?? "",
-        summary: `${service.name} — ${a.callerName}`,
-        startTimeISO: a.preferredStartTimeISO,
+        summary: `${service.name} — ${callerName}`,
+        startTimeISO: preferredStartTimeISO,
         durationMinutes: service.durationMinutes,
         timezone: business.booking.timezone,
-        attendeeName: a.callerName,
-        attendeePhone: a.callerPhone,
+        attendeeName: callerName,
+        attendeePhone: callerPhone,
       });
 
       if (!booking.success) {
@@ -181,7 +186,7 @@ export async function executeToolCall(
       void sendOwnerAlert({
         ownerEmail: effectiveBusiness.integrations.notifyEmail,
         businessName: business.name,
-        message: `New booking: ${service.name} for ${a.callerName} at ${booking.confirmedStartTimeISO}.`,
+        message: `New booking: ${service.name} for ${callerName} at ${booking.confirmedStartTimeISO}.`,
       });
       void sendToConfiguredWebhooks(business, {
         event: "booking",
@@ -190,22 +195,22 @@ export async function executeToolCall(
         data: {
           serviceId: service.id,
           serviceName: service.name,
-          callerName: a.callerName,
-          callerPhone: a.callerPhone,
+          callerName,
+          callerPhone,
           startTimeISO: booking.confirmedStartTimeISO,
         },
       });
       void recordActivity(businessId, "booking", {
         serviceName: service.name,
-        callerName: a.callerName,
+        callerName,
         startTimeISO: booking.confirmedStartTimeISO,
       });
 
-      return `Booked ${service.name} for ${a.callerName} at ${booking.confirmedStartTimeISO}. A confirmation will be sent.`;
+      return `Booked ${service.name} for ${callerName} at ${booking.confirmedStartTimeISO}. A confirmation will be sent.`;
     }
 
     case "save_confirmation_email": {
-      const a = args as { email?: string; serviceName?: string; confirmedStartTimeISO?: string };
+      const a = args as { email?: string | null; serviceName?: string | null; confirmedStartTimeISO?: string | null };
 
       if (!isValidEmail(a.email)) {
         return "That doesn't look like a valid email address — could you double check it?";
@@ -231,7 +236,7 @@ export async function executeToolCall(
     }
 
     case "log_lead": {
-      const a = args as { callerName?: string; callerPhone?: string; reason?: string };
+      const a = args as { callerName?: string | null; callerPhone?: string | null; reason?: string | null };
 
       // Same "tool schema no longer enforces required fields, so this is
       // the only real validation" reasoning as book_appointment above —
@@ -258,8 +263,8 @@ export async function executeToolCall(
       await logLead(
         {
           businessId,
-          callerName: a.callerName,
-          callerPhone: a.callerPhone,
+          callerName: a.callerName ?? undefined,
+          callerPhone: a.callerPhone ?? undefined,
           reason,
           callTimestampISO: leadTimestampISO,
         },
