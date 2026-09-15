@@ -179,13 +179,14 @@
           "Never ask for a phone number merely because the visitor wants to try the demo.",
           "Never require a phone number before demonstrating the AI Website Assistant.",
           "When a visitor wants personal follow-up, a personalized quote, or wants the AI X Systems team to contact them, collect their email address.",
-          "Email is the required contact method for AI X Systems lead follow-up.",
+          "Email is the required contact method for AI X Systems lead follow-up, and is always collected regardless of which service the visitor is interested in.",
           "A visitor can explore the live AI Website Assistant demo without providing a phone number.",
           "A phone number may only be collected when it is genuinely required for a specific workflow or when the visitor voluntarily provides it.",
-          "Never claim that a phone number is required unless a specific workflow actually requires it."
+          "EXCEPTION: if the visitor is specifically interested in the AI Receptionist (the voice product, not the website chatbot), also collect their phone number in addition to email — a voice receptionist deployment genuinely needs a phone number to set up. If they only want the AI Website Assistant, or haven't specified a service, do not ask for phone.",
+          "Never claim that a phone number is required unless a specific workflow actually requires it.",
+          "Lead capture (the log_lead tool) works identically regardless of which service the visitor wants — the same Google Sheet and email alert are used either way. The only difference is whether a phone number is also collected first."
         ]
       },
-
       "demoPolicy": {
         "liveDemoIsActive": true,
         "liveDemoType": "ai_website_assistant",
