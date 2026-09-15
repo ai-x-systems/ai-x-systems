@@ -134,7 +134,8 @@ export async function POST(
         // which made a transient, retry-worthy rate limit look identical
         // to a hard failure.
         const userMessage =
-          result.error.code === "request_failed" && result.error.message.length < 120
+          (result.error.code === "request_failed" || result.error.code === "rate_limited") &&
+          result.error.message.length < 120
             ? result.error.message
             : "Sorry, I'm having trouble responding right now. Please try again.";
         return chatErrorResponse(502, "llm_unavailable", userMessage, headers);
