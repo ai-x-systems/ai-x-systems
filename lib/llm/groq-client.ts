@@ -1,4 +1,12 @@
 import "server-only";
+import { callGemini } from "@/lib/llm/gemini-client";
+import {
+  LlmMessage,
+  ToolDefinition,
+  ChatCompletionOptions,
+  ChatCompletionResult,
+  parseOpenAiChatCompletionResponse,
+} from "@/lib/llm/types";
 
 /**
  * lib/llm/groq-client.ts
@@ -6,16 +14,38 @@ import "server-only";
  * THE single entry point for every LLM request in this project. No other
  * file should call an LLM provider directly.
  *
+ * Re-exports every type from lib/llm/types.ts so existing imports
+ * elsewhere in the app (e.g. `import { LlmMessage } from
+ * "@/lib/llm/groq-client"`) keep working unchanged — the types moved to
+ * their own file only to break a circular import with the Gemini fallback
+ * (gemini-client.ts needs these same types/parser, and this file needs to
+ * call gemini-client.ts — see lib/llm/types.ts's header for why that
+ * combination can't live in one file safely).
+ *
  * MODEL: configurable via GROQ_MODEL env var, defaulting to
- * "openai/gpt-oss-120b" — Groq's own documented replacement for the
- * deprecated llama-3.3-70b-versatile (fully decommissioned as of this
- * fix; requests to it now 404 with "model_not_found"). Making this an
- * env var, not just a hardcoded string, means a future Groq deprecation
- * can be worked around with a Vercel environment variable change and a
- * redeploy — no code change needed — since this exact failure mode has
- * now happened once for real.
+ * "openai/gpt-oss-20b". Making this an env var, not just a hardcoded
+ * string, means a future Groq deprecation can be worked around with a
+ * Vercel environment variable change and a redeploy — no code change
+ * needed.
+ *
+ * FALLBACK: if Groq fails specifically due to rate limiting and
+ * GEMINI_API_KEY is set, this automatically retries the same request
+ * against Gemini's free, OpenAI-compatible endpoint before giving up. See
+ * lib/llm/gemini-client.ts.
  * ------------------------------------------------------------------------
  */
+
+export type {
+  LlmRole,
+  LlmToolCall,
+  LlmMessage,
+  ToolDefinition,
+  ChatCompletionOptions,
+  ChatCompletionSuccess,
+  LlmErrorCode,
+  ChatCompletionFailure,
+  ChatCompletionResult,
+} from "@/lib/llm/types";
 
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -36,71 +66,6 @@ export const LLM_DEFAULTS = {
   temperature: 0.4,
   maxTokens: 1024,
 };
-
-// ---------------------------------------------------------------------------
-// Public types
-// ---------------------------------------------------------------------------
-
-export type LlmRole = "system" | "user" | "assistant" | "tool";
-
-export interface LlmToolCall {
-  id: string;
-  function: {
-    name: string;
-    arguments: string;
-  };
-}
-
-export interface LlmMessage {
-  role: LlmRole;
-  content: string;
-  tool_call_id?: string;
-  tool_calls?: LlmToolCall[];
-}
-
-export interface ToolDefinition {
-  type: "function";
-  function: {
-    name: string;
-    description: string;
-    parameters: Record<string, unknown>;
-  };
-}
-
-export interface ChatCompletionOptions {
-  systemPrompt?: string;
-  messages: LlmMessage[];
-  tools?: ToolDefinition[];
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-}
-
-export interface ChatCompletionSuccess {
-  success: true;
-  message: {
-    role: "assistant";
-    content: string;
-    toolCalls?: LlmToolCall[];
-  };
-  usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
-}
-
-export type LlmErrorCode =
-  | "missing_api_key"
-  | "request_failed"
-  | "invalid_response"
-  | "unknown";
-
-export interface ChatCompletionFailure {
-  success: false;
-  error: {
-    code: LlmErrorCode;
-    message: string;
-  };
-}
-
-export type ChatCompletionResult = ChatCompletionSuccess | ChatCompletionFailure;
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -125,13 +90,39 @@ export async function getChatCompletion(
     : options.messages;
 
   try {
-    return await callGroq(apiKey, {
+    const groqResult = await callGroq(apiKey, {
       messages,
       tools: options.tools,
       model: options.model ?? LLM_DEFAULTS.model,
       temperature: options.temperature ?? LLM_DEFAULTS.temperature,
       maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
     });
+
+    // Fallback to Gemini ONLY when Groq specifically failed due to rate
+    // limiting (not on a bad-request, auth, or unknown error — falling
+    // back on those would just mask a real bug behind a second provider).
+    // Gemini's own free tier is currently more generous than Groq's for
+    // sustained/bursty traffic, so this meaningfully reduces how often a
+    // visitor ever sees a rate-limit message at all, without abandoning
+    // Groq's speed as the default path.
+    if (!groqResult.success && groqResult.error.code === "rate_limited" && process.env.GEMINI_API_KEY) {
+      console.warn("[llm] Groq rate-limited — falling back to Gemini");
+      const geminiResult = await callGemini(process.env.GEMINI_API_KEY, {
+        messages,
+        tools: options.tools,
+        model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+        temperature: options.temperature ?? LLM_DEFAULTS.temperature,
+        maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
+      });
+      if (geminiResult.success) return geminiResult;
+      console.error("[llm] Gemini fallback also failed:", geminiResult.error);
+      // Both providers failed — return Groq's result since its message is
+      // the one already tuned for display to the visitor (see
+      // app/api/chat/[businessId]/route.ts).
+      return groqResult;
+    }
+
+    return groqResult;
   } catch (err) {
     console.error("[llm] unexpected error calling Groq:", err);
     return {
@@ -218,7 +209,7 @@ async function callGroq(
     return {
       success: false,
       error: {
-        code: "request_failed",
+        code: res.status === 429 ? "rate_limited" : "request_failed",
         message:
           res.status === 429
             ? "I'm getting a lot of requests right now — please try that again in a few seconds."
@@ -238,7 +229,7 @@ async function callGroq(
     };
   }
 
-  const parsed = parseGroqResponse(json);
+  const parsed = parseOpenAiChatCompletionResponse(json);
   if (!parsed) {
     console.error("[llm] Groq response did not match expected shape:", json);
     return {
@@ -248,36 +239,4 @@ async function callGroq(
   }
 
   return parsed;
-}
-
-function parseGroqResponse(json: unknown): ChatCompletionSuccess | null {
-  if (typeof json !== "object" || json === null) return null;
-  const choices = (json as { choices?: unknown }).choices;
-  if (!Array.isArray(choices) || choices.length === 0) return null;
-
-  const message = (choices[0] as { message?: unknown }).message;
-  if (typeof message !== "object" || message === null) return null;
-
-  const content = (message as { content?: unknown }).content;
-  const toolCalls = (message as { tool_calls?: unknown }).tool_calls;
-
-  const usageRaw = (json as { usage?: unknown }).usage;
-  const usage =
-    typeof usageRaw === "object" && usageRaw !== null
-      ? {
-          promptTokens: Number((usageRaw as Record<string, unknown>).prompt_tokens ?? 0),
-          completionTokens: Number((usageRaw as Record<string, unknown>).completion_tokens ?? 0),
-          totalTokens: Number((usageRaw as Record<string, unknown>).total_tokens ?? 0),
-        }
-      : undefined;
-
-  return {
-    success: true,
-    message: {
-      role: "assistant",
-      content: typeof content === "string" ? content : "",
-      toolCalls: Array.isArray(toolCalls) ? (toolCalls as LlmToolCall[]) : undefined,
-    },
-    usage,
-  };
 }
