@@ -110,7 +110,7 @@ export async function getChatCompletion(
       const geminiResult = await callGemini(process.env.GEMINI_API_KEY, {
         messages,
         tools: options.tools,
-        model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+        model: process.env.GEMINI_MODEL || "gemini-3.6-flash",
         temperature: options.temperature ?? LLM_DEFAULTS.temperature,
         maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
       });
