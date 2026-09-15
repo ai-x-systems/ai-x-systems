@@ -24,7 +24,7 @@ import { LlmMessage, ToolDefinition, ChatCompletionResult, parseOpenAiChatComple
  * ---------------------------------------------------------------------
  */
 
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/chat/completions";
+const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
 interface CallGeminiParams {
   messages: LlmMessage[];
