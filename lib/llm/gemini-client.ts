@@ -18,7 +18,7 @@ import { LlmMessage, ToolDefinition, ChatCompletionResult, parseOpenAiChatComple
  *
  * Get a free key (no card required) at https://aistudio.google.com/apikey
  * and set it as GEMINI_API_KEY. Model is configurable via GEMINI_MODEL
- * (defaults to "gemini-2.5-flash") for the same reason GROQ_MODEL is
+ * (defaults to "gemini-3.6-flash") for the same reason GROQ_MODEL is
  * configurable — a future model deprecation shouldn't require a code
  * change, just an env var update.
  * ---------------------------------------------------------------------
