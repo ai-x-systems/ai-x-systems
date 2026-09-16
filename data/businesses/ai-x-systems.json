@@ -4,7 +4,7 @@
   "industry": "AI Automation Agency",
   "phoneNumber": "+1XXXXXXXXXX",
   "timezone": "America/Chicago",
-  "demo": true,
+  "demo": false,
 
   "contact": {
     "website": "https://ai-x-systems-2.vercel.app",
