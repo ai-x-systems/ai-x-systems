@@ -15,6 +15,18 @@ export type LlmRole = "system" | "user" | "assistant" | "tool";
 
 export interface LlmToolCall {
   id: string;
+  /**
+   * Always "function" today (the only tool_call type OpenAI-compatible
+   * APIs currently define), but required, not optional — Groq validates
+   * this field is present on every tool_calls entry in the CONVERSATION
+   * HISTORY sent with the next request, not just on the entry it itself
+   * returns. A hand-constructed LlmToolCall (see
+   * lib/llm/groq-client.ts's recoverFailedToolCall) that omits this field
+   * passes fine when created, then makes the *next* request in the same
+   * conversation fail with a confusing, unrelated-looking 400 once that
+   * entry is echoed back as history — this happened in production.
+   */
+  type: "function";
   function: {
     name: string;
     arguments: string;
