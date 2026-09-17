@@ -41,6 +41,7 @@ export type ConversationRole = "system" | "user" | "assistant" | "tool";
 
 export interface ConversationToolCall {
   id: string;
+  type: "function";
   function: { name: string; arguments: string };
 }
 
