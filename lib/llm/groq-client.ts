@@ -50,15 +50,6 @@ export type {
 
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
-// Vercel's default serverless function timeout is 10s on the Hobby plan.
-// The PREVIOUS version of this retry logic used Groq's own suggested wait
-// time uncapped — which can be 20+ seconds under heavier throttling (seen
-// live: "please try again in 22.8675s") — so the function itself could be
-// killed mid-sleep before ever attempting the retry, which is the most
-// likely cause of "book an appointment" failing outright rather than
-// succeeding on retry. Capping the wait tightly, and limiting to one
-// retry, keeps the worst case (one real request + one capped wait + one
-// retry request) comfortably under 10s even on Hobby.
 const MAX_RETRIES = 1;
 const MAX_RETRY_WAIT_MS = 4000;
 
@@ -67,10 +58,6 @@ export const LLM_DEFAULTS = {
   temperature: 0.4,
   maxTokens: 1024,
 };
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
 
 export async function getChatCompletion(
   options: ChatCompletionOptions
@@ -99,13 +86,6 @@ export async function getChatCompletion(
       maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
     });
 
-    // Fallback to Gemini ONLY when Groq specifically failed due to rate
-    // limiting (not on a bad-request, auth, or unknown error — falling
-    // back on those would just mask a real bug behind a second provider).
-    // Gemini's own free tier is currently more generous than Groq's for
-    // sustained/bursty traffic, so this meaningfully reduces how often a
-    // visitor ever sees a rate-limit message at all, without abandoning
-    // Groq's speed as the default path.
     if (!groqResult.success && groqResult.error.code === "rate_limited" && process.env.GEMINI_API_KEY) {
       console.warn("[llm] Groq rate-limited — falling back to Gemini");
       const geminiResult = await callGemini(process.env.GEMINI_API_KEY, {
@@ -117,9 +97,6 @@ export async function getChatCompletion(
       });
       if (geminiResult.success) return geminiResult;
       console.error("[llm] Gemini fallback also failed:", geminiResult.error);
-      // Both providers failed — return Groq's result since its message is
-      // the one already tuned for display to the visitor (see
-      // app/api/chat/[businessId]/route.ts).
       return groqResult;
     }
 
@@ -140,13 +117,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Groq's 429 body includes a human-readable hint like "Please try again in
- * 2.175s." — parsed here so the retry waits exactly that long (plus a small
- * buffer for clock drift) instead of a blind guess. Falls back to null
- * (caller uses its own default) if the message doesn't match, since this
- * wording isn't a documented, stable API contract.
- */
 function parseRetryAfterMs(bodyText: string): number | null {
   const match = bodyText.match(/try again in ([\d.]+)s/i);
   if (!match) return null;
@@ -154,74 +124,3 @@ function parseRetryAfterMs(bodyText: string): number | null {
   if (!Number.isFinite(seconds) || seconds <= 0) return null;
   return Math.ceil(seconds * 1000) + 250;
 }
-
-/**
- * Parses Groq's 400 tool_use_failed error body and reconstructs the tool
- * call the model was actually trying to make, so it can be routed through
- * our own null-safe validation instead of being lost entirely. Returns
- * null for any error shape that isn't this specific case (e.g. a genuine
- * malformed generation with no failed_generation field, or a completely
- * different 400 cause) — those still fall through to the generic failure.
- */
-function recoverFailedToolCall(bodyText: string): LlmToolCall | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(bodyText);
-  } catch {
-    return null;
-  }
-
-  const error = (parsed as { error?: unknown })?.error;
-  if (typeof error !== "object" || error === null) return null;
-
-  const code = (error as { code?: unknown }).code;
-  const failedGeneration = (error as { failed_generation?: unknown }).failed_generation;
-  if (code !== "tool_use_failed" || typeof failedGeneration !== "string") return null;
-
-  let call: unknown;
-  try {
-    call = JSON.parse(failedGeneration);
-  } catch {
-    return null;
-  }
-
-  const name = (call as { name?: unknown })?.name;
-  const args = (call as { arguments?: unknown })?.arguments;
-  if (typeof name !== "string" || typeof args !== "object" || args === null) return null;
-
-  return {
-    id: `recovered-${Date.now()}`,
-    type: "function",
-    function: { name, arguments: JSON.stringify(args) },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Groq-specific implementation
-// ---------------------------------------------------------------------------
-
-interface CallGroqParams {
-  messages: LlmMessage[];
-  tools?: ToolDefinition[];
-  model: string;
-  temperature: number;
-  maxTokens: number;
-}
-
-async function callGroq(
-  apiKey: string,
-  { messages, tools, model, temperature, maxTokens }: CallGroqParams,
-  attempt: number = 1
-): Promise<ChatCompletionResult> {
-  console.log("[GROQ REQUEST]", { model, toolCount: tools?.length ?? 0, attempt });
-  const res = await fetch(GROQ_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      tools,
-      tool_choice: "auto",
