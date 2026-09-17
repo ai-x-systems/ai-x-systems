@@ -10,10 +10,14 @@ import { LlmMessage, ToolDefinition, ChatCompletionResult, parseOpenAiChatComple
  * that file for the fallback decision logic.
  *
  * Uses Google's own OpenAI-compatible endpoint
- * (generativelanguage.googleapis.com/v1beta/chat/completions) — same
+ * (generativelanguage.googleapis.com/v1beta/openai/chat/completions) —
+ * note the required /openai/ path segment: Google's docs originally
+ * documented this without it (.../v1beta/chat/completions), which is why
+ * an earlier version of this file used that shorter path and got a
+ * confusing 403 "project denied" error instead of a clean 404 — same
  * request body shape, same response shape, same Bearer-token auth style
- * as Groq's endpoint. That's what makes this a clean fallback rather than
- * a second integration to maintain: it reuses
+ * as Groq's endpoint otherwise. That's what makes this a clean fallback
+ * rather than a second integration to maintain: it reuses
  * parseOpenAiChatCompletionResponse from lib/llm/types.ts unchanged.
  *
  * Get a free key (no card required) at https://aistudio.google.com/apikey
