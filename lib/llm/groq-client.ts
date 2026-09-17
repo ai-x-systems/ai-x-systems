@@ -194,6 +194,7 @@ function recoverFailedToolCall(bodyText: string): LlmToolCall | null {
     type: "function",
     function: { name, arguments: JSON.stringify(args) },
   };
+}
 
 // ---------------------------------------------------------------------------
 // Groq-specific implementation
@@ -224,83 +225,3 @@ async function callGroq(
       messages,
       tools,
       tool_choice: "auto",
-      temperature,
-      max_tokens: maxTokens,
-    }),
-  });
-
-  if (!res.ok) {
-    const bodyText = await res.text().catch(() => "");
-    console.error(`[llm] Groq request failed: ${res.status} ${bodyText}`);
-
-    // Groq's free/on-demand tier enforces a tokens-per-minute cap, not a
-    // per-request cap — a burst (e.g. a long conversation history plus a
-    // big system prompt) can transiently exceed it even though a request
-    // a few seconds later, once the per-minute window rolls over, would
-    // succeed. One automatic retry with a short, capped backoff (see
-    // MAX_RETRY_WAIT_MS above) turns that into an invisible delay instead
-    // of a visible failure.
-    if (res.status === 429 && attempt <= MAX_RETRIES) {
-      const waitMs = Math.min(parseRetryAfterMs(bodyText) ?? 3000, MAX_RETRY_WAIT_MS);
-      console.warn(`[llm] Groq 429 — retrying (attempt ${attempt + 1}) in ${waitMs}ms`);
-      await sleep(waitMs);
-      return callGroq(apiKey, { messages, tools, model, temperature, maxTokens }, attempt + 1);
-    }
-
-    // Groq's own tool-calling layer strictly validates a tool call's
-    // arguments against the declared JSON Schema server-side, and rejects
-    // the ENTIRE request with a 400 "tool_use_failed" if the model's call
-    // doesn't match (e.g. a `null` for a field schema'd as plain
-    // "string") — even when lib/tools/tool-definitions.ts already widens
-    // that field to accept null. Rather than trust that every future
-    // schema tweak keeps satisfying Groq's specific validator, recover
-    // directly: Groq includes `failed_generation`, the exact tool call the
-    // model tried to make. Parse it and feed it through the normal
-    // tool-call path — lib/tools/execute-tool-call.ts's own validation
-    // already treats `null`/missing fields correctly (asks the visitor for
-    // what's missing instead of crashing) — so this makes the chat
-    // resilient to Groq's tool-call validation regardless of the specific
-    // reason it rejected the call.
-    const recovered = recoverFailedToolCall(bodyText);
-    if (recovered) {
-      console.warn("[llm] Recovered a tool call Groq rejected at the schema-validation layer:", recovered.function.name);
-      return {
-        success: true,
-        message: { role: "assistant", content: "", toolCalls: [recovered] },
-      };
-    }
-
-    return {
-      success: false,
-      error: {
-        code: res.status === 429 ? "rate_limited" : "request_failed",
-        message:
-          res.status === 429
-            ? "I'm getting a lot of requests right now — please try that again in a few seconds."
-            : "The AI service returned an error. Please try again.",
-      },
-    };
-  }
-
-  let json: unknown;
-  try {
-    json = await res.json();
-  } catch (err) {
-    console.error("[llm] Groq response was not valid JSON:", err);
-    return {
-      success: false,
-      error: { code: "invalid_response", message: "Received an invalid response from the AI service." },
-    };
-  }
-
-  const parsed = parseOpenAiChatCompletionResponse(json);
-  if (!parsed) {
-    console.error("[llm] Groq response did not match expected shape:", json);
-    return {
-      success: false,
-      error: { code: "invalid_response", message: "Received an unexpected response from the AI service." },
-    };
-  }
-
-  return parsed;
-}
