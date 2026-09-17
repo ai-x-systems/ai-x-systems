@@ -124,3 +124,122 @@ function parseRetryAfterMs(bodyText: string): number | null {
   if (!Number.isFinite(seconds) || seconds <= 0) return null;
   return Math.ceil(seconds * 1000) + 250;
 }
+
+
+function recoverFailedToolCall(bodyText: string): LlmToolCall | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(bodyText);
+  } catch {
+    return null;
+  }
+
+  const error = (parsed as { error?: unknown })?.error;
+  if (typeof error !== "object" || error === null) return null;
+
+  const code = (error as { code?: unknown }).code;
+  const failedGeneration = (error as { failed_generation?: unknown }).failed_generation;
+  if (code !== "tool_use_failed" || typeof failedGeneration !== "string") return null;
+
+  let call: unknown;
+  try {
+    call = JSON.parse(failedGeneration);
+  } catch {
+    return null;
+  }
+
+  const name = (call as { name?: unknown })?.name;
+  const args = (call as { arguments?: unknown })?.arguments;
+  if (typeof name !== "string" || typeof args !== "object" || args === null) return null;
+
+  return {
+    id: `recovered-${Date.now()}`,
+    type: "function",
+    function: { name, arguments: JSON.stringify(args) },
+  };
+}
+
+interface CallGroqParams {
+  messages: LlmMessage[];
+  tools?: ToolDefinition[];
+  model: string;
+  temperature: number;
+  maxTokens: number;
+}
+
+async function callGroq(
+  apiKey: string,
+  { messages, tools, model, temperature, maxTokens }: CallGroqParams,
+  attempt: number = 1
+): Promise<ChatCompletionResult> {
+  console.log("[GROQ REQUEST]", { model, toolCount: tools?.length ?? 0, attempt });
+  const res = await fetch(GROQ_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      tools,
+      tool_choice: "auto",
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    console.error(`[llm] Groq request failed: ${res.status} ${bodyText}`);
+
+    if (res.status === 429 && attempt <= MAX_RETRIES) {
+      const waitMs = Math.min(parseRetryAfterMs(bodyText) ?? 3000, MAX_RETRY_WAIT_MS);
+      console.warn(`[llm] Groq 429 — retrying (attempt ${attempt + 1}) in ${waitMs}ms`);
+      await sleep(waitMs);
+      return callGroq(apiKey, { messages, tools, model, temperature, maxTokens }, attempt + 1);
+    }
+
+    const recovered = recoverFailedToolCall(bodyText);
+    if (recovered) {
+      console.warn("[llm] Recovered a tool call Groq rejected at the schema-validation layer:", recovered.function.name);
+      return {
+        success: true,
+        message: { role: "assistant", content: "", toolCalls: [recovered] },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: res.status === 429 ? "rate_limited" : "request_failed",
+        message:
+          res.status === 429
+            ? "I'm getting a lot of requests right now — please try that again in a few seconds."
+            : "The AI service returned an error. Please try again.",
+      },
+    };
+  }
+
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch (err) {
+    console.error("[llm] Groq response was not valid JSON:", err);
+    return {
+      success: false,
+      error: { code: "invalid_response", message: "Received an invalid response from the AI service." },
+    };
+  }
+
+  const parsed = parseOpenAiChatCompletionResponse(json);
+  if (!parsed) {
+    console.error("[llm] Groq response did not match expected shape:", json);
+    return {
+      success: false,
+      error: { code: "invalid_response", message: "Received an unexpected response from the AI service." },
+    };
+  }
+
+  return parsed;
+}
