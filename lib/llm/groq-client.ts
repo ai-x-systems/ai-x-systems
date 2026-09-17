@@ -191,9 +191,9 @@ function recoverFailedToolCall(bodyText: string): LlmToolCall | null {
 
   return {
     id: `recovered-${Date.now()}`,
+    type: "function",
     function: { name, arguments: JSON.stringify(args) },
   };
-}
 
 // ---------------------------------------------------------------------------
 // Groq-specific implementation
