@@ -40,6 +40,7 @@ export interface LeadRecord {
   businessId: string;
   callerName?: string;
   callerPhone?: string;
+  callerEmail?: string;
   reason: string;
   callTimestampISO: string;
   callSummary?: string;
