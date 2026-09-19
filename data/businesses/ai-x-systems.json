@@ -7,7 +7,7 @@
   "demo": false,
 
   "contact": {
-    "website": "https://ai-x-systems-2.vercel.app",
+    "website": "https://ai-x-systems.vercel.app",
     "email": "hello@aixsystems.com"
   },
 
@@ -34,7 +34,7 @@
     "company": {
       "name": "AI X Systems",
       "description": "AI X Systems provides AI-powered receptionist and website assistant solutions for businesses.",
-      "website": "https://ai-x-systems-2.vercel.app"
+      "website": "https://ai-x-systems.vercel.app"
     },
 
     "services": [
@@ -61,7 +61,7 @@
       "liveDemoAvailable": true,
       "liveDemoType": "ai_website_assistant",
       "description": "The live chat available throughout the AI X Systems website is the real AI Website Assistant demo. Visitors can interact with it directly and ask questions to see how the assistant works.",
-      "website": "https://ai-x-systems-2.vercel.app/demo",
+      "website": "https://ai-x-systems.vercel.app/demo",
       "rules": [
         "The live website chat is the real AI Website Assistant demo.",
         "Visitors do not need to provide a phone number to try the demo.",
@@ -73,7 +73,7 @@
     },
 
     "businessSetupForm": {
-      "url": "https://ai-x-systems-2.vercel.app/demo",
+      "url": "https://ai-x-systems.vercel.app/demo",
       "purpose": "client_onboarding",
       "description": "The form on the /demo page is used by a business to submit its business knowledge, choose the AI services it wants, and provide information about the systems and integrations it currently uses.",
       "collects": [
@@ -105,7 +105,7 @@
       },
       {
         "question": "Where do I submit my business information?",
-        "answer": "You can submit your business knowledge, select the services you want, and provide your integration requirements through the business setup form at https://ai-x-systems-2.vercel.app/demo."
+        "answer": "You can submit your business knowledge, select the services you want, and provide your integration requirements through the business setup form at https://ai-x-systems.vercel.app/demo."
       },
       {
         "question": "How much does it cost?",
@@ -160,7 +160,7 @@
         "Never promise compatibility with a specific third-party system unless compatibility has been confirmed.",
         "When discussing CRM, booking, calendar, lead-management, phone systems, or other integrations, explain that the setup depends on the customer's existing tools and requirements.",
         "For personalized pricing, provide the general setup range of $300–$1,000 plus monthly subscription and explain that exact pricing depends on requirements.",
-        "For customers who want to get started, direct them to the business setup form at https://ai-x-systems-2.vercel.app/demo.",
+        "For customers who want to get started, direct them to the business setup form at https://ai-x-systems.vercel.app/demo.",
         "For customers who want personal follow-up or a personalized quote, collect their email address.",
         "Do not ask for a phone number simply because a visitor is interested in the AI Website Assistant.",
         "Do not ask for a phone number simply because a visitor wants to try the demo.",
@@ -201,20 +201,20 @@
 
       "unknownQuestionResponse": "I don't have confirmed information on that yet, and I don't want to give you the wrong answer. I can collect your email and have the AI X Systems team follow up with you.",
 
-      "unknownIntegrationResponse": "The exact integration depends on the tools your business uses and how they're configured. I don't want to promise compatibility without confirming it. You can include the systems you use in your business information at https://ai-x-systems-2.vercel.app/demo and the team can review the requirements.",
+      "unknownIntegrationResponse": "The exact integration depends on the tools your business uses and how they're configured. I don't want to promise compatibility without confirming it. You can include the systems you use in your business information at https://ai-x-systems.vercel.app/demo and the team can review the requirements.",
 
-      "personalizedQuoteResponse": "Pricing depends on your business, the services you choose, your integrations, and your setup requirements. The typical setup is $300–$1,000 plus a monthly subscription. You can submit your business information and select your services at https://ai-x-systems-2.vercel.app/demo, or provide your email and the team can follow up.",
+      "personalizedQuoteResponse": "Pricing depends on your business, the services you choose, your integrations, and your setup requirements. The typical setup is $300–$1,000 plus a monthly subscription. You can submit your business information and select your services at https://ai-x-systems.vercel.app/demo, or provide your email and the team can follow up.",
 
-      "demoResponse": "You're already using the live AI Website Assistant demo. You can ask questions here and see how it works. If you want an AI system configured for your own business, you can submit your business knowledge, choose your services, and provide your integration requirements at https://ai-x-systems-2.vercel.app/demo."
+      "demoResponse": "You're already using the live AI Website Assistant demo. You can ask questions here and see how it works. If you want an AI system configured for your own business, you can submit your business knowledge, choose your services, and provide your integration requirements at https://ai-x-systems.vercel.app/demo."
     },
 
     "policies": {
       "general": [
         "AI X Systems does not currently offer phone or video discovery calls.",
-        "If a customer wants to move forward, direct them to https://ai-x-systems-2.vercel.app/demo or collect their email for personal follow-up.",
+        "If a customer wants to move forward, direct them to https://ai-x-systems.vercel.app/demo or collect their email for personal follow-up.",
         "Never quote a final personalized price. Provide the general setup range of $300–$1,000 plus monthly subscription and explain that exact pricing depends on requirements.",
         "The live chat on the AI X Systems website is the real AI Website Assistant demo.",
-        "The form at https://ai-x-systems-2.vercel.app/demo is for businesses to submit their business knowledge, select services, and provide integration requirements.",
+        "The form at https://ai-x-systems.vercel.app/demo is for businesses to submit their business knowledge, select services, and provide integration requirements.",
         "Do not confuse the live chat demo with the business setup form.",
         "Do not require a phone number for demo access or general lead capture.",
         "Email should be collected when a visitor requests personal follow-up or a personalized quote."
