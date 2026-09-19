@@ -101,12 +101,19 @@ export async function logLead(
     return { success: false, error: "Could not authenticate with Google Sheets." };
   }
 
+  // Column order matches the actual sheet header row this app writes to
+  // (Timestamp | Name | Phone | Email | Service | Notes) — NOT the order
+  // LeadRecord's own fields happen to be declared in. A prior version of
+  // this row array used [businessId, callerName, callerPhone, reason,
+  // callTimestampISO, callSummary], which silently wrote real data into
+  // the wrong labeled columns (e.g. the timestamp landed under "Service")
+  // for every business until caught by inspecting real spreadsheet rows.
   const row = [
-    record.businessId,
+    record.callTimestampISO,
     record.callerName ?? "",
     record.callerPhone ?? "",
+    record.callerEmail ?? "",
     record.reason,
-    record.callTimestampISO,
     record.callSummary ?? "",
   ];
 
