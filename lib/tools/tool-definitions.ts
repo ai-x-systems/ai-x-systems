@@ -30,7 +30,7 @@ export const TOOL_DEFINITIONS = [
           callerPhone: { type: "string" },
           serviceId: {
             type: "string",
-            description:
+            
               "The service's internal id shown as [serviceId: ...] next to each service in the system prompt — not the service's display name.",
           },
           preferredStartTimeISO: {
@@ -68,13 +68,14 @@ export const TOOL_DEFINITIONS = [
     function: {
       name: "log_lead",
       description:
-        "Record contact info and reason for reaching out when not booking directly.",
+        "Record contact info and reason for reaching out when not booking directly. Always include the caller's email once they've provided it — email is this business's primary follow-up contact method.",
       parameters: {
         type: "object",
         properties: {
-          callerName: { type: "string" },
-          callerPhone: { type: "string" },
-          reason: { type: "string" },
+          callerName: { type: ["string", "null"] },
+          callerPhone: { type: ["string", "null"] },
+          callerEmail: { type: ["string", "null"], description: "The caller's email address, once they've provided it." },
+          reason: { type: ["string", "null"] },
         },
       },
     },
