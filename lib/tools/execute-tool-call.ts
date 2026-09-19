@@ -236,7 +236,12 @@ export async function executeToolCall(
     }
 
     case "log_lead": {
-      const a = args as { callerName?: string | null; callerPhone?: string | null; reason?: string | null };
+      const a = args as {
+        callerName?: string | null;
+        callerPhone?: string | null;
+        callerEmail?: string | null;
+        reason?: string | null;
+      };
 
       // Same "tool schema no longer enforces required fields, so this is
       // the only real validation" reasoning as book_appointment above —
@@ -265,13 +270,14 @@ export async function executeToolCall(
           businessId,
           callerName: a.callerName ?? undefined,
           callerPhone: a.callerPhone ?? undefined,
+          callerEmail: a.callerEmail ?? undefined,
           reason,
           callTimestampISO: leadTimestampISO,
         },
         business.integrations.leadSheetId ?? "",
         business.integrations.leadSheetTabName
       );
-
+      
       void sendOwnerAlert({
         ownerEmail: effectiveBusiness.integrations.notifyEmail,
         businessName: business.name,
@@ -281,7 +287,7 @@ export async function executeToolCall(
         event: "lead",
         businessId: business.id,
         timestampISO: leadTimestampISO,
-        data: { callerName: a.callerName, callerPhone: a.callerPhone, reason },
+        data: { callerName: a.callerName, callerPhone: a.callerPhone, callerEmail: a.callerEmail, reason },
       });
       void recordActivity(businessId, "lead", {
         callerName: a.callerName,
