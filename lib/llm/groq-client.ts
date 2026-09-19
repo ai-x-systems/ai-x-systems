@@ -1,5 +1,5 @@
 import "server-only";
-import { callGemini } from "@/lib/llm/gemini-client";
+import { callOpenRouter } from "@/lib/llm/openrouter-client";
 import {
   LlmMessage,
   LlmToolCall,
@@ -18,10 +18,10 @@ import {
  * Re-exports every type from lib/llm/types.ts so existing imports
  * elsewhere in the app (e.g. `import { LlmMessage } from
  * "@/lib/llm/groq-client"`) keep working unchanged — the types moved to
- * their own file only to break a circular import with the Gemini fallback
- * (gemini-client.ts needs these same types/parser, and this file needs to
- * call gemini-client.ts — see lib/llm/types.ts's header for why that
- * combination can't live in one file safely).
+ * their own file only to break a circular import with the fallback
+ * provider (the fallback client needs these same types/parser, and this
+ * file needs to call the fallback client — see lib/llm/types.ts's header
+ * for why that combination can't live in one file safely).
  *
  * MODEL: configurable via GROQ_MODEL env var, defaulting to
  * "openai/gpt-oss-20b". Making this an env var, not just a hardcoded
@@ -30,9 +30,22 @@ import {
  * needed.
  *
  * FALLBACK: if Groq fails specifically due to rate limiting and
- * GEMINI_API_KEY is set, this automatically retries the same request
- * against Gemini's free, OpenAI-compatible endpoint before giving up. See
- * lib/llm/gemini-client.ts.
+ * OPENROUTER_API_KEY is set, this automatically retries the same request
+ * against OpenRouter's free router before giving up. See
+ * lib/llm/openrouter-client.ts. (A previous version of this fallback used
+ * Gemini — see that file's git history / lib/llm/gemini-client.ts, now
+ * unused — swapped out after its endpoint kept returning an unresolved
+ * account-side 403.)
+ *
+ * WHY GROQ STAYS PRIMARY even on a zero-budget setup: Groq's free tier
+ * caps tokens PER MINUTE (8000/min observed), which resets every minute
+ * and adds up to a much higher effective daily ceiling than OpenRouter's
+ * free tier, which caps requests PER DAY (50/day on a bare key, 1000/day
+ * after a one-time $10 top-up). Making OpenRouter primary would trade a
+ * bursty-but-high-volume free tier for a hard, low, daily ceiling — worse
+ * for a live business chatbot even though it removes Groq's per-minute
+ * math. Groq primary + OpenRouter as the fallback keeps both tiers' free
+ * budgets independent and additive instead of picking the smaller one.
  * ------------------------------------------------------------------------
  */
 
@@ -86,17 +99,17 @@ export async function getChatCompletion(
       maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
     });
 
-    if (!groqResult.success && groqResult.error.code === "rate_limited" && process.env.GEMINI_API_KEY) {
-      console.warn("[llm] Groq rate-limited — falling back to Gemini");
-      const geminiResult = await callGemini(process.env.GEMINI_API_KEY, {
+    if (!groqResult.success && groqResult.error.code === "rate_limited" && process.env.OPENROUTER_API_KEY) {
+      console.warn("[llm] Groq rate-limited — falling back to OpenRouter");
+      const openRouterResult = await callOpenRouter(process.env.OPENROUTER_API_KEY, {
         messages,
         tools: options.tools,
-        model: process.env.GEMINI_MODEL || "gemini-3.6-flash",
+        model: process.env.OPENROUTER_MODEL || "openrouter/free",
         temperature: options.temperature ?? LLM_DEFAULTS.temperature,
         maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
       });
-      if (geminiResult.success) return geminiResult;
-      console.error("[llm] Gemini fallback also failed:", geminiResult.error);
+      if (openRouterResult.success) return openRouterResult;
+      console.error("[llm] OpenRouter fallback also failed:", openRouterResult.error);
       return groqResult;
     }
 
@@ -124,7 +137,6 @@ function parseRetryAfterMs(bodyText: string): number | null {
   if (!Number.isFinite(seconds) || seconds <= 0) return null;
   return Math.ceil(seconds * 1000) + 250;
 }
-
 
 function recoverFailedToolCall(bodyText: string): LlmToolCall | null {
   let parsed: unknown;
