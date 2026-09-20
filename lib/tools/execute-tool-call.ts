@@ -240,6 +240,7 @@ export async function executeToolCall(
         callerName?: string | null;
         callerPhone?: string | null;
         callerEmail?: string | null;
+        serviceInterest?: string | null;
         reason?: string | null;
       };
 
@@ -271,13 +272,14 @@ export async function executeToolCall(
           callerName: a.callerName ?? undefined,
           callerPhone: a.callerPhone ?? undefined,
           callerEmail: a.callerEmail ?? undefined,
+          serviceInterest: a.serviceInterest ?? undefined,
           reason,
           callTimestampISO: leadTimestampISO,
         },
         business.integrations.leadSheetId ?? "",
         business.integrations.leadSheetTabName
       );
-      
+
       void sendOwnerAlert({
         ownerEmail: effectiveBusiness.integrations.notifyEmail,
         businessName: business.name,
@@ -287,7 +289,13 @@ export async function executeToolCall(
         event: "lead",
         businessId: business.id,
         timestampISO: leadTimestampISO,
-        data: { callerName: a.callerName, callerPhone: a.callerPhone, callerEmail: a.callerEmail, reason },
+        data: {
+          callerName: a.callerName,
+          callerPhone: a.callerPhone,
+          callerEmail: a.callerEmail,
+          serviceInterest: a.serviceInterest,
+          reason,
+        },
       });
       void recordActivity(businessId, "lead", {
         callerName: a.callerName,
