@@ -4,17 +4,21 @@
  * lib/voice/providers/vapi/assistant-config.ts and
  * app/api/chat/[businessId]/route.ts.
  *
- * Deliberately NO "required" arrays on any of these. Groq's own function-
- * calling layer enforces "required" strictly server-side: if the model
- * calls a tool before it actually has every required field, Groq rejects
- * the entire completion with a 400 tool_use_failed error — before
- * lib/tools/execute-tool-call.ts's own field-by-field validation (which
- * handles this gracefully, e.g. "Before I can book that, I still need
- * your name") ever gets a chance to run. That 400 surfaced as a hard,
- * unrecoverable chat failure in production. Leaving every field optional
- * here means an incomplete/premature tool call is always allowed through
- * to our own code, which is the only place that should decide what to do
- * about missing data.
+ * Deliberately NO "required" arrays on any of these — see the block below
+ * this one for why.
+ *
+ * Deliberately `type: ["string", "null"]` on every field the model might
+ * not have a value for yet, instead of plain `type: "string"`. Observed in
+ * production: the model sometimes emits a literal JSON `null` for a field
+ * it doesn't have (e.g. `"callerPhone": null`) rather than omitting the
+ * key entirely. `null` doesn't satisfy `type: "string"` under strict JSON
+ * Schema validation, so Groq rejected the whole tool call with a 400
+ * before lib/tools/execute-tool-call.ts's own null-safe checks (which
+ * already handle `null` fine — `isMissingOrPlaceholder` treats it the same
+ * as missing) ever got a chance to run. Allowing `null` at the schema
+ * level, on top of already not requiring these fields, closes both halves
+ * of "the model hasn't collected this yet" — an omitted key and an
+ * explicit `null` value are now equally valid.
  */
 export const TOOL_DEFINITIONS = [
   {
@@ -26,15 +30,15 @@ export const TOOL_DEFINITIONS = [
       parameters: {
         type: "object",
         properties: {
-          callerName: { type: "string" },
-          callerPhone: { type: "string" },
+          callerName: { type: ["string", "null"] },
+          callerPhone: { type: ["string", "null"] },
           serviceId: {
-            type: "string",
-            
+            type: ["string", "null"],
+            description:
               "The service's internal id shown as [serviceId: ...] next to each service in the system prompt — not the service's display name.",
           },
           preferredStartTimeISO: {
-            type: "string",
+            type: ["string", "null"],
             description: "ISO 8601 datetime in the business's local timezone.",
           },
         },
@@ -50,13 +54,13 @@ export const TOOL_DEFINITIONS = [
       parameters: {
         type: "object",
         properties: {
-          email: { type: "string", description: "The caller's email address." },
+          email: { type: ["string", "null"], description: "The caller's email address." },
           serviceName: {
-            type: "string",
+            type: ["string", "null"],
             description: "The display name of the already-booked service (not the serviceId).",
           },
           confirmedStartTimeISO: {
-            type: "string",
+            type: ["string", "null"],
             description: "The confirmedStartTimeISO returned by the earlier book_appointment call.",
           },
         },
@@ -74,7 +78,10 @@ export const TOOL_DEFINITIONS = [
         properties: {
           callerName: { type: ["string", "null"] },
           callerPhone: { type: ["string", "null"] },
-          callerEmail: { type: ["string", "null"], description: "The caller's email address, once they've provided it." },
+          callerEmail: {
+            type: ["string", "null"],
+            description: "The caller's email address, once they've provided it.",
+          },
           reason: { type: ["string", "null"] },
         },
       },
