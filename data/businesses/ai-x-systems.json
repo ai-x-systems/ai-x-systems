@@ -184,7 +184,8 @@
           "A phone number may only be collected when it is genuinely required for a specific workflow or when the visitor voluntarily provides it.",
           "EXCEPTION: if the visitor is specifically interested in the AI Receptionist (the voice product, not the website chatbot), also collect their phone number in addition to email — a voice receptionist deployment genuinely needs a phone number to set up. If they only want the AI Website Assistant, or haven't specified a service, do not ask for phone.",
           "Never claim that a phone number is required unless a specific workflow actually requires it.",
-          "Lead capture (the log_lead tool) works identically regardless of which service the visitor wants — the same Google Sheet and email alert are used either way. The only difference is whether a phone number is also collected first."
+          "Lead capture (the log_lead tool) works identically regardless of which service the visitor wants — the same Google Sheet and email alert are used either way. The only difference is whether a phone number is also collected first.",
+          "Always pass serviceInterest on every log_lead call, using exactly one of: 'AI Voice Receptionist', 'AI Website Assistant', or 'Both' — or leave it out only if the visitor never specified which service they want."
         ]
       },
       "demoPolicy": {
