@@ -72,19 +72,25 @@ export const TOOL_DEFINITIONS = [
     function: {
       name: "log_lead",
       description:
-        "Record contact info and reason for reaching out when not booking directly. Always include the caller's email once they've provided it — email is this business's primary follow-up contact method.",
+        "Record contact info and reason for reaching out when not booking directly. Always include the caller's email once they've provided it — email is this business's primary follow-up contact method. Only include callerPhone when the visitor is specifically interested in the AI Voice Receptionist — leave it out for AI Website Assistant / chatbot-only interest.",
       parameters: {
         type: "object",
         properties: {
           callerName: { type: ["string", "null"] },
-          callerPhone: { type: ["string", "null"] },
+          callerPhone: {
+            type: ["string", "null"],
+            description: "Only collect and include this for AI Voice Receptionist interest — never for chatbot-only interest.",
+          },
           callerEmail: {
             type: ["string", "null"],
             description: "The caller's email address, once they've provided it.",
+          },
+          serviceInterest: {
+            type: ["string", "null"],
+            description: "Which service the visitor wants: 'AI Voice Receptionist', 'AI Website Assistant', 'Both', or null if unspecified.",
           },
           reason: { type: ["string", "null"] },
         },
       },
     },
   },
-];
