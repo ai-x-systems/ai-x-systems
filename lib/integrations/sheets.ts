@@ -41,6 +41,7 @@ export interface LeadRecord {
   callerName?: string;
   callerPhone?: string;
   callerEmail?: string;
+  serviceInterest?: string;
   reason: string;
   callTimestampISO: string;
   callSummary?: string;
