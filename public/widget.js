@@ -163,6 +163,7 @@
     "} " +
     ".aixw-close:hover{opacity:1;background:rgba(255,255,255,.14);} " +
     ".aixw-frame{flex:1 1 auto;border:0;width:100%;height:100%;background:#ffffff;display:block;} " +
+    ".aixw-launcher.aixw-launcher-open{display:none;} " +
     "@media (max-width:480px){" +
     ".aixw-panel{right:12px;bottom:12px;width:calc(100vw - 24px);height:calc(100vh - 24px);height:calc(100dvh - 24px);max-width:none;border-radius:14px;}" +
     ".aixw-launcher{right:16px;bottom:16px;}" +
@@ -189,9 +190,17 @@
   function setOpen(next) {
     open = next;
     panel.classList.toggle("aixw-hidden", !open);
+    // The panel already has its own close (X) button in its header —
+    // the round launcher button used to just swap to a close icon and
+    // stay floating in the same corner, sitting on top of the now-open
+    // panel (most visible on mobile, where the panel fills nearly the
+    // whole screen and the launcher's corner overlaps the panel's own
+    // controls/input area). Hiding the launcher entirely while the panel
+    // is open removes that overlap and the redundant second close button.
+    launcher.classList.toggle("aixw-launcher-open", open);
     launcher.setAttribute("aria-expanded", open ? "true" : "false");
-    launcher.title = open ? "Close chat" : "Chat with us";
-    launcher.innerHTML = open ? CLOSE_SVG : CHAT_ICON_SVG;
+    launcher.title = "Chat with us";
+    launcher.innerHTML = CHAT_ICON_SVG;
 
     // The greeting bubble only removed itself when clicked directly —
     // opening the panel via the round launcher button instead left it
@@ -201,7 +210,6 @@
       activeCallout = null;
     }
   }
-
   function toggle() {
     setOpen(!open);
   }
