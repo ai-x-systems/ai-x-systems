@@ -69,8 +69,8 @@ const contact = {
 
 const social = {
   instagram: {
-    handle: '@aixsautomation',
-    url: 'https://instagram.com/aixsautomation',
+    handle: '@aixsystems.app',
+    url: 'https://instagram.com/aixsystems.app',
   },
   // Add x/linkedin/etc. here as accounts are created — nothing else in the
   // app should hardcode a social URL.
