@@ -257,6 +257,14 @@ export async function executeToolCall(
       if (isMissingOrPlaceholder(a.reason)) {
         return "Sure — what's the best reason to note for the team, and what name should I put with it?";
       }
+      // A lead with no email AND no phone is useless to follow up on —
+      // this was previously allowed through, which meant the very first
+      // "I'm interested in X" message could get logged as a complete
+      // lead with zero contact info, and then logged AGAIN once the
+      // visitor actually gave their email — two rows for one person.
+      if (isMissingOrPlaceholder(a.callerEmail) && isMissingOrPlaceholder(a.callerPhone)) {
+        return "Sure — what's the best email (or phone number) I can pass along to the team?";
+      }
       const reason = a.reason as string;
 
       if (business.demo) {
