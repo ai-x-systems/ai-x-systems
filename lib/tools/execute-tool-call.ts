@@ -54,6 +54,11 @@ function isMissingOrPlaceholder(value: string | undefined | null): boolean {
   const trimmed = value.trim();
   if (trimmed.length === 0) return true;
   if (PLACEHOLDER_VALUES.has(trimmed.toLowerCase())) return true;
+  // Catches template-style placeholders the model sometimes writes
+  // literally instead of omitting the field — e.g. "[name]", "[email]",
+  // "{{email}}" — seen in production landing in the actual Google Sheet
+  // as real-looking but fake data.
+  if (/^[[{].*[\]}]$/.test(trimmed)) return true;
   return false;
 }
 
