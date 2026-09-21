@@ -103,6 +103,7 @@ export default function EmbeddedChatPage() {
     const nextMessages: Message[] = [...messages, { role: "user", content: input }];
     setMessages(nextMessages);
     setInput("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
     setLoading(true);
 
     try {
@@ -204,7 +205,16 @@ export default function EmbeddedChatPage() {
           ref={inputRef}
           className="aixw-input"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            // Auto-grow up to maxHeight, then let it scroll internally.
+            // Previously fixed at rows={1} with an unused maxHeight — a
+            // longer message just scrolled inside one tiny line instead
+            // of the box actually growing.
+            const el = e.target;
+            el.style.height = "auto";
+            el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -219,7 +229,12 @@ export default function EmbeddedChatPage() {
             border: "1px solid #e5e7eb",
             borderRadius: 10,
             padding: "9px 12px",
-            fontSize: 14,
+            // 16px, not 14px: iOS Safari auto-zooms the entire page when
+            // a focused input/textarea has a font-size under 16px — a
+            // hard platform behavior, not a style choice. Below 16px
+            // here meant tapping the chat input on iPhone visibly
+            // zoomed the whole page in.
+            fontSize: 16,
             fontFamily: "inherit",
             maxHeight: 96,
             outline: "none",
