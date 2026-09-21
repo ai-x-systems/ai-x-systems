@@ -99,9 +99,18 @@ function isValidIsoDateTime(value: string | undefined | null): boolean {
  * a real booking so the experience is indistinguishable to whoever's
  * testing it. Only the side effects are simulated.
  */
+interface HistoryToolCall {
+  function: { name: string };
+}
+interface HistoryMessage {
+  role: string;
+  tool_calls?: HistoryToolCall[];
+}
+
 export async function executeToolCall(
   { name, arguments: args }: ToolCallArgs,
-  businessId: string
+  businessId: string,
+  conversationHistory: HistoryMessage[] = []
 ): Promise<string> {
   const business = getBusinessById(businessId);
   if (!business) return "I couldn't find that business's configuration.";
@@ -257,14 +266,25 @@ export async function executeToolCall(
       if (isMissingOrPlaceholder(a.reason)) {
         return "Sure — what's the best reason to note for the team, and what name should I put with it?";
       }
-      // A lead with no email AND no phone is useless to follow up on —
-      // this was previously allowed through, which meant the very first
-      // "I'm interested in X" message could get logged as a complete
-      // lead with zero contact info, and then logged AGAIN once the
-      // visitor actually gave their email — two rows for one person.
+      // A lead with no email AND no phone is useless to follow up on.
       if (isMissingOrPlaceholder(a.callerEmail) && isMissingOrPlaceholder(a.callerPhone)) {
         return "Sure — what's the best email (or phone number) I can pass along to the team?";
       }
+
+      // Structural guarantee, not just a prompt instruction: the system
+      // prompt already told the model to call log_lead only once per
+      // conversation, and it still didn't reliably follow that in
+      // production (confirmed: 3 identical rows, same person, ~30s
+      // apart). Checking the actual conversation history for a prior
+      // log_lead call — the same tool-call log — makes this impossible
+      // to violate regardless of what the model decides to do.
+      const alreadyLogged = conversationHistory.some(
+        (m) => m.role === "assistant" && m.tool_calls?.some((tc) => tc.function.name === "log_lead")
+      );
+      if (alreadyLogged) {
+        return "You're all set — I've already passed your details to the team, no need to log it again.";
+      }
+
       const reason = a.reason as string;
 
       if (business.demo) {
