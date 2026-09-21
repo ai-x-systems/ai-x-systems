@@ -163,7 +163,8 @@ export async function POST(
 
         const toolResult = await executeToolCall(
           { name: call.function.name, arguments: args },
-          business.id
+          business.id,
+          history
         );
         history = appendMessage(history, { role: "tool", tool_call_id: call.id, content: toolResult });
       }
