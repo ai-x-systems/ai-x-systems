@@ -184,12 +184,22 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
+  var activeCallout = null;
+
   function setOpen(next) {
     open = next;
     panel.classList.toggle("aixw-hidden", !open);
     launcher.setAttribute("aria-expanded", open ? "true" : "false");
     launcher.title = open ? "Close chat" : "Chat with us";
     launcher.innerHTML = open ? CLOSE_SVG : CHAT_ICON_SVG;
+
+    // The greeting bubble only removed itself when clicked directly —
+    // opening the panel via the round launcher button instead left it
+    // stranded in the page, visible behind/near the now-open panel.
+    if (open && activeCallout && activeCallout.parentNode) {
+      activeCallout.parentNode.removeChild(activeCallout);
+      activeCallout = null;
+    }
   }
 
   function toggle() {
@@ -344,6 +354,7 @@
 
       function remove() {
         if (callout.parentNode) callout.parentNode.removeChild(callout);
+        if (activeCallout === callout) activeCallout = null;
       }
 
       closeBtn.addEventListener("click", function (e) {
@@ -355,6 +366,7 @@
         setOpen(true);
       });
 
+      activeCallout = callout;
       document.body.appendChild(callout);
       playChime();
 
