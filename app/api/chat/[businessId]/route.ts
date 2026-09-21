@@ -148,6 +148,12 @@ export async function POST(
         break;
       }
 
+      // Snapshot BEFORE appending this turn's own assistant/tool_calls
+      // message — executeToolCall's duplicate-log_lead check needs to see
+      // only tool calls from EARLIER turns. Passing the post-append
+      // `history` here made every log_lead call, including the very
+      // first one in a conversation, look like a duplicate of itself.
+      const historyBeforeThisTurn = history;
       history = appendMessage(history, { role: "assistant", content, tool_calls: toolCalls });
 
       for (const call of toolCalls) {
@@ -164,7 +170,7 @@ export async function POST(
         const toolResult = await executeToolCall(
           { name: call.function.name, arguments: args },
           business.id,
-          history
+          historyBeforeThisTurn
         );
         history = appendMessage(history, { role: "tool", tool_call_id: call.id, content: toolResult });
       }
