@@ -144,7 +144,17 @@ export async function POST(
       const { content, toolCalls } = result.message;
 
       if (!toolCalls || toolCalls.length === 0) {
-        finalText = content;
+        // A model (especially OpenRouter's rotating free pool, which
+        // varies in quality) can return an empty/whitespace-only final
+        // reply. Sending that straight to the client was worse than a
+        // one-off bad reply: the client stores it in its own local chat
+        // history, and every message after that resends the FULL history
+        // — including that empty entry — which the request schema
+        // correctly rejects every time (content must be non-empty). Once
+        // it happened, that browser tab's conversation was permanently
+        // broken until reload. Substituting a safe fallback here means an
+        // empty model reply is never allowed to exist in the first place.
+        finalText = content.trim() || "Could you say that again? I didn't quite catch that.";
         break;
       }
 
