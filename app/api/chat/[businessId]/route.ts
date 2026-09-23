@@ -108,6 +108,7 @@ export async function POST(
   }
 
   let history = limitHistory(normalizeMessages(body.messages));
+  let leadLogged = body.leadAlreadyLogged === true;
 
   try {
     let finalText = "";
@@ -180,9 +181,11 @@ export async function POST(
         const toolResult = await executeToolCall(
           { name: call.function.name, arguments: args },
           business.id,
-          historyBeforeThisTurn
+          historyBeforeThisTurn,
+          leadLogged
         );
-        history = appendMessage(history, { role: "tool", tool_call_id: call.id, content: toolResult });
+        if (toolResult.leadLogged) leadLogged = true;
+        history = appendMessage(history, { role: "tool", tool_call_id: call.id, content: toolResult.message });
       }
 
       if (round === MAX_TOOL_ROUNDS) {
@@ -190,7 +193,7 @@ export async function POST(
       }
     }
 
-    return chatSuccessResponse(finalText, headers);
+        return chatSuccessResponse(finalText, headers, leadLogged);
   } catch (err) {
     console.error("[chat] request failed", {
       business: business.id,
