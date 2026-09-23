@@ -107,19 +107,26 @@ interface HistoryMessage {
   tool_calls?: HistoryToolCall[];
 }
 
+export interface ToolExecutionResult {
+  message: string;
+  /** Set true only when this call newly logged a lead — lets the caller (the chat route) tell the client to remember it for future requests. */
+  leadLogged?: boolean;
+}
+
 export async function executeToolCall(
   { name, arguments: args }: ToolCallArgs,
   businessId: string,
-  conversationHistory: HistoryMessage[] = []
-): Promise<string> {
+  conversationHistory: HistoryMessage[] = [],
+  leadAlreadyLogged: boolean = false
+): Promise<ToolExecutionResult> {
   const business = getBusinessById(businessId);
-  if (!business) return "I couldn't find that business's configuration.";
+  if (!business) return { message: "I couldn't find that business's configuration." };
   const effectiveBusiness = await getEffectiveBusinessConfig(business);
 
   switch (name) {
     case "book_appointment": {
       if (!business.booking.enabled) {
-        return "We're not currently booking appointments directly — I can pass your details along to the team instead, or you're welcome to reach out directly.";
+        return { message: "We're not currently booking appointments directly — I can pass your details along to the team instead, or you're welcome to reach out directly." };
       }
 
       const a = args as {
@@ -139,7 +146,7 @@ export async function executeToolCall(
       if (!isValidIsoDateTime(a.preferredStartTimeISO)) missingFields.push("a preferred date and time");
 
       if (missingFields.length > 0) {
-        return `Before I can book that, I still need ${missingFields.join(", ")}. Could you share that?`;
+        return { message: `Before I can book that, I still need ${missingFields.join(", ")}. Could you share that?` };`
       }
       // Validated non-empty/non-null above — narrow to plain strings so
       // downstream calls (bookAppointment, etc.) get the types they expect.
@@ -150,7 +157,7 @@ export async function executeToolCall(
       const service = findService(business.knowledge.services, a.serviceId as string);
 
       if (!service) {
-        return "I'm having trouble matching that service. Let me confirm which service you'd like to book.";
+        return { message: "I'm having trouble matching that service. Let me confirm which service you'd like to book." };
       }
 
       // Even with booking "enabled", only services explicitly listed in
@@ -161,7 +168,7 @@ export async function executeToolCall(
       // existing in `knowledge.services` can never be booked as if it
       // were a real time slot just because it resolves via findService.
       if (!business.booking.appointmentTypes.includes(service.id)) {
-        return "That's not something we book as an appointment right now — I can pass your details along to the team instead.";
+        return { message: "That's not something we book as an appointment right now — I can pass your details along to the team instead." };
       }
 
       if (business.demo) {
@@ -172,7 +179,7 @@ export async function executeToolCall(
           startTimeISO: preferredStartTimeISO,
           demo: true,
         });
-        return `Booked ${service.name} for ${callerName} at ${preferredStartTimeISO}. A confirmation will be sent.`;
+        return { message: `Booked ${service.name} for ${callerName} at ${preferredStartTimeISO}. A confirmation will be sent.` };`
       }
 
       const booking = await bookAppointment({
@@ -186,7 +193,7 @@ export async function executeToolCall(
       });
 
       if (!booking.success) {
-        return "I wasn't able to book that slot — could you offer an alternative day or time?";
+        return { message: "I wasn't able to book that slot — could you offer an alternative day or time?" };
       }
 
       const hasEmail = isValidEmail(a.callerEmail);
@@ -220,14 +227,14 @@ export async function executeToolCall(
         startTimeISO: booking.confirmedStartTimeISO,
       });
 
-      return `Booked ${service.name} for ${callerName} at ${booking.confirmedStartTimeISO}. A confirmation will be sent.`;
+      return { message: `Booked ${service.name} for ${callerName} at ${booking.confirmedStartTimeISO}. A confirmation will be sent.` };
     }
 
     case "save_confirmation_email": {
       const a = args as { email?: string | null; serviceName?: string | null; confirmedStartTimeISO?: string | null };
 
       if (!isValidEmail(a.email)) {
-        return "That doesn't look like a valid email address — could you double check it?";
+        return { message: "That doesn't look like a valid email address — could you double check it?" };
       }
       const email = (a.email as string).trim();
 
@@ -246,7 +253,7 @@ export async function executeToolCall(
         });
       }
 
-      return "Thanks! I've saved your email address. Email confirmations will be available once our email system is fully configured.";
+      return { message: "Thanks! I've saved your email address. Email confirmations will be available once our email system is fully configured." };
     }
 
     case "log_lead": {
@@ -264,29 +271,31 @@ export async function executeToolCall(
       // premature/empty call must be caught here, not silently logged as
       // a blank lead.
       if (isMissingOrPlaceholder(a.reason)) {
-        return "Sure — what's the best reason to note for the team, and what name should I put with it?";
+        return { message: "Sure — what's the best reason to note for the team, and what name should I put with it?" };
       }
       // A lead with no email AND no phone is useless to follow up on.
       if (isMissingOrPlaceholder(a.callerEmail) && isMissingOrPlaceholder(a.callerPhone)) {
-        return "Sure — what's the best email (or phone number) I can pass along to the team?";
+        return { message: "Sure — what's the best email (or phone number) I can pass along to the team?" };
       }
 
-      // Structural guarantee, not just a prompt instruction: the system
-      // prompt already told the model to call log_lead only once per
-      // conversation, and it still didn't reliably follow that in
-      // production (confirmed: 3 identical rows, same person, ~30s
-      // apart). Checking the actual conversation history for a prior
-      // log_lead call — the same tool-call log — makes this impossible
-      // to violate regardless of what the model decides to do.
-      const alreadyLogged = conversationHistory.some(
+      // Two layers, since neither alone is sufficient:
+      // 1. leadAlreadyLogged — round-tripped from the client (see
+      //    chat-request-schema.ts) — is the ONLY thing that catches a
+      //    duplicate across SEPARATE HTTP requests (e.g. the visitor
+      //    says "thanks" three messages later), since the client never
+      //    stores tool-call metadata between requests.
+      // 2. The conversationHistory scan still catches a duplicate WITHIN
+      //    the same request's own multi-round tool-calling loop, which
+      //    leadAlreadyLogged can't see (it isn't set until AFTER this
+      //    request finishes).
+      const alreadyLoggedThisRequest = conversationHistory.some(
         (m) => m.role === "assistant" && m.tool_calls?.some((tc) => tc.function.name === "log_lead")
       );
-      if (alreadyLogged) {
-        return "You're all set — I've already passed your details to the team, no need to log it again.";
+      if (leadAlreadyLogged || alreadyLoggedThisRequest) {
+        return { message: "You're all set — I've already passed your details to the team, no need to log it again." };
       }
 
       const reason = a.reason as string;
-
       if (business.demo) {
         console.log("[demo] simulated lead", { business: business.id, ...a });
         void recordActivity(businessId, "lead", {
@@ -294,7 +303,7 @@ export async function executeToolCall(
           reason,
           demo: true,
         });
-        return "Got it, I've passed this along to the team.";
+        return { message: "Got it, I've passed this along to the team.", leadLogged: true };
       }
 
       const leadTimestampISO = new Date().toISOString();
@@ -335,10 +344,10 @@ export async function executeToolCall(
         reason,
       });
 
-      return "Got it, I've passed this along to the team.";
+      return { message: "Got it, I've passed this along to the team.", leadLogged: true };
     }
 
     default:
-      return "That action isn't available.";
+      return { message: "That action isn't available." };
   }
 }
