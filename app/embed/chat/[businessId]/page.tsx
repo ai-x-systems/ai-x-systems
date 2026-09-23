@@ -89,6 +89,10 @@ export default function EmbeddedChatPage() {
     { role: "assistant", content: "Hi! How can I help you today?" },
   ]);
   const [input, setInput] = useState("");
+  // Round-tripped to the server on every request once true — see
+  // chat-request-schema.ts's leadAlreadyLogged for why this can't just
+  // live server-side: each request is a fresh, stateless invocation.
+  const [leadLogged, setLeadLogged] = useState(false);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -110,10 +114,11 @@ export default function EmbeddedChatPage() {
       const res = await fetch(`/api/chat/${businessId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({ messages: nextMessages, leadAlreadyLogged: leadLogged }),
       });
       const data = await res.json();
       const replyContent = data.success ? data.reply : data.error.message;
+      if (data.success && data.leadLogged) setLeadLogged(true);
       setMessages([...nextMessages, { role: "assistant", content: replyContent }]);
     } catch {
       setMessages([
