@@ -14,6 +14,8 @@ import { NextResponse } from "next/server";
 export interface ChatApiSuccess {
   success: true;
   reply: string;
+  /** True if a lead was logged in this request OR was already logged earlier in the conversation (client should remember and echo this back — see chat-request-schema.ts). */
+  leadLogged?: boolean;
 }
 
 export type ChatApiErrorCode =
@@ -36,8 +38,8 @@ export interface ChatApiError {
 
 export type ChatApiResponse = ChatApiSuccess | ChatApiError;
 
-export function chatSuccessResponse(reply: string, headers: HeadersInit) {
-  const body: ChatApiSuccess = { success: true, reply: sanitizeUrls(reply) };
+export function chatSuccessResponse(reply: string, headers: HeadersInit, leadLogged?: boolean) {
+  const body: ChatApiSuccess = { success: true, reply: sanitizeUrls(reply), leadLogged };
   return NextResponse.json(body, { status: 200, headers });
 }
 
