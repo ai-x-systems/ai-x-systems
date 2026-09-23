@@ -22,6 +22,13 @@ export const ChatRequestSchema = z.object({
     .array(IncomingMessageSchema)
     .min(1, "At least one message is required")
     .max(40, "Conversation too long for a single request"),
+  // Echoed back to the server by the client once a lead has been logged
+  // in this conversation (see chat-response.ts's leadLogged field on the
+  // success response). The server is stateless per-request and the
+  // client never stores tool-call metadata, only plain text — so without
+  // this round-tripped flag, there is no way for a LATER, separate
+  // message to know a lead was already logged by an EARLIER one.
+  leadAlreadyLogged: z.boolean().optional(),
 });
 
 export type ChatRequestBody = z.infer<typeof ChatRequestSchema>;
