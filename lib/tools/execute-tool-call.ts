@@ -89,16 +89,6 @@ function isValidIsoDateTime(value: string | undefined | null): boolean {
   return !Number.isNaN(parsed.getTime());
 }
 
-/**
- * Single source of truth for "what happens when the AI decides to book an
- * appointment or log a lead." Both the voice webhook and the chat endpoint
- * call this instead of each having their own copy.
- *
- * DEMO MODE: when business.demo is true, no real calendar event, sheet row,
- * email, or SMS is created — the response text stays worded identically to
- * a real booking so the experience is indistinguishable to whoever's
- * testing it. Only the side effects are simulated.
- */
 interface HistoryToolCall {
   function: { name: string };
 }
@@ -113,6 +103,16 @@ export interface ToolExecutionResult {
   leadLogged?: boolean;
 }
 
+/**
+ * Single source of truth for "what happens when the AI decides to book an
+ * appointment or log a lead." Both the voice webhook and the chat endpoint
+ * call this instead of each having their own copy.
+ *
+ * DEMO MODE: when business.demo is true, no real calendar event, sheet row,
+ * email, or SMS is created — the response text stays worded identically to
+ * a real booking so the experience is indistinguishable to whoever's
+ * testing it. Only the side effects are simulated.
+ */
 export async function executeToolCall(
   { name, arguments: args }: ToolCallArgs,
   businessId: string,
@@ -146,7 +146,7 @@ export async function executeToolCall(
       if (!isValidIsoDateTime(a.preferredStartTimeISO)) missingFields.push("a preferred date and time");
 
       if (missingFields.length > 0) {
-        return { message: `Before I can book that, I still need ${missingFields.join(", ")}. Could you share that?` };`
+        return { message: `Before I can book that, I still need ${missingFields.join(", ")}. Could you share that?` };
       }
       // Validated non-empty/non-null above — narrow to plain strings so
       // downstream calls (bookAppointment, etc.) get the types they expect.
@@ -164,8 +164,8 @@ export async function executeToolCall(
       // booking.appointmentTypes are actually schedulable. This is what
       // makes an empty (or partial) appointmentTypes list a real,
       // enforced "nothing bookable" state that doesn't depend on the
-      // `enabled` flag's value — e.g. a non-appointment product/service
-      // existing in `knowledge.services` can never be booked as if it
+      // "enabled" flag's value — e.g. a non-appointment product/service
+      // existing in knowledge.services can never be booked as if it
       // were a real time slot just because it resolves via findService.
       if (!business.booking.appointmentTypes.includes(service.id)) {
         return { message: "That's not something we book as an appointment right now — I can pass your details along to the team instead." };
@@ -179,7 +179,7 @@ export async function executeToolCall(
           startTimeISO: preferredStartTimeISO,
           demo: true,
         });
-        return { message: `Booked ${service.name} for ${callerName} at ${preferredStartTimeISO}. A confirmation will be sent.` };`
+        return { message: `Booked ${service.name} for ${callerName} at ${preferredStartTimeISO}. A confirmation will be sent.` };
       }
 
       const booking = await bookAppointment({
@@ -296,6 +296,7 @@ export async function executeToolCall(
       }
 
       const reason = a.reason as string;
+
       if (business.demo) {
         console.log("[demo] simulated lead", { business: business.id, ...a });
         void recordActivity(businessId, "lead", {
