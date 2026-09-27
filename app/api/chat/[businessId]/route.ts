@@ -89,7 +89,10 @@ export async function POST(
     );
   }
 
-  let body: { messages: Array<{ role: "user" | "assistant"; content: string }> };
+  let body: {
+    messages: Array<{ role: "user" | "assistant"; content: string }>;
+    leadAlreadyLogged?: boolean;
+  };
   try {
     const json = await req.json();
     const parsed = ChatRequestSchema.safeParse(json);
@@ -193,7 +196,7 @@ export async function POST(
       }
     }
 
-        return chatSuccessResponse(finalText, headers, leadLogged);
+    return chatSuccessResponse(finalText, headers, leadLogged);
   } catch (err) {
     console.error("[chat] request failed", {
       business: business.id,
