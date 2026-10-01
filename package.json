@@ -1,12 +1,18 @@
 {
-  "name": "my-project",
+  "name": "ai-x-systems",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:growth": "node --no-warnings --import ./scripts/register.mjs scripts/test-growth.mjs",
+    "test:onboarding": "node --no-warnings --import ./scripts/register.mjs scripts/test-onboarding.mjs",
+    "test": "npm run test:growth && npm run test:onboarding && npm run test:billing && npm run test:voice",
+    "test:billing": "node --no-warnings --import ./scripts/register.mjs scripts/test-billing.mjs",
+    "test:voice": "node --no-warnings --import ./scripts/register.mjs scripts/test-voice.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
