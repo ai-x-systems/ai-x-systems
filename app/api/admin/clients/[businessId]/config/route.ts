@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/accounts/session";
-import { getBusinessById } from "@/config/businesses";
+import { getBusiness } from "@/lib/config/business-store";
 import { getBusinessOverride, saveBusinessOverride } from "@/lib/config/overrides";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ busines
   }
 
   const { businessId } = await context.params;
-  const business = getBusinessById(businessId);
+  const business = await getBusiness(businessId);
   if (!business) {
     return NextResponse.json({ success: false, error: "Unknown business." }, { status: 404 });
   }
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ busine
   }
 
   const { businessId } = await context.params;
-  if (!getBusinessById(businessId)) {
+  if (!(await getBusiness(businessId))) {
     return NextResponse.json({ success: false, error: "Unknown business." }, { status: 404 });
   }
 
