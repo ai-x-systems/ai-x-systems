@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/accounts/session";
 import { accountStore } from "@/lib/accounts/store";
 import { creditLedger } from "@/lib/billing/credits";
-import { getBusinessById } from "@/config/businesses";
+import { listStoredBusinesses } from "@/lib/config/business-store";
 
 export const runtime = "nodejs";
 
@@ -20,11 +20,12 @@ export async function GET() {
   }
 
   const accounts = await accountStore.list();
+  const stored = new Map((await listStoredBusinesses()).map((b) => [b.config.id, b]));
   const clients = await Promise.all(
     accounts
       .filter((a) => a.role === "client" && a.businessId)
       .map(async (a) => {
-        const business = getBusinessById(a.businessId!);
+        const business = stored.get(a.businessId!)?.config;
         const balance = await creditLedger.getBalance(a.businessId!);
         return {
           accountId: a.id,
