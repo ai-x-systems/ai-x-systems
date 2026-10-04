@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/accounts/session";
 import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
-import { getBusinessById } from "@/config/businesses";
+import { getBusiness } from "@/lib/config/business-store";
 
 export const runtime = "nodejs";
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (!businessId || !getBusinessById(businessId)) {
+  if (!businessId || !(await getBusiness(businessId))) {
     return NextResponse.json(
       { success: false, error: "Unknown businessId — no matching business configuration." },
       { status: 400 }
