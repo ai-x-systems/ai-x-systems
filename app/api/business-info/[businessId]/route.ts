@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBusinessById } from "@/config/businesses";
+import { getBusiness } from "@/lib/config/business-store";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,7 @@ export const runtime = "nodejs";
  */
 export async function GET(req: NextRequest, context: { params: Promise<{ businessId: string }> }) {
   const { businessId } = await context.params;
-  const business = getBusinessById(businessId);
+  const business = await getBusiness(businessId);
 
   if (!business) {
     return NextResponse.json({ success: false, error: "Unknown business." }, { status: 404 });
