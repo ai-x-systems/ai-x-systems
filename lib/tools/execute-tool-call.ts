@@ -1,10 +1,11 @@
-import { getBusinessById } from "@/config/businesses";
+import { getBusiness } from "@/lib/config/business-store";
 import { bookAppointment } from "@/lib/integrations/calendar";
 import { logLead } from "@/lib/integrations/sheets";
 import { sendCallerConfirmation, sendOwnerAlert } from "@/lib/integrations/notify";
 import { sendToConfiguredWebhooks } from "@/lib/integrations/webhook";
 import { recordActivity } from "@/lib/activity/log";
 import { getEffectiveBusinessConfig } from "@/lib/config/overrides";
+import { runInBackground } from "@/lib/utils/background";
 
 export interface ToolCallArgs {
   name: string;
@@ -119,7 +120,7 @@ export async function executeToolCall(
   conversationHistory: HistoryMessage[] = [],
   leadAlreadyLogged: boolean = false
 ): Promise<ToolExecutionResult> {
-  const business = getBusinessById(businessId);
+  const business = await getBusiness(businessId);
   if (!business) return { message: "I couldn't find that business's configuration." };
   const effectiveBusiness = await getEffectiveBusinessConfig(business);
 
@@ -173,12 +174,13 @@ export async function executeToolCall(
 
       if (business.demo) {
         console.log("[demo] simulated booking", { business: business.id, ...a });
-        void recordActivity(businessId, "booking", {
+        runInBackground(() => recordActivity(businessId, "booking", {
           serviceName: service.name,
           callerName,
+          callerPhone,
           startTimeISO: preferredStartTimeISO,
           demo: true,
-        });
+        }));
         return { message: `Booked ${service.name} for ${callerName} at ${preferredStartTimeISO}. A confirmation will be sent.` };
       }
 
@@ -198,18 +200,18 @@ export async function executeToolCall(
 
       const hasEmail = isValidEmail(a.callerEmail);
 
-      void sendCallerConfirmation({
+      runInBackground(() => sendCallerConfirmation({
         toEmail: hasEmail ? (a.callerEmail as string).trim() : undefined,
         businessName: business.name,
         serviceName: service.name,
         startTimeISO: booking.confirmedStartTimeISO!,
-      });
-      void sendOwnerAlert({
+      }));
+      runInBackground(() => sendOwnerAlert({
         ownerEmail: effectiveBusiness.integrations.notifyEmail,
         businessName: business.name,
         message: `New booking: ${service.name} for ${callerName} at ${booking.confirmedStartTimeISO}.`,
-      });
-      void sendToConfiguredWebhooks(business, {
+      }));
+      runInBackground(() => sendToConfiguredWebhooks(business, {
         event: "booking",
         businessId: business.id,
         timestampISO: new Date().toISOString(),
@@ -220,12 +222,13 @@ export async function executeToolCall(
           callerPhone,
           startTimeISO: booking.confirmedStartTimeISO,
         },
-      });
-      void recordActivity(businessId, "booking", {
+      }));
+      runInBackground(() => recordActivity(businessId, "booking", {
         serviceName: service.name,
         callerName,
+        callerPhone,
         startTimeISO: booking.confirmedStartTimeISO,
-      });
+      }));
 
       return { message: `Booked ${service.name} for ${callerName} at ${booking.confirmedStartTimeISO}. A confirmation will be sent.` };
     }
@@ -245,12 +248,12 @@ export async function executeToolCall(
       // create a duplicate appointment, a second Calendar event, or a
       // new lead.
       if (!business.demo) {
-        void sendCallerConfirmation({
+        runInBackground(() => sendCallerConfirmation({
           toEmail: email,
           businessName: business.name,
           serviceName: a.serviceName ?? "your appointment",
           startTimeISO: a.confirmedStartTimeISO ?? "",
-        });
+        }));
       }
 
       return { message: "Thanks! I've saved your email address. Email confirmations will be available once our email system is fully configured." };
@@ -299,11 +302,14 @@ export async function executeToolCall(
 
       if (business.demo) {
         console.log("[demo] simulated lead", { business: business.id, ...a });
-        void recordActivity(businessId, "lead", {
+        runInBackground(() => recordActivity(businessId, "lead", {
           callerName: a.callerName,
+          callerEmail: a.callerEmail,
+          callerPhone: a.callerPhone,
+          serviceInterest: a.serviceInterest,
           reason,
           demo: true,
-        });
+        }));
         return { message: "Got it, I've passed this along to the team.", leadLogged: true };
       }
 
@@ -323,12 +329,12 @@ export async function executeToolCall(
         business.integrations.leadSheetTabName
       );
 
-      void sendOwnerAlert({
+      runInBackground(() => sendOwnerAlert({
         ownerEmail: effectiveBusiness.integrations.notifyEmail,
         businessName: business.name,
         message: `New lead: ${a.callerName ?? "Unknown"} — ${reason}`,
-      });
-      void sendToConfiguredWebhooks(business, {
+      }));
+      runInBackground(() => sendToConfiguredWebhooks(business, {
         event: "lead",
         businessId: business.id,
         timestampISO: leadTimestampISO,
@@ -339,11 +345,14 @@ export async function executeToolCall(
           serviceInterest: a.serviceInterest,
           reason,
         },
-      });
-      void recordActivity(businessId, "lead", {
+      }));
+      runInBackground(() => recordActivity(businessId, "lead", {
         callerName: a.callerName,
+        callerEmail: a.callerEmail,
+        callerPhone: a.callerPhone,
+        serviceInterest: a.serviceInterest,
         reason,
-      });
+      }));
 
       return { message: "Got it, I've passed this along to the team.", leadLogged: true };
     }
