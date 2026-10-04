@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/accounts/session'
-import { getBusinessById } from '@/config/businesses'
+import { getBusiness } from '@/lib/config/business-store'
 import { getBusinessOverride } from '@/lib/config/overrides'
 import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
@@ -17,7 +17,7 @@ export default async function EditBusinessConfigPage({
   if (!session) redirect('/admin-login')
 
   const { businessId } = await params
-  const business = getBusinessById(businessId)
+  const business = await getBusiness(businessId)
   if (!business) redirect('/admin')
 
   const override = await getBusinessOverride(businessId)
