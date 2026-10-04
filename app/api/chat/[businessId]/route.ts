@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
-import { getBusinessById } from "@/config/businesses";
+import { getStoredBusiness } from "@/lib/config/business-store";
 import { getEffectiveBusinessConfig } from "@/lib/config/overrides";
 import { buildSystemPrompt } from "@/lib/prompt/prompt-builder";
 import { getChatCompletion } from "@/lib/llm/groq-client";
 import { executeToolCall } from "@/lib/tools/execute-tool-call";
 import { TOOL_DEFINITIONS } from "@/lib/tools/tool-definitions";
 import { ChatRequestSchema } from "@/lib/chat/chat-request-schema";
-import { isRateLimited } from "@/lib/chat/rate-limit";
+import { rateLimit, clientIp } from "@/lib/security/rate-limit";
 import { chatSuccessResponse, chatErrorResponse } from "@/lib/chat/chat-response";
 import {
   normalizeMessages,
@@ -38,6 +38,8 @@ import {
  * ---------------------------------------------------------------------
  */
 export const runtime = "nodejs";
+// Room for the LLM retry + tool rounds + after() background work (emails, webhooks).
+export const maxDuration = 30;
 
 const MAX_TOOL_ROUNDS = 2; // safety cap so a confused model can't loop indefinitely
 
@@ -50,16 +52,12 @@ function corsHeaders(origin: string | null, allowedOrigin?: string) {
   };
 }
 
-function clientKey(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
-
 export async function OPTIONS(
   req: NextRequest,
   context: { params: Promise<{ businessId: string }> }
 ) {
   const { businessId } = await context.params;
-  const business = getBusinessById(businessId);
+  const business = (await getStoredBusiness(businessId))?.config;
   const origin = req.headers.get("origin");
   return new Response(null, {
     status: 204,
@@ -72,7 +70,8 @@ export async function POST(
   context: { params: Promise<{ businessId: string }> }
 ) {
   const { businessId } = await context.params;
-  const business = getBusinessById(businessId);
+  const stored = await getStoredBusiness(businessId);
+  const business = stored?.config;
   const origin = req.headers.get("origin");
   const headers = corsHeaders(origin, business?.contact.website);
 
@@ -80,7 +79,22 @@ export async function POST(
     return chatErrorResponse(404, "unknown_business", "This business could not be found.", headers);
   }
 
-  if (isRateLimited(`${business.id}:${clientKey(req)}`)) {
+  // Admin can pause a client (unpaid, cancelled, on request). Visitors get a
+  // polite message instead of an error.
+  if (stored && !stored.active) {
+    return chatSuccessResponse(
+      "Our assistant is offline right now. Please reach out to the team directly and they'll be happy to help.",
+      headers
+    );
+  }
+
+  const [perVisitor, perBusinessDay] = await Promise.all([
+    rateLimit(`chat:${business.id}:${clientIp(req)}`, 20, 60),
+    // Hard daily ceiling per business so one script can't burn the whole
+    // LLM quota. Override with CHAT_DAILY_CAP_PER_BUSINESS.
+    rateLimit(`chat-day:${business.id}`, Number(process.env.CHAT_DAILY_CAP_PER_BUSINESS) || 3000, 86400),
+  ]);
+  if (perVisitor.limited || perBusinessDay.limited) {
     return chatErrorResponse(
       429,
       "rate_limited",
