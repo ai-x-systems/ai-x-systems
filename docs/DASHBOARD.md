@@ -20,28 +20,12 @@
   POSTed there as JSON. Works with Zapier/Make/n8n catch hooks or any CRM's
   native inbound webhook, with zero new code per client.
 
-## ⚠️ Before this touches a real client
+## Storage
 
-`lib/accounts/store.ts` and `lib/billing/credits.ts` are **local-dev-only**
-JSON-file implementations (`data/accounts.json`, `data/credits.json`,
-both gitignored). On Vercel the filesystem is read-only outside `/tmp`, and
-`/tmp` isn't durable — accounts and balances created this way will
-intermittently or permanently disappear in production. This was a deliberate
-choice: it gets the interfaces, routes, and pages fully working and testable
-locally today, without deciding your database for you.
-
-**To go live**, write one new file per store that implements the same
-interface, backed by Supabase (already your stated stack) or another real
-database:
-
-- `AccountStore` (`lib/accounts/store.ts`) — 4 methods: `findByEmail`,
-  `findById`, `create`, `list`.
-- `CreditLedger` (`lib/billing/credits.ts`) — 3 methods: `getBalance`,
-  `recordTransaction`, `listAllBalances`.
-
-Swap the exported `accountStore` / `creditLedger` singletons to the new
-implementation. No route, page, or component changes — same pattern already
-used for `ConversationStore` in `lib/chat/conversation.ts`.
+Accounts, credits, activity, overrides, prospects and the growth engine all
+live in Supabase. The full table definitions are in `supabase/schema.sql`
+(idempotent — safe to re-run). Client sign-up is closed: only an admin can
+create a client login (`/admin` → Create client login).
 
 ## Setup
 
@@ -55,9 +39,9 @@ used for `ConversationStore` in `lib/chat/conversation.ts`.
      -d '{"email":"you@aixsystems.app","password":"...","secret":"<ADMIN_BOOTSTRAP_SECRET>"}'
    ```
    This route refuses to run again once one admin account exists.
-3. Onboard a client the same way you do today (add their
-   `data/businesses/<id>.json`), then either create their login yourself or
-   have them sign up at `/signup` with the `businessId` you gave them.
+3. Onboard a client (add their `data/businesses/<id>.json`), then create
+   their login yourself from `/admin`. Public sign-up is disabled.
+4. After your admin account exists, DELETE `ADMIN_BOOTSTRAP_SECRET` from Vercel.
 
 ## Known gaps, by design (not yet asked for)
 
