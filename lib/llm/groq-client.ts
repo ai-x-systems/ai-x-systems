@@ -90,40 +90,39 @@ export async function getChatCompletion(
     ? [{ role: "system", content: options.systemPrompt }, ...options.messages]
     : options.messages;
 
+  const params = {
+    messages,
+    tools: options.tools,
+    model: options.model ?? LLM_DEFAULTS.model,
+    temperature: options.temperature ?? LLM_DEFAULTS.temperature,
+    maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
+  };
+
+  let groqResult: ChatCompletionResult;
   try {
-    const groqResult = await callGroq(apiKey, {
-      messages,
-      tools: options.tools,
-      model: options.model ?? LLM_DEFAULTS.model,
-      temperature: options.temperature ?? LLM_DEFAULTS.temperature,
-      maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
-    });
-
-    if (!groqResult.success && groqResult.error.code === "rate_limited" && process.env.OPENROUTER_API_KEY) {
-      console.warn("[llm] Groq rate-limited — falling back to OpenRouter");
-      const openRouterResult = await callOpenRouter(process.env.OPENROUTER_API_KEY, {
-        messages,
-        tools: options.tools,
-        model: process.env.OPENROUTER_MODEL || "openrouter/free",
-        temperature: options.temperature ?? LLM_DEFAULTS.temperature,
-        maxTokens: options.maxTokens ?? LLM_DEFAULTS.maxTokens,
-      });
-      if (openRouterResult.success) return openRouterResult;
-      console.error("[llm] OpenRouter fallback also failed:", openRouterResult.error);
-      return groqResult;
-    }
-
-    return groqResult;
+    groqResult = await callGroq(apiKey, params);
   } catch (err) {
+    // Network error / DNS / timeout — previously this skipped the fallback
+    // entirely and surfaced a hard failure to the visitor.
     console.error("[llm] unexpected error calling Groq:", err);
-    return {
+    groqResult = {
       success: false,
-      error: {
-        code: "unknown",
-        message: "The AI service is temporarily unavailable. Please try again.",
-      },
+      error: { code: "unknown", message: "The AI service is temporarily unavailable. Please try again." },
     };
   }
+
+  if (groqResult.success || !process.env.OPENROUTER_API_KEY) return groqResult;
+
+  // Fall back on ANY Groq failure (rate limit, 5xx, network, bad response),
+  // not only 429s.
+  console.warn("[llm] Groq failed (", groqResult.error.code, ") — falling back to OpenRouter");
+  const fallback = await callOpenRouter(process.env.OPENROUTER_API_KEY, {
+    ...params,
+    model: process.env.OPENROUTER_MODEL || "openrouter/free",
+  });
+  if (fallback.success) return fallback;
+  console.error("[llm] OpenRouter fallback also failed:", fallback.error);
+  return groqResult;
 }
 
 function sleep(ms: number): Promise<void> {
