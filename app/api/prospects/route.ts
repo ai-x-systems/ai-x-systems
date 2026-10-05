@@ -1,35 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createProspect, ServiceType } from "@/lib/leads/prospects";
+import { rateLimit, clientIp } from "@/lib/security/rate-limit";
+import { sendFounderAlert, sendProspectAutoReply } from "@/lib/integrations/notify";
+import { runInBackground } from "@/lib/utils/background";
+import { markOutreachReplied } from "@/lib/growth/store";
+import { siteConfig } from "@/lib/site-config";
 
 export const runtime = "nodejs";
-
-// Simple in-memory per-IP throttle — this is a public, unauthenticated
-// endpoint, so it needs some spam resistance. Same best-effort,
-// single-instance limitation as the other in-memory limiters in this
-// project (see lib/chat/rate-limit.ts).
-const WINDOW_MS = 60 * 60_000; // 1 hour
-const MAX_PER_WINDOW = 5;
-const buckets = new Map<string, { count: number; windowStart: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const bucket = buckets.get(ip);
-  const now = Date.now();
-  if (!bucket || now - bucket.windowStart > WINDOW_MS) {
-    buckets.set(ip, { count: 1, windowStart: now });
-    return false;
-  }
-  bucket.count += 1;
-  return bucket.count > MAX_PER_WINDOW;
-}
-
-function clientIp(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
 
 const VALID_SERVICE_TYPES: ServiceType[] = ["voice", "chatbot", "both"];
 
 export async function POST(req: NextRequest) {
-  if (isRateLimited(clientIp(req))) {
+  if ((await rateLimit(`prospects:${clientIp(req)}`, 5, 3600)).limited) {
     return NextResponse.json(
       { success: false, error: "Too many submissions. Please try again later." },
       { status: 429 }
@@ -37,6 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   let body: {
+    hp?: string;
     businessName?: string;
     industry?: string;
     country?: string;
@@ -58,6 +41,9 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ success: false, error: "Invalid JSON body." }, { status: 400 });
   }
+
+  // Bots fill the hidden field. Pretend success so they don't retry.
+  if (body.hp) return NextResponse.json({ success: true });
 
   if (
     !body.businessName?.trim() ||
@@ -84,23 +70,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const cap = (v: string | undefined, n: number) => v?.trim().slice(0, n) || undefined;
+
   try {
     await createProspect({
-      businessName: body.businessName.trim(),
-      industry: body.industry?.trim() || undefined,
+      businessName: body.businessName.trim().slice(0, 200),
+      industry: cap(body.industry, 120),
       country: body.country.trim(),
-      city: body.city?.trim() || undefined,
+      city: cap(body.city, 120),
       serviceType: body.serviceType as ServiceType,
-      contactName: body.contactName.trim(),
+      contactName: body.contactName.trim().slice(0, 120),
       email: body.email.trim().toLowerCase(),
-      phone: body.phone?.trim() || undefined,
-      website: body.website?.trim() || undefined,
-      businessHours: body.businessHours?.trim() || undefined,
-      offerings: body.offerings?.trim() || undefined,
-      challenges: body.challenges?.trim() || undefined,
-      volume: body.volume?.trim() || undefined,
-      referralSource: body.referralSource?.trim() || undefined,
-      details: body.details?.trim() || undefined,
+      phone: cap(body.phone, 40),
+      website: cap(body.website, 200),
+      businessHours: cap(body.businessHours, 300),
+      offerings: cap(body.offerings, 1000),
+      challenges: cap(body.challenges, 1000),
+      volume: cap(body.volume, 120),
+      referralSource: cap(body.referralSource, 200),
+      details: cap(body.details, 2000),
     });
   } catch (err) {
     console.error("[prospects] failed to save:", err);
@@ -109,6 +97,28 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+
+  const email = body.email.trim().toLowerCase();
+  const businessName = body.businessName.trim().slice(0, 200);
+  const contactName = body.contactName.trim().slice(0, 120);
+
+  // Speed-to-lead: tell the founder immediately, acknowledge the prospect
+  // immediately, and stop any outbound sequence to this address.
+  runInBackground(async () => {
+    await sendFounderAlert(`New demo request: ${businessName}`, [
+      `${contactName} (${email}) from ${businessName} asked for: ${body.serviceType}.`,
+      `${[body.industry, body.city, body.country].filter(Boolean).join(" · ")}`,
+      `Challenges: ${cap(body.challenges, 500) ?? "-"}`,
+      `Open ${siteConfig.brand.baseUrl}/admin/inquiries`,
+    ]);
+    await sendProspectAutoReply({
+      toEmail: email,
+      contactName,
+      businessName,
+      tryUrl: `${siteConfig.brand.baseUrl}/`,
+    });
+    await markOutreachReplied(email, "demo_booked");
+  });
 
   return NextResponse.json({ success: true });
 }
