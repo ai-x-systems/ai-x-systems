@@ -36,21 +36,40 @@ function getSecret(): string {
   return secret;
 }
 
-function sign(accountId: string): string {
-  const hmac = crypto.createHmac("sha256", getSecret()).update(accountId).digest("hex");
-  return `${accountId}.${hmac}`;
+/**
+ * Token = <accountId>.<expiresAtEpochSec>.<hmac>. The HMAC covers the id,
+ * the expiry AND a fingerprint of the account's current password hash, so:
+ *  - a stolen cookie stops working at its expiry (previously: never), and
+ *  - changing/resetting the password instantly invalidates every session.
+ */
+function passwordFingerprint(passwordHash: string): string {
+  return crypto.createHash("sha256").update(passwordHash).digest("hex").slice(0, 16);
 }
 
-function verify(token: string): string | null {
-  const [accountId, hmac] = token.split(".");
-  if (!accountId || !hmac) return null;
+function mac(accountId: string, exp: number, passwordHash: string): string {
+  return crypto
+    .createHmac("sha256", getSecret())
+    .update(`${accountId}.${exp}.${passwordFingerprint(passwordHash)}`)
+    .digest("hex");
+}
 
-  const expected = crypto.createHmac("sha256", getSecret()).update(accountId).digest("hex");
-  const a = Buffer.from(hmac);
+function sign(account: Account): string {
+  const exp = Math.floor(Date.now() / 1000) + COOKIE_MAX_AGE_SECONDS;
+  return `${account.id}.${exp}.${mac(account.id, exp, account.passwordHash)}`;
+}
+
+function parseToken(token: string): { accountId: string; exp: number; hmac: string } | null {
+  const [accountId, expStr, hmac] = token.split(".");
+  const exp = Number(expStr);
+  if (!accountId || !hmac || !Number.isFinite(exp)) return null;
+  if (exp < Math.floor(Date.now() / 1000)) return null;
+  return { accountId, exp, hmac };
+}
+
+function macMatches(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
   const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-
-  return accountId;
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 export interface AuthResult {
@@ -109,7 +128,7 @@ export async function logIn(email: string, password: string): Promise<AuthResult
 
 async function startSession(account: Account): Promise<void> {
   const jar = await cookies();
-  jar.set(COOKIE_NAMES[account.role], sign(account.id), {
+  jar.set(COOKIE_NAMES[account.role], sign(account), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -134,11 +153,12 @@ async function readSession(role: AccountRole): Promise<AccountPublic | null> {
   const token = jar.get(COOKIE_NAMES[role])?.value;
   if (!token) return null;
 
-  const accountId = verify(token);
-  if (!accountId) return null;
+  const parsed = parseToken(token);
+  if (!parsed) return null;
 
-  const account = await accountStore.findById(accountId);
+  const account = await accountStore.findById(parsed.accountId);
   if (!account || account.role !== role) return null;
+  if (!macMatches(parsed.hmac, mac(account.id, parsed.exp, account.passwordHash))) return null;
 
   return toPublicAccount(account);
 }
