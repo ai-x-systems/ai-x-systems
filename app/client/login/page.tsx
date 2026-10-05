@@ -19,12 +19,6 @@ export default function ClientLoginPage() {
           <div className="mt-8">
             <ClientLoginForm />
           </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            New here?{' '}
-            <a href="/client/signup" className="text-primary underline underline-offset-4">
-              Create your login
-            </a>
-          </p>
           <p className="mt-2 text-center text-sm text-muted-foreground">
             <a href="/client/forgot-password" className="text-primary underline underline-offset-4">
               Forgot password?
