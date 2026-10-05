@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
+import crypto from "crypto";
+import { rateLimit, clientIp } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -27,6 +29,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if ((await rateLimit(`bootstrap:${clientIp(req)}`, 5, 3600)).limited) {
+    return NextResponse.json({ success: false, error: "Too many attempts." }, { status: 429 });
+  }
+
   let body: { email?: string; password?: string; secret?: string };
   try {
     body = await req.json();
@@ -34,7 +40,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Invalid JSON body." }, { status: 400 });
   }
 
-  if (body.secret !== configuredSecret) {
+  const provided = Buffer.from(String(body.secret ?? ""));
+  const expected = Buffer.from(configuredSecret);
+  if (provided.length !== expected.length || !crypto.timingSafeEqual(provided, expected)) {
     return NextResponse.json({ success: false, error: "Not authorized." }, { status: 403 });
   }
 
