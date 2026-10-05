@@ -17,7 +17,6 @@ export function Navbar() {
         <div className="hidden items-center gap-8 md:flex">
           {siteConfig.nav.main.map((link) => (<a key={link.href} href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{link.label}</a>))}
           <Link href="/client/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Client Login</Link>
-          <Link href="/client/signup" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Client Sign Up</Link>
         </div>
         <div className="hidden md:block">
           <Button size="sm" render={<a href={siteConfig.forms.demoPath} />}>
@@ -39,7 +38,6 @@ export function Navbar() {
           <div className="flex flex-col gap-4">
             {siteConfig.nav.main.map((link) => (<a key={link.href} href={link.href} className="text-sm text-muted-foreground" onClick={() => setOpen(false)}>{link.label}</a>))}
             <Link href="/client/login" className="text-sm text-muted-foreground" onClick={() => setOpen(false)}>Client Login</Link>
-            <Link href="/client/signup" className="text-sm text-muted-foreground" onClick={() => setOpen(false)}>Client Sign Up</Link>
             <Button
               size="sm"
               className="w-full"
