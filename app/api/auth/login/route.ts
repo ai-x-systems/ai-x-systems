@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logIn } from "@/lib/accounts/session";
-import { isLoginRateLimited, recordLoginAttempt } from "@/lib/accounts/login-rate-limit";
+import { rateLimit, clientIp } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
-
-function clientIp(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
 
 export async function POST(req: NextRequest) {
   let body: { email?: string; password?: string };
@@ -24,15 +20,18 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = clientIp(req);
-
-  if (isLoginRateLimited(body.email, ip)) {
+  // Per email+IP (blunts credential stuffing on one account) AND per IP
+  // (blunts spraying many accounts from one source).
+  const [perAccount, perIp] = await Promise.all([
+    rateLimit(`login:${body.email.trim().toLowerCase()}:${ip}`, 5, 300),
+    rateLimit(`login-ip:${ip}`, 30, 300),
+  ]);
+  if (perAccount.limited || perIp.limited) {
     return NextResponse.json(
       { success: false, error: "Too many attempts. Please wait a few minutes and try again." },
       { status: 429 }
     );
   }
-
-  recordLoginAttempt(body.email, ip);
 
   const result = await logIn(body.email, body.password);
   return NextResponse.json(result, { status: result.success ? 200 : 401 });
