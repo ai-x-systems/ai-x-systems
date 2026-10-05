@@ -26,6 +26,7 @@ const SERVICE_OPTIONS: { value: ServiceType; label: string; blurb: string }[] = 
 
 export function DemoRequestForm() {
   const [businessName, setBusinessName] = useState('')
+  const [hp, setHp] = useState('')
   const [industry, setIndustry] = useState('')
   const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
@@ -63,6 +64,7 @@ export function DemoRequestForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          hp,
           businessName,
           industry,
           country,
@@ -105,6 +107,17 @@ export function DemoRequestForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Honeypot: hidden from people, filled by bots. */}
+      <input
+        type="text"
+        name="company_website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={hp}
+        onChange={(e) => setHp(e.target.value)}
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
       <div className="space-y-3">
         <label className="text-sm font-medium">Which service are you interested in?</label>
         <div className="grid gap-3 sm:grid-cols-3">
