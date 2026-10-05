@@ -50,7 +50,7 @@ export function createSupabaseAccountStore(): AccountStore {
       const { data, error } = await supabase
         .from("accounts")
         .select("*")
-        .ilike("email", email)
+        .eq("email", email.trim().toLowerCase())
         .maybeSingle();
       if (error) throw error;
       return data ? rowToAccount(data) : undefined;
