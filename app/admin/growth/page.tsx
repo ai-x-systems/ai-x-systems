@@ -27,6 +27,9 @@ export default async function GrowthPage() {
     listProspects(), sentSince(day.toISOString()), sentSince(new Date(Date.now() - 7 * 86400000).toISOString()),
   ])
   const readiness = growthReadiness()
+  const manual = settings.sendMode !== 'auto'
+  const addr = (process.env.GROWTH_PHYSICAL_ADDRESS ?? '').trim()
+  const manualFooter = `\n\n--\nAI x Systems${addr ? ' · ' + addr : ''}\nNot interested? Just reply "no" and I won't email you again.`
   const c = (k: string) => counts[k] ?? 0
   const contactedEver = c('contacted') + c('replied') + c('demo_booked') + c('won')
   const replies = c('replied') + c('demo_booked') + c('won')
@@ -58,24 +61,42 @@ export default async function GrowthPage() {
       </p>
 
       <section className="mt-8 rounded-xl border border-border bg-card p-5">
-        <p className="text-sm font-medium">Sending readiness {readiness.ok ? '— all clear' : '— not ready to send yet'}</p>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {readiness.checks.map((k) => (
-            <li key={k.label} className="text-xs">
-              <span className={k.ok ? 'text-primary' : 'text-destructive'}>{k.ok ? '✓' : '✗'}</span> <span className="font-medium">{k.label}</span>
-              {!k.ok ? <span className="block text-muted-foreground">{k.hint}</span> : null}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4"><RunButtons /></div>
-        <p className="mt-2 text-xs text-muted-foreground">A daily run also happens automatically on weekdays. New sending domains warm up gradually: about 5 emails on day one, growing by 3 a day up to your cap.</p>
+        {manual ? (
+          <>
+            <p className="text-sm font-medium">Manual mode — nothing is sent by the system</p>
+            <ol className="mt-3 list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
+              <li>The system finds leads, finds their emails and writes each message below.</li>
+              <li>You press <b>Copy email</b>, paste it into your own mailbox and send it to that one person.</li>
+              <li>Press <b>I sent it</b>. Follow-ups are then written for you automatically (3 and 7 days later).</li>
+              <li>If they reply, press <b>Replied</b> on the lead. If they say no, press <b>Never contact</b>.</li>
+            </ol>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Keep it to a handful a day and send each one individually. {addr ? '' : <span className="text-destructive">Set GROWTH_PHYSICAL_ADDRESS in Vercel: US law requires a postal address in commercial email. </span>}
+              Automatic sending comes later, after you have your own domain.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-medium">Sending readiness {readiness.ok ? '— all clear' : '— not ready to send yet'}</p>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {readiness.checks.map((k) => (
+                <li key={k.label} className="text-xs">
+                  <span className={k.ok ? 'text-primary' : 'text-destructive'}>{k.ok ? '✓' : '✗'}</span> <span className="font-medium">{k.label}</span>
+                  {!k.ok ? <span className="block text-muted-foreground">{k.hint}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <div className="mt-4"><RunButtons manual={manual} /></div>
+        {!manual ? <p className="mt-2 text-xs text-muted-foreground">A daily run also happens automatically on weekdays. New sending domains warm up gradually: about 5 emails on day one, growing by 3 a day up to your cap.</p> : null}
       </section>
 
       <section className="mt-8">
-        <p className="text-sm font-medium">Approval queue ({queue.length}){settings.autoSend ? ' — automatic sending is ON, so new emails skip this queue' : ''}</p>
+        <p className="text-sm font-medium">{manual ? 'Emails to send' : 'Approval queue'} ({queue.length}){!manual && settings.autoSend ? ' — automatic sending is ON, so new emails skip this queue' : ''}</p>
         <div className="mt-3 space-y-3">
           {queue.length === 0 ? <div className="rounded-xl border border-border p-5 text-center text-sm text-muted-foreground">Nothing waiting for approval.</div> :
-            queue.map((m) => <QueueItem key={m.id} id={m.id} to={m.lead?.email ?? '?'} business={m.lead?.businessName ?? '?'} subject={m.subject} body={m.bodyText} step={m.step} />)}
+            queue.map((m) => <QueueItem key={m.id} id={m.id} to={m.lead?.email ?? '?'} business={m.lead?.businessName ?? '?'} subject={m.subject} body={m.bodyText} step={m.step} manual={manual} footer={manualFooter} />)}
         </div>
       </section>
 
