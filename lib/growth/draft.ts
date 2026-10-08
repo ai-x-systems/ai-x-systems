@@ -32,7 +32,8 @@ async function writeOpener(lead: OutreachLead): Promise<string | undefined> {
 /** Drafts step-1 emails for enriched leads (best score first) and follow-ups for contacted leads that are due. */
 export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<{ drafted: number }> {
   const demoUrl = `${siteConfig.brand.baseUrl}${siteConfig.forms.demoPath}`;
-  const status = settings.autoSend ? ("approved" as const) : ("draft" as const);
+  const auto = settings.sendMode === "auto" && settings.autoSend;
+  const status = auto ? ("approved" as const) : ("draft" as const);
   let drafted = 0;
 
   const fresh = await listLeads({ stage: "enriched", limit });
@@ -41,7 +42,7 @@ export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<
     const opener = await writeOpener(lead);
     const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, opener, step: 1, senderName: settings.senderName, demoUrl, offer: settings.offer });
     await createMessage({ leadId: lead.id, step: 1, subject, bodyText: body, status });
-    await updateLead(lead.id, { stage: settings.autoSend ? "queued" : "drafted" });
+    await updateLead(lead.id, { stage: auto ? "queued" : "drafted" });
     drafted++;
   }
 
