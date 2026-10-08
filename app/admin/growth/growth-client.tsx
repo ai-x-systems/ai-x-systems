@@ -11,7 +11,7 @@ async function post(url: string, body: unknown) {
   return res.json()
 }
 
-export function RunButtons() {
+export function RunButtons({ manual }: { manual: boolean }) {
   const router = useRouter()
   const [busy, setBusy] = useState<string | null>(null)
   const [result, setResult] = useState<string>('')
@@ -28,7 +28,7 @@ export function RunButtons() {
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {[['all', 'Run full cycle'], ['discover', 'Find leads'], ['enrich', 'Find emails'], ['draft', 'Write emails'], ['send', 'Send approved']].map(([t, label]) => (
+        {[['all', 'Run full cycle'], ['discover', 'Find leads'], ['enrich', 'Find emails'], ['draft', 'Write emails'], ...(manual ? [] : [['send', 'Send approved']])].map(([t, label]) => (
           <Button key={t} size="sm" variant={t === 'all' ? 'default' : 'outline'} disabled={!!busy} onClick={() => run(t)}>
             {busy === t ? 'Running…' : label}
           </Button>
@@ -40,7 +40,7 @@ export function RunButtons() {
 }
 
 export interface SettingsShape {
-  autoSend: boolean; dailySendCap: number; industries: string[]; cities: string[]
+  sendMode: 'manual' | 'auto'; autoSend: boolean; dailySendCap: number; industries: string[]; cities: string[]
   country: string; offer: 'chat' | 'voice'; senderName: string; discoverPerRun: number
 }
 
@@ -75,11 +75,18 @@ export function SettingsForm({ initial }: { initial: SettingsShape }) {
             <option value="voice">Phone + website (only once Voice is built)</option>
           </select></label>
       </div>
-      <label className="flex items-start gap-3 rounded-lg border border-border p-3">
-        <input type="checkbox" className="mt-1" checked={s.autoSend} onChange={(e) => setS({ ...s, autoSend: e.target.checked })} />
-        <span><span className="font-medium">Fully automatic sending</span><br />
-          <span className="text-xs text-muted-foreground">Off (recommended at first): every email waits in the approval queue for one click. On: emails go out on their own, within the warm-up limit.</span></span>
-      </label>
+      <label className="block space-y-1.5"><span className="font-medium">How emails are sent</span>
+        <select className={input} value={s.sendMode} onChange={(e) => setS({ ...s, sendMode: e.target.value as 'manual' | 'auto' })}>
+          <option value="manual">Manual: I copy each email and send it from my own mailbox (recommended)</option>
+          <option value="auto">Automatic: the system sends (needs your own domain and a sending service)</option>
+        </select></label>
+      {s.sendMode === 'auto' ? (
+        <label className="flex items-start gap-3 rounded-lg border border-border p-3">
+          <input type="checkbox" className="mt-1" checked={s.autoSend} onChange={(e) => setS({ ...s, autoSend: e.target.checked })} />
+          <span><span className="font-medium">Skip the approval queue</span><br />
+            <span className="text-xs text-muted-foreground">Off: each email waits for one click. On: emails go out on their own within the warm-up limit.</span></span>
+        </label>
+      ) : null}
       <div className="flex items-center gap-3">
         <Button type="submit" size="sm">Save settings</Button>
         {msg ? <span className="text-xs text-muted-foreground">{msg}</span> : null}
@@ -88,15 +95,22 @@ export function SettingsForm({ initial }: { initial: SettingsShape }) {
   )
 }
 
-export function QueueItem({ id, to, business, subject, body, step }: { id: string; to: string; business: string; subject: string; body: string; step: number }) {
+export function QueueItem({ id, to, business, subject, body, step, manual, footer }: { id: string; to: string; business: string; subject: string; body: string; step: number; manual: boolean; footer: string }) {
   const router = useRouter()
   const [sub, setSub] = useState(subject)
   const [text, setText] = useState(body)
   const [open, setOpen] = useState(false)
 
-  async function act(action: 'approve' | 'skip') {
+  const [copied, setCopied] = useState(false)
+
+  async function act(action: 'approve' | 'skip' | 'sent_manually') {
     await post(`/api/admin/growth/messages/${id}`, { action, subject: sub, bodyText: text })
     router.refresh()
+  }
+
+  async function copyAll() {
+    await navigator.clipboard.writeText(`To: ${to}\nSubject: ${sub}\n\n${text}${footer}`)
+    setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
 
   return (
@@ -106,7 +120,14 @@ export function QueueItem({ id, to, business, subject, body, step }: { id: strin
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => setOpen(!open)}>{open ? 'Hide' : 'Review / edit'}</Button>
           <Button size="sm" variant="outline" onClick={() => act('skip')}>Skip</Button>
-          <Button size="sm" onClick={() => act('approve')}>Approve</Button>
+          {manual ? (
+            <>
+              <Button size="sm" variant="outline" onClick={copyAll}>{copied ? 'Copied' : 'Copy email'}</Button>
+              <Button size="sm" onClick={() => act('sent_manually')}>I sent it</Button>
+            </>
+          ) : (
+            <Button size="sm" onClick={() => act('approve')}>Approve</Button>
+          )}
         </div>
       </div>
       {open ? (
