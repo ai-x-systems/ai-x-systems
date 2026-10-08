@@ -37,6 +37,9 @@ async function allowedToday(settings: GrowthSettings): Promise<number> {
 const DAY = 86_400_000;
 
 export async function sendApproved(settings: GrowthSettings): Promise<{ sent: number; failed: number; blocked?: string }> {
+  if (settings.sendMode !== "auto") {
+    return { sent: 0, failed: 0, blocked: "Manual mode: copy each email from the queue and send it from your own mailbox." };
+  }
   const readiness = growthReadiness();
   if (!readiness.ok) {
     const first = readiness.checks.find((c) => !c.ok)!;
