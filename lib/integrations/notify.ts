@@ -215,6 +215,15 @@ interface SenderIdentity {
  * plain-password SMTP login entirely). See docs/ACCOUNTS.md for setup.
  */
 function getSender(): SenderIdentity | null {
+  // 1. Brevo: BREVO_API_KEY + BREVO_SENDER_EMAIL (+ optional BREVO_SENDER_NAME).
+  //    The sender address must be verified in Brevo -> Senders, domains & dedicated IPs.
+  if (process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL) {
+    return {
+      email: process.env.BREVO_SENDER_EMAIL,
+      name: process.env.BREVO_SENDER_NAME || DEFAULT_SENDER_NAME,
+    };
+  }
+  // 2. Resend (optional, only if you ever add it).
   const resendFrom = process.env.RESEND_API_KEY && process.env.RESEND_FROM;
   if (resendFrom) {
     const m = process.env.RESEND_FROM!.match(/^(.*)<(.+)>$/);
@@ -222,6 +231,7 @@ function getSender(): SenderIdentity | null {
       ? { name: m[1].trim().replace(/^"|"$/g, "") || DEFAULT_SENDER_NAME, email: m[2].trim() }
       : { name: DEFAULT_SENDER_NAME, email: process.env.RESEND_FROM! };
   }
+  // 3. Gmail SMTP fallback.
   const email = process.env.GMAIL_USER;
   if (!email) return null;
   return { email, name: process.env.GMAIL_SENDER_NAME || DEFAULT_SENDER_NAME };
@@ -258,7 +268,39 @@ interface EmailRequest {
 }
 
 async function deliverEmail(sender: SenderIdentity, request: EmailRequest): Promise<NotifyResult> {
-  // Preferred path: Resend's HTTP API — one stateless request, no SMTP
+  // Preferred path: Brevo's HTTP API (free plan: 300 emails/day). One stateless
+  // request, no SMTP handshake. Used for TRANSACTIONAL mail only: lead alerts,
+  // demo-request acknowledgements, password resets. Never for cold outreach
+  // (Brevo's policy requires opt-in and suspends accounts that break it).
+  if (process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          sender: { name: sender.name, email: sender.email },
+          to: [{ email: request.to }],
+          subject: request.subject,
+          htmlContent: request.html,
+          ...(request.text ? { textContent: request.text } : {}),
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) return { success: true };
+      // Typical causes: sender not verified in Brevo (400), bad key (401), daily limit (402/429).
+      console.error("[notify] Brevo rejected email:", res.status, await res.text().catch(() => ""));
+    } catch (err) {
+      console.error("[notify] Brevo request failed:", err);
+    }
+    const haveOther = (process.env.RESEND_API_KEY && process.env.RESEND_FROM) || (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+    if (!haveOther) return { success: false, error: "The email service rejected the notification." };
+  }
+
+  // Optional path: Resend's HTTP API — one stateless request, no SMTP
   // handshake, which is what makes it reliable from serverless.
   if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
     try {
@@ -290,7 +332,7 @@ async function deliverEmail(sender: SenderIdentity, request: EmailRequest): Prom
 
   const transporter = getTransporter();
   if (!transporter) {
-    return { success: false, error: "Email notifications are not configured (set RESEND_API_KEY + RESEND_FROM, or GMAIL_USER + GMAIL_APP_PASSWORD)." };
+    return { success: false, error: "Email notifications are not configured (set BREVO_API_KEY + BREVO_SENDER_EMAIL, or GMAIL_USER + GMAIL_APP_PASSWORD)." };
   }
 
   try {
