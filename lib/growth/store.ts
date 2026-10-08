@@ -135,3 +135,8 @@ export async function getSupabaseLeadIdForMessage(messageId: string): Promise<st
   const { data } = await db().from("outreach_messages").select("lead_id").eq("id", messageId).maybeSingle();
   return data?.lead_id ?? null;
 }
+
+export async function getMessageStep(messageId: string): Promise<number | null> {
+  const { data } = await db().from("outreach_messages").select("step").eq("id", messageId).maybeSingle();
+  return data?.step ?? null;
+}
