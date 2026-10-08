@@ -45,7 +45,13 @@ export interface OutreachMessage {
 }
 
 export interface GrowthSettings {
-  /** false = every email waits for your one-click approval. true = fully automatic. */
+  /**
+   * "manual" (default): the system finds leads and writes the emails; YOU copy each one into your own mailbox
+   * and press "I sent it". No sending service, no domain, no policy risk.
+   * "auto": the system sends through the configured provider (needs a domain + a cold-email-friendly sender).
+   */
+  sendMode: "manual" | "auto";
+  /** auto mode only: false = each email waits for one-click approval. */
   autoSend: boolean;
   /** Ceiling; the real daily limit also ramps up slowly (warm-up). */
   dailySendCap: number;
@@ -60,6 +66,7 @@ export interface GrowthSettings {
 }
 
 export const DEFAULT_SETTINGS: GrowthSettings = {
+  sendMode: "manual",
   autoSend: false,
   dailySendCap: 30,
   industries: ["dentist", "hvac contractor", "plumber", "law firm"],
