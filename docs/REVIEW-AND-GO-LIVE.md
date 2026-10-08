@@ -121,8 +121,16 @@ See `docs/VOICE.md`. Summary:
 - [ ] Run the test checklist in docs/VOICE.md, especially "Length is not 0 s".
 - [ ] Avoid healthcare/legal voice clients until you have a compliant plan.
 
-## 6. Still open (roadmap)
-1. Edit services/hours/booking from the UI after onboarding.
-2. Auto-pause on non-payment (after you've seen real Freemius events).
-3. Per-client usage analytics beyond the minutes list.
-4. Outbound calling (needs a paid number and consent rules — not built).
+## 6. Round 4: Brevo email, manual outreach, billing decisions
+
+See `docs/EMAIL-AND-BILLING.md`.
+- **Brevo** is now the preferred transactional sender (alerts, auto-replies, resets). Your existing `BREVO_*` Vercel variables are used. Verify the sender in Brevo first.
+- **Outreach is manual by default**: the system finds and drafts, you copy and send from your own mailbox, press "I sent it". Cold email through Brevo would break its policy and risk the account that delivers client alerts. Section 2's Resend description is superseded: automatic sending is a later step.
+- **Billing**: Freemius and Lemon Squeezy are out. Manual now; Paddle after you own a domain and have a reviewed website (check its "phone services" and AI-product rules first).
+- No domain needed until your first client validates the product. Vercel Hobby is fine for testing, but its terms cover non-commercial use, so move to Pro before you rely on it for paying clients.
+
+## 7. Still open (roadmap)
+1. Edit services, hours and booking from the UI after onboarding.
+2. Paddle integration (after approval).
+3. Automatic outreach (after the domain and a cold-email-friendly sender).
+4. Per-client usage analytics.
