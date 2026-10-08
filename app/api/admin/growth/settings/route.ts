@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const cur = await getSettings();
   await saveSettings({
+    sendMode: b.sendMode === "auto" || b.sendMode === "manual" ? b.sendMode : cur.sendMode,
     autoSend: typeof b.autoSend === "boolean" ? b.autoSend : cur.autoSend,
     dailySendCap: Math.min(200, Math.max(1, Number(b.dailySendCap) || cur.dailySendCap)),
     industries: b.industries !== undefined ? list(b.industries, 20) : cur.industries,
