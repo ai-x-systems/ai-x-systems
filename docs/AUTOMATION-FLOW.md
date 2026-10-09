@@ -2,7 +2,7 @@
 
 ## The loop
 
-1. **Find (automatic, daily).** Google Places finds local businesses with a website. The system reads each site, finds a public email, and scores the lead.
+1. **Find.** Two ways, both free to start. (a) **By hand, no Google needed:** search Google Maps, Yelp or Facebook for 10-20 local businesses, paste their websites into Growth -> "Add leads by hand" (one per line: `website | name | email`, the last two optional). (b) **Automatic (optional):** with a `GOOGLE_PLACES_API_KEY` the daily run finds businesses itself. Either way the system then reads each site, finds a public email, and scores the lead.
 2. **Preview (automatic).** For each lead whose website states opening hours plus a service or FAQ, the system builds a private preview assistant for that business (prices removed, no alerts, no billing). Leads where a faithful preview isn't possible get the plain email instead.
 3. **Draft (automatic).** The email leads with the preview link: "I built this for you from your public website, try it." Follow-ups are written for day 3 and day 7.
 4. **Send (you, 5 min/day, manual mode).** Copy each email into your own mailbox, send it, press "I sent it".
@@ -32,7 +32,7 @@ Previews are deleted after 30 days unless the prospect replied, booked or bought
 - [ ] Present already: `SESSION_SECRET`, `SUPABASE_*`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `NEXT_PUBLIC_SITE_URL`, `VOICE_WEBHOOK_SECRET`, `UPSTASH_*`.
 - [ ] `FOUNDER_NOTIFY_EMAIL` (you need this: preview signals and intake alerts go there).
 - [ ] `BREVO_API_KEY` (an API key starting `xkeysib-`), `BREVO_SENDER_EMAIL` (verified in Brevo), `BREVO_SENDER_NAME`.
-- [ ] `GOOGLE_PLACES_API_KEY` and `CRON_SECRET` (for the daily find/preview/draft run).
+- [ ] `CRON_SECRET` (for the daily email-finding / preview / draft run). `GOOGLE_PLACES_API_KEY` is optional: skip it and paste leads by hand instead.
 - [ ] `GROWTH_PHYSICAL_ADDRESS` before sending any cold email.
 - [ ] Delete `ADMIN_BOOTSTRAP_SECRET` once you can log in.
 
