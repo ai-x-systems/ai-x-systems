@@ -10,9 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test:growth": "node --no-warnings --import ./scripts/register.mjs scripts/test-growth.mjs",
     "test:onboarding": "node --no-warnings --import ./scripts/register.mjs scripts/test-onboarding.mjs",
-    "test": "npm run test:growth && npm run test:onboarding && npm run test:billing && npm run test:voice",
+    "test": "npm run test:growth && npm run test:onboarding && npm run test:billing && npm run test:voice && npm run test:demo",
     "test:billing": "node --no-warnings --import ./scripts/register.mjs scripts/test-billing.mjs",
-    "test:voice": "node --no-warnings --import ./scripts/register.mjs scripts/test-voice.mjs"
+    "test:voice": "node --no-warnings --import ./scripts/register.mjs scripts/test-voice.mjs",
+    "test:demo": "node --no-warnings --import ./scripts/register.mjs scripts/test-demo.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
