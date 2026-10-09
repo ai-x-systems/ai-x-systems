@@ -20,10 +20,11 @@ export interface OutreachLead {
   email?: string;
   rating?: number;
   reviewCount?: number;
-  signals: { chatWidget?: boolean; onlineBooking?: boolean };
+  signals: { chatWidget?: boolean; onlineBooking?: boolean; demoAttempts?: number; demoSkipped?: boolean };
   score: number;
   stage: Stage;
   step: number;
+  demoBusinessId?: string;
   nextActionAtISO?: string;
   lastContactedAtISO?: string;
   notes?: string;
