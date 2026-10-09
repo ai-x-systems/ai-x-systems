@@ -25,6 +25,8 @@ export interface OnboardInput {
   policiesText?: string;
   webhookUrl?: string;
   leadSheetId?: string;
+  /** true = a preview business: no alerts, no sheet, no billing. */
+  demo?: boolean;
 }
 
 export function slugify(name: string): string {
@@ -125,13 +127,13 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
     industry: input.industry.trim().slice(0, 120) || "Local business",
     phoneNumber: input.phone?.trim() || "",
     timezone,
-    demo: false,
+    demo: input.demo === true,
     contact: {
       ...(input.address?.trim() ? { address: input.address.trim() } : {}),
       ...(input.website?.trim() ? { website: input.website.trim() } : {}),
       email: (input.contactEmail || input.notifyEmail).trim(),
     },
-    client: { id, name: input.name.trim(), status: "onboarding", deploymentType: "client_deployment" },
+    client: { id, name: input.name.trim(), status: input.demo ? "demo" : "onboarding", deploymentType: input.demo ? "demo_preview" : "client_deployment" },
     hours: parseHours(input.hoursText),
     knowledge: {
       services: parseServices(input.servicesText),
@@ -161,4 +163,49 @@ export function generatePassword(): string {
   const bytes = new Uint8Array(16);
   globalThis.crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
+// ── Previews (auto-demo) ────────────────────────────────────────────────
+export type Services = "chat" | "voice" | "both";
+export const isServices = (v: unknown): v is Services => v === "chat" || v === "voice" || v === "both";
+
+/**
+ * A preview is only worth showing a prospect if we found their opening
+ * hours AND at least a service or an FAQ. Without hours the assistant
+ * would have to invent them, and a wrong answer in front of the owner
+ * loses the sale.
+ */
+export function demoDraftIsUsable(d?: { hoursText?: string; servicesText?: string; faqsText?: string } | null): boolean {
+  if (!d?.hoursText?.trim()) return false;
+  return !!(d.servicesText?.trim() || d.faqsText?.trim());
+}
+
+export function demoId(name: string, rand: string): string {
+  return `demo-${slugify(name).slice(0, 24).replace(/-+$/g, "")}-${rand}`;
+}
+export const isDemoId = (id: string) => id.startsWith("demo-");
+
+export function buildDemoConfig(
+  input: OnboardInput & { demo?: never },
+  id: string
+): BusinessConfig {
+  const base = buildBusinessConfig({ ...input, demo: true }, id);
+  const policies = [
+    "This is a preview built only from the business's public website. Details may be incomplete.",
+    "Prices are not listed in this preview: if asked, say the team will confirm pricing and offer to take the visitor's details.",
+    ...(base.knowledge.policies?.general ?? []),
+  ];
+  return BusinessConfigSchema.parse({
+    ...base,
+    knowledge: {
+      ...base.knowledge,
+      // AI-extracted prices were never reviewed by a human: never show them.
+      services: base.knowledge.services.map((svc) => {
+        const rest = { ...svc } as Record<string, unknown>;
+        delete rest.price;
+        return rest;
+      }),
+      policies: { ...(base.knowledge.policies ?? {}), general: policies },
+    },
+  });
 }
