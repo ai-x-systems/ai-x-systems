@@ -129,8 +129,17 @@ See `docs/EMAIL-AND-BILLING.md`.
 - **Billing**: Freemius and Lemon Squeezy are out. Manual now; Paddle after you own a domain and have a reviewed website (check its "phone services" and AI-product rules first).
 - No domain needed until your first client validates the product. Vercel Hobby is fine for testing, but its terms cover non-commercial use, so move to Pro before you rely on it for paying clients.
 
-## 7. Still open (roadmap)
+## 7. Round 5: auto-demo and self-serve intake
+
+See `docs/AUTOMATION-FLOW.md` (flow + checklist).
+- **Previews**: the daily run builds a private preview business from each lead's own website (only when it states hours plus a service or FAQ; prices removed; no alerts or billing). Cold emails lead with the link. You are alerted when a prospect chats or leaves details. Previews expire after 30 days unless the prospect engaged. The preview page only ever shows generated previews, never a real client.
+- **Phone demo**: one shared demo line, pointed at a preview with one click, free to the prospect and capped at 2 minutes.
+- **Intake link**: after a prospect says yes you send a private, expiring, one-time link. The client reviews the pre-filled setup, chooses a password and finishes; the system creates the business and login and emails the install line. Their login email is fixed by you, so it matches their payment email.
+- **Services**: each client is chat, voice or both; the dashboard shows only what applies.
+- Verified: `tsc`, 5 test suites, a full `next build`, and runtime checks of the new routes (404 for non-previews, 410 for used or unknown links, 403 for admin routes without login). Not verified against live Supabase, Brevo or Vapi.
+
+## 8. Still open (roadmap)
 1. Edit services, hours and booking from the UI after onboarding.
-2. Paddle integration (after approval).
-3. Automatic outreach (after the domain and a cold-email-friendly sender).
+2. Paddle integration (after approval) so payment triggers setup and minutes by itself.
+3. Automatic outreach sending (after the domain and a cold-email-friendly sender).
 4. Per-client usage analytics.
