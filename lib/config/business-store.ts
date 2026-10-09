@@ -14,7 +14,10 @@ import { getBusinessById as getFileBusiness, getAllBusinesses as getFileBusiness
  * message; saving a business clears it on the instance that handled the save.
  */
 
+export type Services = "chat" | "voice" | "both";
+
 export interface StoredBusiness {
+  services: Services;
   config: BusinessConfig;
   clientEmail?: string;
   billingStatus: string;
@@ -35,6 +38,7 @@ function fromRow(row: any): StoredBusiness | null {
   return {
     config: parsed.data,
     clientEmail: row.client_email ?? undefined,
+    services: row.services === "voice" || row.services === "both" ? row.services : "chat",
     billingStatus: row.billing_status ?? "awaiting_payment",
     active: row.active !== false,
     source: "db",
@@ -56,7 +60,7 @@ export async function getStoredBusiness(id: string): Promise<StoredBusiness | nu
   }
   if (!value) {
     const f = getFileBusiness(id);
-    if (f) value = { config: f, billingStatus: "active", active: true, source: "file" };
+    if (f) value = { config: f, services: "both", billingStatus: "active", active: true, source: "file" };
   }
   cache.set(id, { at: Date.now(), value });
   return value;
@@ -69,7 +73,7 @@ export async function getBusiness(id: string): Promise<BusinessConfig | undefine
 
 export async function listStoredBusinesses(): Promise<StoredBusiness[]> {
   const out = new Map<string, StoredBusiness>();
-  for (const f of getFileBusinesses()) out.set(f.id, { config: f, billingStatus: "active", active: true, source: "file" });
+  for (const f of getFileBusinesses()) out.set(f.id, { config: f, services: "both", billingStatus: "active", active: true, source: "file" });
   try {
     const { data, error } = await getSupabaseClient().from("businesses").select("*");
     if (error) throw error;
@@ -89,15 +93,26 @@ export async function businessIdTaken(id: string): Promise<boolean> {
   return !!data;
 }
 
-export async function saveNewBusiness(config: BusinessConfig, clientEmail?: string): Promise<void> {
+export async function saveNewBusiness(
+  config: BusinessConfig,
+  clientEmail?: string,
+  opts: { services?: Services; source?: string; billingStatus?: string } = {}
+): Promise<void> {
   const { error } = await getSupabaseClient().from("businesses").insert({
     id: config.id,
     config,
     client_email: clientEmail?.toLowerCase() ?? null,
-    source: "onboarding",
+    source: opts.source ?? "onboarding",
+    services: opts.services ?? "chat",
+    ...(opts.billingStatus ? { billing_status: opts.billingStatus } : {}),
   });
   if (error) throw error;
   cache.delete(config.id);
+}
+
+export async function deleteBusinessRow(id: string): Promise<void> {
+  await getSupabaseClient().from("businesses").delete().eq("id", id);
+  cache.delete(id);
 }
 
 export async function setBusinessFlags(id: string, patch: { active?: boolean; billing_status?: string }): Promise<boolean> {
