@@ -1,11 +1,13 @@
 # Onboarding a client (no GitHub, no JSON)
 
 ## The flow
-1. **Demo → yes.** They agree.
-2. **/admin → "+ Onboard client".** Type the business name, or paste their website and press *Draft from website*. Review every price, hour and policy (the assistant quotes them to customers), add the lead-alert email, press *Create client*.
-3. You get, on one screen: the **install line**, the **client login**, your **payment link** (optional), and a **ready-to-send message**.
-4. Client pastes one line into their site (any stack) or shares the hosted chat link. They pay with the same email as their login.
-5. After the payment clears you mark them **active** in /admin and add minutes. Leads appear in their dashboard (name, email, phone, CSV download), by email, and optionally a Sheet or CRM webhook.
+1. **Prospect replies** -> Admin -> Onboard -> **Create preview** (paste their website) -> send them the private link. For a phone demo press "Point the demo line at this preview".
+2. **They say yes** -> send your payment request. In Onboard -> **Send setup link**, enter name, the email they pay from, what they bought and their website.
+3. **They finish the form** (pre-filled, ~5 min): hours, services, answers, a password. They receive the install line and login; you get an email.
+4. **You mark them paid** in /admin (Billing -> active). Voice clients: attach a number in /admin/voice and add minutes.
+5. Leads arrive in their dashboard (name, email, phone, CSV), by email, and optionally in a CRM via webhook.
+
+"Set up myself" (the full form) still exists for clients who send you everything by message.
 
 ## Install by platform
 | Platform | Where the one line goes |
