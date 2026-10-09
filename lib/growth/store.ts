@@ -141,3 +141,22 @@ export async function getMessageStep(messageId: string): Promise<number | null> 
   const { data } = await db().from("outreach_messages").select("step").eq("id", messageId).maybeSingle();
   return data?.step ?? null;
 }
+
+/** Adds one hand-entered lead. The place_id "manual:<host>" makes the same site a duplicate, so pasting it twice is harmless. */
+export async function insertManualLead(row: { host: string; website: string; name: string; email?: string; industry?: string; city?: string; country?: string }): Promise<"added" | "duplicate"> {
+  const { error } = await db().from("outreach_leads").insert({
+    place_id: `manual:${row.host}`,
+    business_name: row.name,
+    industry: row.industry ?? null,
+    city: row.city ?? null,
+    country: row.country ?? null,
+    website: row.website,
+    email: row.email ?? null,
+    source: "manual",
+    // A supplied email skips the "find emails" step.
+    stage: row.email ? "enriched" : "discovered",
+  });
+  if (!error) return "added";
+  if (error.code === "23505") return "duplicate"; // same site, or the email already belongs to another lead
+  throw error;
+}
