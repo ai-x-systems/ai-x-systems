@@ -7,6 +7,9 @@ import { executeToolCall } from "@/lib/tools/execute-tool-call";
 import { TOOL_DEFINITIONS } from "@/lib/tools/tool-definitions";
 import { ChatRequestSchema } from "@/lib/chat/chat-request-schema";
 import { rateLimit, clientIp } from "@/lib/security/rate-limit";
+import { runInBackground } from "@/lib/utils/background";
+import { sendFounderAlert } from "@/lib/integrations/notify";
+import { isDemoId } from "@/lib/onboarding/build-config";
 import { chatSuccessResponse, chatErrorResponse } from "@/lib/chat/chat-response";
 import {
   normalizeMessages,
@@ -79,6 +82,9 @@ export async function POST(
     return chatErrorResponse(404, "unknown_business", "This business could not be found.", headers);
   }
 
+  // Generated previews: small daily cap so a shared link can't burn the AI quota.
+  const isPreview = !!stored && stored.source === "db" && stored.config.demo && isDemoId(stored.config.id);
+
   // Admin can pause a client (unpaid, cancelled, on request). Visitors get a
   // polite message instead of an error.
   if (stored && !stored.active) {
@@ -92,7 +98,7 @@ export async function POST(
     rateLimit(`chat:${business.id}:${clientIp(req)}`, 20, 60),
     // Hard daily ceiling per business so one script can't burn the whole
     // LLM quota. Override with CHAT_DAILY_CAP_PER_BUSINESS.
-    rateLimit(`chat-day:${business.id}`, Number(process.env.CHAT_DAILY_CAP_PER_BUSINESS) || 3000, 86400),
+    rateLimit(`chat-day:${business.id}`, isPreview ? 150 : Number(process.env.CHAT_DAILY_CAP_PER_BUSINESS) || 3000, 86400),
   ]);
   if (perVisitor.limited || perBusinessDay.limited) {
     return chatErrorResponse(
@@ -125,6 +131,15 @@ export async function POST(
   }
 
   let history = limitHistory(normalizeMessages(body.messages));
+
+  // The single most valuable signal for you: a prospect is trying their preview right now.
+  if (isPreview && history.filter((m) => m.role === "user").length === 1) {
+    const bizName = business.name;
+    runInBackground(async () => {
+      if ((await rateLimit(`preview-ping:${business.id}`, 1, 3600)).limited) return;
+      await sendFounderAlert(`Someone is trying the preview for ${bizName}`, [`A visitor just started chatting with the preview built for ${bizName}.`, "If you emailed this prospect, follow up while it is fresh."]);
+    });
+  }
   let leadLogged = body.leadAlreadyLogged === true;
 
   try {
