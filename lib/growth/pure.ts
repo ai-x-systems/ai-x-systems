@@ -96,6 +96,8 @@ export interface CopyInput {
   step: 1 | 2 | 3;
   senderName: string;
   demoUrl: string;
+  /** private preview built for this business; when present the email leads with it */
+  tryUrl?: string;
   offer: GrowthSettings["offer"];
 }
 
@@ -106,6 +108,22 @@ export function buildEmail(i: CopyInput): { subject: string; body: string } {
   const where = [i.industry, i.city].filter(Boolean).join(" in ");
   const opener = i.opener?.trim() || `I came across ${i.businessName}${where ? ` while looking at ${where}` : ""}.`;
   const sign = `— ${i.senderName}\nAI x Systems`;
+
+  if (i.tryUrl) {
+    const phone = i.offer === "voice" ? " (or on your phone line)" : "";
+    if (i.step === 1) {
+      return {
+        subject: `A preview for ${i.businessName}`,
+        body: `${opener}\n\nI run AI x Systems. I put together a working preview of an AI receptionist for ${i.businessName}, built only from what's public on your website. Try asking it something a customer would: ${i.tryUrl}\n\nIt answers questions 24/7, takes the visitor's details and sends every enquiry straight to you. It's only a preview. If it looks useful, reply and I'll show you how it would go live on your site${phone}.\n\n${sign}`,
+      };
+    }
+    if (i.step === 2) {
+      return {
+        subject: `Re: A preview for ${i.businessName}`,
+        body: `Following up in case my note got buried. The preview is still live: ${i.tryUrl}\n\nWorth a quick look? Reply and I'll set it up properly for ${i.businessName}.\n\n${sign}`,
+      };
+    }
+  }
 
   if (i.step === 1) {
     return {
