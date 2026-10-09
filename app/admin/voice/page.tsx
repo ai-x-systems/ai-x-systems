@@ -5,8 +5,9 @@ import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { creditLedger } from '@/lib/billing/credits'
 import { listStoredBusinesses } from '@/lib/config/business-store'
-import { listCalls, listLines } from '@/lib/voice/store'
+import { findDemoLine, listCalls, listLines } from '@/lib/voice/store'
 import { VoiceLineForm } from './voice-line-form'
+import { DemoLineForm } from './demo-line-form'
 
 export const metadata = { title: 'Voice' }
 export const dynamic = 'force-dynamic'
@@ -14,7 +15,8 @@ export const dynamic = 'force-dynamic'
 export default async function AdminVoicePage() {
   if (!(await getAdminSession())) redirect('/admin-login')
 
-  const [lines, calls, businesses] = await Promise.all([listLines(), listCalls(null, 200), listStoredBusinesses()])
+  const [lines, calls, businesses, demoLine] = await Promise.all([listLines(), listCalls(null, 200), listStoredBusinesses(), findDemoLine()])
+  const previewIds = businesses.filter((b) => b.config.demo && b.config.id.startsWith('demo-')).map((b) => b.config.id)
   const balances = new Map<string, number>()
   for (const l of lines) balances.set(l.businessId, (await creditLedger.getBalance(l.businessId)).balance)
 
@@ -72,8 +74,17 @@ export default async function AdminVoicePage() {
       <p className="mt-2 text-xs text-muted-foreground">Add minutes from <Link href="/admin" className="text-primary underline underline-offset-4">Clients</Link> (1 credit = 1 minute) after a payment clears.</p>
 
       <section className="mt-8 rounded-xl border border-border bg-card p-5">
+        <p className="text-sm font-medium">Shared demo line</p>
+        <p className="mb-4 mt-1 text-xs text-muted-foreground">
+          {demoLine ? `${demoLine.e164} currently answers as ${demoLine.businessId}. ` : 'No demo line yet. '}
+          One number is shared by all prospects, so point it at a prospect&apos;s preview just before they call. Demo calls are free to them and capped at 2 minutes.
+        </p>
+        <DemoLineForm previewIds={previewIds} hasLine={!!demoLine} />
+      </section>
+
+      <section className="mt-8 rounded-xl border border-border bg-card p-5">
         <p className="mb-4 text-sm font-medium">Attach a phone line to a client</p>
-        <VoiceLineForm businessIds={businesses.map((b) => b.config.id)} />
+        <VoiceLineForm businessIds={businesses.filter((b) => !b.config.id.startsWith('demo-')).map((b) => b.config.id)} />
       </section>
 
       <section className="mt-8 overflow-x-auto rounded-xl border border-border">
