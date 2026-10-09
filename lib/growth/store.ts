@@ -9,6 +9,7 @@ const toLead = (r: any): OutreachLead => ({
   website: r.website ?? undefined, phone: r.phone ?? undefined, email: r.email ?? undefined,
   rating: r.rating != null ? Number(r.rating) : undefined, reviewCount: r.review_count ?? undefined,
   signals: r.signals ?? {}, score: r.score ?? 0, stage: r.stage, step: r.step ?? 0,
+  demoBusinessId: r.demo_business_id ?? undefined,
   nextActionAtISO: r.next_action_at ?? undefined, lastContactedAtISO: r.last_contacted_at ?? undefined,
   notes: r.notes ?? undefined, createdAtISO: r.created_at,
 });
