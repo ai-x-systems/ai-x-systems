@@ -138,6 +138,9 @@ See `docs/AUTOMATION-FLOW.md` (flow + checklist).
 - **Services**: each client is chat, voice or both; the dashboard shows only what applies.
 - Verified: `tsc`, 5 test suites, a full `next build`, and runtime checks of the new routes (404 for non-previews, 410 for used or unknown links, 403 for admin routes without login). Not verified against live Supabase, Brevo or Vapi.
 
+### Round 5b: no Google key needed
+`GOOGLE_PLACES_API_KEY` is optional. Growth -> "Add leads by hand" takes a pasted list of websites (one per line, optional name and email) and the daily run finds emails, builds previews and drafts emails for them. Google Cloud billing requires a card with a temporary hold, so this keeps the whole loop usable at zero cost.
+
 ## 8. Still open (roadmap)
 1. Edit services, hours and booking from the UI after onboarding.
 2. Paddle integration (after approval) so payment triggers setup and minutes by itself.
