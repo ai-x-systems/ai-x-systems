@@ -8,6 +8,7 @@ export interface VoiceLine {
   forwardTo?: string;
   sellCentsPerMinute: number;
   enabled: boolean;
+  isDemoLine: boolean;
 }
 
 export interface VoiceCall {
@@ -24,7 +25,7 @@ export interface VoiceCall {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const toLine = (r: any): VoiceLine => ({
   businessId: r.business_id, e164: r.e164, vapiPhoneNumberId: r.vapi_phone_number_id ?? undefined,
-  forwardTo: r.forward_to ?? undefined, sellCentsPerMinute: r.sell_cents_per_minute ?? 0, enabled: r.enabled !== false,
+  forwardTo: r.forward_to ?? undefined, sellCentsPerMinute: r.sell_cents_per_minute ?? 0, enabled: r.enabled !== false, isDemoLine: r.is_demo_line === true,
 });
 const toCall = (r: any): VoiceCall => ({
   callId: r.call_id, businessId: r.business_id, caller: r.caller ?? undefined, durationSeconds: r.duration_seconds ?? 0,
@@ -61,6 +62,7 @@ export async function upsertLine(l: VoiceLine): Promise<void> {
   const { error } = await db().from("voice_lines").upsert({
     business_id: l.businessId, e164: l.e164, vapi_phone_number_id: l.vapiPhoneNumberId ?? null,
     forward_to: l.forwardTo ?? null, sell_cents_per_minute: l.sellCentsPerMinute, enabled: l.enabled,
+    is_demo_line: l.isDemoLine,
   }, { onConflict: "business_id" });
   if (error) throw error;
 }
@@ -88,4 +90,27 @@ export async function listCalls(businessId: string | null, limit = 50): Promise<
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map(toCall);
+}
+
+export async function findDemoLine(): Promise<VoiceLine | null> {
+  const { data } = await db().from("voice_lines").select("*").eq("is_demo_line", true).maybeSingle();
+  return data ? toLine(data) : null;
+}
+
+/** Creates the shared demo line (first time) or re-points it at another business. Only one demo line exists. */
+export async function pointDemoLine(businessId: string, number?: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const existing = await findDemoLine();
+  if (existing) {
+    const { error } = await db().from("voice_lines")
+      .update({ business_id: businessId, enabled: true, forward_to: null, sell_cents_per_minute: 0, ...(number ? { e164: number } : {}) })
+      .eq("is_demo_line", true);
+    if (error) return { ok: false, error: error.code === "23505" ? "That business already has its own phone line." : "Could not move the demo line." };
+    return { ok: true };
+  }
+  if (!number) return { ok: false, error: "Create the demo line first: enter its phone number." };
+  const { error } = await db().from("voice_lines").insert({
+    business_id: businessId, e164: number, forward_to: null, sell_cents_per_minute: 0, enabled: true, is_demo_line: true,
+  });
+  if (error) return { ok: false, error: error.code === "23505" ? "That number or business already has a line." : "Could not create the demo line." };
+  return { ok: true };
 }
