@@ -179,3 +179,38 @@ export function verifySvix(body: string, headers: { id?: string | null; timestam
 export function firstEmailIn(text: string): string | undefined {
   return text.match(EMAIL_RE)?.[0]?.toLowerCase();
 }
+
+// ── Hand-entered leads (no Google Places needed) ─────────────────────────
+export interface ManualLeadInput { website: string; name: string; email?: string; host: string }
+
+const MANUAL_EMAIL = /^[^\s@,;|]+@[^\s@,;|]+\.[a-z]{2,}$/i;
+
+/**
+ * One business per line:  website | business name (optional) | email (optional)
+ * Accepts a bare domain ("acmedental.com"). Duplicate sites in the same paste are dropped.
+ * Every address goes through the same public-URL safety check used when fetching sites.
+ */
+export function parseManualLeads(text: string, max = 100): { leads: ManualLeadInput[]; rejected: Array<{ line: string; reason: string }> } {
+  const leads: ManualLeadInput[] = [];
+  const rejected: Array<{ line: string; reason: string }> = [];
+  const seen = new Set<string>();
+
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (leads.length >= max) { rejected.push({ line: line.slice(0, 80), reason: `Over the limit of ${max} per paste` }); continue; }
+
+    const [site, name, email] = line.split(/\s*[|\t]\s*/).map((p) => p.trim());
+    const url = site ? isSafePublicUrl(site) : null;
+    if (!url) { rejected.push({ line: line.slice(0, 80), reason: "Not a valid public website" }); continue; }
+
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (seen.has(host)) { rejected.push({ line: line.slice(0, 80), reason: "Duplicate in this list" }); continue; }
+    if (email && !MANUAL_EMAIL.test(email)) { rejected.push({ line: line.slice(0, 80), reason: "The email isn't valid" }); continue; }
+    seen.add(host);
+
+    const fallbackName = host.split(".")[0].replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    leads.push({ website: url.origin, name: (name || fallbackName).slice(0, 120), email: email ? email.toLowerCase() : undefined, host });
+  }
+  return { leads, rejected };
+}
