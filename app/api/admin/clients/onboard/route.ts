@@ -4,7 +4,7 @@ import { getAdminSession } from "@/lib/accounts/session";
 import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
 import { businessIdTaken, saveNewBusiness, installSnippet } from "@/lib/config/business-store";
-import { buildBusinessConfig, generatePassword, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
+import { buildBusinessConfig, generatePassword, isServices, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
 import { siteConfig } from "@/lib/site-config";
 
 export const runtime = "nodejs";
@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
   }
 
   const password = b.clientPassword || generatePassword();
-  await saveNewBusiness(config, clientEmail);
+  const picked = (b as { services?: unknown }).services;
+  await saveNewBusiness(config, clientEmail, { services: isServices(picked) ? picked : "chat" });
   await accountStore.create({ email: clientEmail, passwordHash: await hashPassword(password), role: "client", businessId: id });
 
   const origin = siteConfig.brand.baseUrl.replace(/\/+$/, "");
