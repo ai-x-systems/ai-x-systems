@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   try {
     await upsertLine({
       businessId: b.businessId, e164, vapiPhoneNumberId: b.vapiPhoneNumberId?.trim() || undefined, forwardTo,
-      sellCentsPerMinute: Math.max(0, Math.round(Number(b.sellCentsPerMinute) || 0)), enabled: b.enabled !== false,
+      sellCentsPerMinute: Math.max(0, Math.round(Number(b.sellCentsPerMinute) || 0)), enabled: b.enabled !== false, isDemoLine: false,
     });
   } catch (err) {
     const code = (err as { code?: string }).code;
