@@ -170,3 +170,40 @@ export function PreviewLinks({ businessId }: { businessId?: string }) {
     </div>
   )
 }
+
+export function AddLeadsForm({ defaultIndustry }: { defaultIndustry: string }) {
+  const router = useRouter()
+  const [f, setF] = useState({ text: '', industry: defaultIndustry, city: '' })
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [rejected, setRejected] = useState<Array<{ line: string; reason: string }>>([])
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault(); setBusy(true); setMsg(''); setRejected([])
+    try {
+      const data = await post('/api/admin/growth/leads/add', f)
+      if (!data.success) { setMsg(data.error ?? 'Failed'); return }
+      setMsg(`Added ${data.added}${data.duplicates ? `, ${data.duplicates} already in the list` : ''}. Press "Run full cycle" (or wait for the daily run) to find emails, build previews and write the emails.`)
+      setRejected(data.rejected ?? [])
+      if (data.added) { setF({ ...f, text: '' }); router.refresh() }
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-3 text-sm">
+      <p className="text-xs text-muted-foreground">One business per line: <code>website | name (optional) | email (optional)</code>. A bare domain works too. If you add the email, the system skips the email search.</p>
+      <textarea required className={input + ' min-h-32 font-mono text-xs'} placeholder={'brightsmile.com | Bright Smile Dental\nacmeplumbing.com\nhttps://www.cityhvac.net | City HVAC | office@cityhvac.net'} value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="space-y-1.5"><span className="font-medium">Industry (used in the email)</span><input className={input} value={f.industry} onChange={(e) => setF({ ...f, industry: e.target.value })} /></label>
+        <label className="space-y-1.5"><span className="font-medium">City (optional)</span><input className={input} value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} /></label>
+      </div>
+      <div className="flex items-center gap-3">
+        <Button type="submit" size="sm" disabled={busy}>{busy ? 'Adding…' : 'Add leads'}</Button>
+        {msg ? <span className="text-xs text-muted-foreground">{msg}</span> : null}
+      </div>
+      {rejected.length ? (
+        <ul className="text-xs text-destructive">{rejected.map((r, i) => <li key={i}>{r.line}: {r.reason}</li>)}</ul>
+      ) : null}
+    </form>
+  )
+}
