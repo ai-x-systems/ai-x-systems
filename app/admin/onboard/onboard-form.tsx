@@ -27,7 +27,7 @@ function Copy({ text, label }: { text: string; label: string }) {
 
 const empty = {
   name: '', industry: '', website: '', phone: '', address: '', notifyEmail: '', clientEmail: '',
-  assistantName: 'Ava', tone: 'friendly', timezone: 'America/Chicago',
+  services: 'chat', assistantName: 'Ava', tone: 'friendly', timezone: 'America/Chicago',
   hoursText: '', servicesText: '', faqsText: '', policiesText: '', webhookUrl: '', leadSheetId: '',
 }
 
@@ -66,7 +66,9 @@ export function OnboardForm() {
   }
 
   if (result) {
-    const welcome = `Hi! Your AI receptionist is set up.\n\n1) Add this line to your website (before </body>, or in your site builder's "custom code" / "header" box):\n${result.snippet}\n\nNo website access? Share this chat link instead: ${result.hostedChatUrl}\n\n2) See your leads any time: ${result.login.url}\nEmail: ${result.login.email}\nTemporary password: ${result.login.password}\n\nReply if you'd like it connected to your CRM.`
+    const chatPart = f.services === 'voice' ? '' : `1) Add this line to your website (before </body>, or in your site builder's "custom code" / "header" box):\n${result.snippet}\n\nNo website access? Share this chat link instead: ${result.hostedChatUrl}\n\n`
+    const voicePart = f.services === 'chat' ? '' : `${f.services === 'both' ? '2' : '1'}) Your phone assistant: we'll send your phone number and how to forward your calls to it.\n\n`
+    const welcome = `Hi! Your AI receptionist is set up.\n\n${chatPart}${voicePart}See your leads any time: ${result.login.url}\nEmail: ${result.login.email}\nTemporary password: ${result.login.password}\n\nReply if you'd like it connected to your CRM.`
     return (
       <div className="space-y-5 text-sm">
         <div className="rounded-xl border border-border bg-card p-5">
@@ -111,6 +113,8 @@ export function OnboardForm() {
           <label className="space-y-1.5"><span className="font-medium">Phone</span><input className={input} value={f.phone} onChange={set('phone')} /></label>
           <label className="space-y-1.5"><span className="font-medium">Address</span><input className={input} value={f.address} onChange={set('address')} /></label>
           <label className="space-y-1.5"><span className="font-medium">Timezone</span><input className={input} value={f.timezone} onChange={set('timezone')} /></label>
+          <label className="space-y-1.5"><span className="font-medium">What did they buy?</span>
+            <select className={input} value={f.services} onChange={set('services')}><option value="chat">Website chat</option><option value="voice">Phone assistant</option><option value="both">Both</option></select></label>
           <label className="space-y-1.5"><span className="font-medium">Assistant name</span><input className={input} value={f.assistantName} onChange={set('assistantName')} /></label>
         </div>
         {note ? <p className="text-xs text-primary">{note}</p> : null}
