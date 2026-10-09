@@ -184,3 +184,24 @@ create index if not exists voice_calls_business_idx on voice_calls (business_id,
 
 alter table voice_lines enable row level security;
 alter table voice_calls enable row level security;
+
+-- ── Auto-demo + self-serve intake ───────────────────────────────────────
+alter table outreach_leads add column if not exists demo_business_id text;
+alter table businesses add column if not exists services text not null default 'chat';  -- chat | voice | both
+alter table voice_lines add column if not exists is_demo_line boolean not null default false;
+
+create table if not exists client_intakes (
+  id uuid primary key default gen_random_uuid(),
+  token_hash text not null unique,           -- sha256 of the link token; the token itself is never stored
+  business_name text not null,
+  client_email text not null,                -- also their login email and the email their payment must come from
+  services text not null default 'chat',
+  website text,
+  draft jsonb not null default '{}',
+  paid boolean not null default false,       -- true = billing starts as "active" when they finish
+  status text not null default 'pending' check (status in ('pending','completed','cancelled')),
+  business_id text,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+alter table client_intakes enable row level security;
