@@ -154,3 +154,19 @@ export function LeadActions({ id, stage }: { id: string; stage: string }) {
     </div>
   )
 }
+
+export function PreviewLinks({ businessId }: { businessId?: string }) {
+  const [msg, setMsg] = useState('')
+  if (!businessId) return <span className="text-xs text-muted-foreground">none</span>
+  async function useLine() {
+    const data = await post('/api/admin/voice/demo-line', { businessId })
+    setMsg(data.success ? 'Demo line moved here' : data.error ?? 'Failed')
+  }
+  return (
+    <div className="flex flex-col gap-1">
+      <a href={`/try/${businessId}`} target="_blank" rel="noreferrer" className="text-xs text-primary underline underline-offset-4">Open preview</a>
+      <button className="text-left text-xs text-muted-foreground underline underline-offset-4" onClick={useLine}>Use demo line</button>
+      {msg ? <span className="text-xs text-muted-foreground">{msg}</span> : null}
+    </div>
+  )
+}
