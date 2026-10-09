@@ -37,10 +37,13 @@ export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<
   let drafted = 0;
 
   const fresh = await listLeads({ stage: "enriched", limit });
+  const base = siteConfig.brand.baseUrl.replace(/\/+$/, "");
   for (const lead of fresh) {
     if (!lead.email || (await hasMessageForStep(lead.id, 1))) continue;
+    // Hold the email until the preview exists, or we have definitively given up on one.
+    if (!lead.demoBusinessId && !lead.signals.demoSkipped) continue;
     const opener = await writeOpener(lead);
-    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, opener, step: 1, senderName: settings.senderName, demoUrl, offer: settings.offer });
+    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, opener, step: 1, senderName: settings.senderName, demoUrl, tryUrl: lead.demoBusinessId ? `${base}/try/${lead.demoBusinessId}` : undefined, offer: settings.offer });
     await createMessage({ leadId: lead.id, step: 1, subject, bodyText: body, status });
     await updateLead(lead.id, { stage: auto ? "queued" : "drafted" });
     drafted++;
@@ -51,7 +54,7 @@ export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<
     const next = (lead.step + 1) as 2 | 3;
     if (next > 3 || !lead.email) { await updateLead(lead.id, { next_action_at: null }); continue; }
     if (await hasMessageForStep(lead.id, next)) continue;
-    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, step: next, senderName: settings.senderName, demoUrl, offer: settings.offer });
+    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, step: next, senderName: settings.senderName, demoUrl, tryUrl: lead.demoBusinessId ? `${base}/try/${lead.demoBusinessId}` : undefined, offer: settings.offer });
     await createMessage({ leadId: lead.id, step: next, subject, bodyText: body, status });
     await updateLead(lead.id, { next_action_at: null });
     drafted++;
