@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header'
 import { getSettings, stageCounts, listMessages, listLeads, sentSince } from '@/lib/growth/store'
 import { growthReadiness } from '@/lib/growth/send'
 import { listProspects } from '@/lib/leads/prospects'
-import { RunButtons, SettingsForm, QueueItem, LeadActions, PreviewLinks } from './growth-client'
+import { RunButtons, SettingsForm, QueueItem, LeadActions, PreviewLinks, AddLeadsForm } from './growth-client'
 
 export const metadata = { title: 'Growth' }
 export const dynamic = 'force-dynamic'
@@ -65,7 +65,7 @@ export default async function GrowthPage() {
           <>
             <p className="text-sm font-medium">Manual mode — nothing is sent by the system</p>
             <ol className="mt-3 list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
-              <li>The system finds leads, finds their emails and writes each message below.</li>
+              <li>Leads come from the websites you paste in below (or from Google, if you ever add a Places key). The system finds their emails, builds a preview and writes each message.</li>
               <li>You press <b>Copy email</b>, paste it into your own mailbox and send it to that one person.</li>
               <li>Press <b>I sent it</b>. Follow-ups are then written for you automatically (3 and 7 days later).</li>
               <li>If they reply, press <b>Replied</b> on the lead. If they say no, press <b>Never contact</b>.</li>
@@ -118,6 +118,12 @@ export default async function GrowthPage() {
                 </tr>))}
           </tbody>
         </table>
+      </section>
+
+      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+        <p className="text-sm font-medium">Add leads by hand</p>
+        <p className="mb-4 mt-1 text-xs text-muted-foreground">No Google key needed. Search Google Maps, Yelp or Facebook yourself for 10-20 businesses, paste their websites here, and the system does the rest.</p>
+        <AddLeadsForm defaultIndustry={settings.industries[0] ?? ''} />
       </section>
 
       <section className="mt-8 rounded-xl border border-border bg-card p-5">
