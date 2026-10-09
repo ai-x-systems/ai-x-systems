@@ -23,6 +23,9 @@ export default async function DashboardPage() {
   const balance = await creditLedger.getBalance(session.businessId)
   const activity = await listRecentActivity(session.businessId, 25)
   const [line, calls] = await Promise.all([getLineForBusiness(session.businessId), listCalls(session.businessId, 10)])
+  const services = stored?.services ?? 'both'
+  const showVoice = services !== 'chat' || !!line
+  const showChat = services !== 'voice'
   const topupUrl = process.env.VOICE_TOPUP_URL
   const lowMinutes = balance.balance < (Number(process.env.VOICE_LOW_BALANCE_MINUTES) || 15)
 
@@ -39,24 +42,26 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
+        {showVoice ? (
         <div className="rounded-xl border border-border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Phone minutes left</p>
-          <p className="mt-2 text-3xl font-semibold tabular-nums">{Math.max(0, balance.balance)}</p>
-          {line && lowMinutes ? (
-            <p className="mt-1 text-xs text-destructive">
-              {balance.balance < 1 ? 'Out of minutes — ' : 'Running low — '}
-              {line.forwardTo ? 'calls are passed to your team when minutes run out.' : 'callers hear a polite message when minutes run out.'}
+            <p className="text-sm text-muted-foreground">Phone minutes left</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums">{Math.max(0, balance.balance)}</p>
+            {line && lowMinutes ? (
+              <p className="mt-1 text-xs text-destructive">
+                {balance.balance < 1 ? 'Out of minutes — ' : 'Running low — '}
+                {line.forwardTo ? 'calls are passed to your team when minutes run out.' : 'callers hear a polite message when minutes run out.'}
+              </p>
+            ) : null}
+            <p className="mt-1 text-xs text-muted-foreground">
+              {topupUrl ? (
+                <a href={topupUrl} className="text-primary underline underline-offset-4">Buy more minutes</a>
+              ) : (
+                <a href={`mailto:${siteConfig.contact.email}?subject=Top up minutes — ${business?.name ?? ''}`} className="text-primary underline underline-offset-4">Reach out</a>
+              )}{' '}
+              {topupUrl ? '— pay with the email you log in with and minutes are added automatically.' : "and we'll send a payment link to top up."}
             </p>
-          ) : null}
-          <p className="mt-1 text-xs text-muted-foreground">
-            {topupUrl ? (
-              <a href={topupUrl} className="text-primary underline underline-offset-4">Buy more minutes</a>
-            ) : (
-              <a href={`mailto:${siteConfig.contact.email}?subject=Top up minutes — ${business?.name ?? ''}`} className="text-primary underline underline-offset-4">Reach out</a>
-            )}{' '}
-            {topupUrl ? '— pay with the email you log in with and minutes are added automatically.' : "and we'll send a payment link to top up."}
-          </p>
-        </div>
+          </div>
+        ) : null}
 
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Receptionist status</p>
@@ -109,16 +114,18 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {showChat ? (
       <div className="mt-8 rounded-xl border border-border bg-card p-6">
-        <p className="text-sm font-medium">Put the assistant on your website</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Paste this line into your site (before the closing body tag, or in your site builder&apos;s custom-code / header box).
-        </p>
-        <pre className="mt-3 overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{snippet}</pre>
-        <p className="mt-2 text-xs text-muted-foreground">
-          No access to your site? Share this chat link anywhere: <span className="break-all">{origin}/embed/chat/{session.businessId}</span>
-        </p>
-      </div>
+          <p className="text-sm font-medium">Put the assistant on your website</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Paste this line into your site (before the closing body tag, or in your site builder&apos;s custom-code / header box).
+          </p>
+          <pre className="mt-3 overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{snippet}</pre>
+          <p className="mt-2 text-xs text-muted-foreground">
+            No access to your site? Share this chat link anywhere: <span className="break-all">{origin}/embed/chat/{session.businessId}</span>
+          </p>
+        </div>
+      ) : null}
 
       {line ? (
         <div className="mt-8 rounded-xl border border-border bg-card p-6">
