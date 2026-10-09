@@ -6,6 +6,7 @@ import { sendToConfiguredWebhooks } from "@/lib/integrations/webhook";
 import { recordActivity } from "@/lib/activity/log";
 import { getEffectiveBusinessConfig } from "@/lib/config/overrides";
 import { runInBackground } from "@/lib/utils/background";
+import { sendFounderAlert } from "@/lib/integrations/notify";
 
 export interface ToolCallArgs {
   name: string;
@@ -302,6 +303,13 @@ export async function executeToolCall(
 
       if (business.demo) {
         console.log("[demo] simulated lead", { business: business.id, ...a });
+        if (businessId.startsWith("demo-")) {
+          runInBackground(() => sendFounderAlert(`Preview lead: ${business.name}`, [
+            `${a.callerName ?? "Someone"} left details in the preview built for ${business.name}.`,
+            `Email: ${a.callerEmail ?? "-"}  Phone: ${a.callerPhone ?? "-"}`,
+            `Message: ${reason}`,
+          ]));
+        }
         runInBackground(() => recordActivity(businessId, "lead", {
           callerName: a.callerName,
           callerEmail: a.callerEmail,
