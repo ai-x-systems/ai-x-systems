@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/page-header'
 import { getSettings, stageCounts, listMessages, listLeads, sentSince } from '@/lib/growth/store'
 import { growthReadiness } from '@/lib/growth/send'
 import { listProspects } from '@/lib/leads/prospects'
-import { RunButtons, SettingsForm, QueueItem, LeadActions } from './growth-client'
+import { RunButtons, SettingsForm, QueueItem, LeadActions, PreviewLinks } from './growth-client'
 
 export const metadata = { title: 'Growth' }
 export const dynamic = 'force-dynamic'
@@ -104,13 +104,14 @@ export default async function GrowthPage() {
         <table className="w-full text-sm">
           <thead><tr className="border-b border-border text-left text-muted-foreground">
             <th className="px-4 py-3 font-medium">Business</th><th className="px-4 py-3 font-medium">Stage</th>
-            <th className="px-4 py-3 font-medium">Score</th><th className="px-4 py-3 font-medium">Contact</th><th className="px-4 py-3 font-medium">Mark</th></tr></thead>
+            <th className="px-4 py-3 font-medium">Preview</th><th className="px-4 py-3 font-medium">Score</th><th className="px-4 py-3 font-medium">Contact</th><th className="px-4 py-3 font-medium">Mark</th></tr></thead>
           <tbody>
-            {leads.length === 0 ? <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">No active leads yet. Add cities in settings, then press “Run full cycle”.</td></tr> :
+            {leads.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No active leads yet. Add cities in settings, then press “Run full cycle”.</td></tr> :
               leads.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3"><div className="font-medium">{l.businessName}</div><div className="text-xs text-muted-foreground">{[l.industry, l.city].filter(Boolean).join(' · ')}{l.signals.chatWidget === false ? ' · no chat widget' : ''}</div></td>
                   <td className="px-4 py-3"><span className="rounded-full bg-secondary px-2 py-0.5 text-xs">{l.stage.replace('_', ' ')}{l.stage === 'contacted' ? ` (${l.step}/3)` : ''}</span></td>
+                  <td className="px-4 py-3"><PreviewLinks businessId={l.demoBusinessId} /></td>
                   <td className="px-4 py-3 tabular-nums">{l.score}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{l.email}</td>
                   <td className="px-4 py-3"><LeadActions id={l.id} stage={l.stage} /></td>
