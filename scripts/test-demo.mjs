@@ -10,6 +10,8 @@ assert.equal(demoDraftIsUsable({ servicesText: "Cleaning", faqsText: "Q | A" }),
 assert.equal(demoDraftIsUsable({ hoursText: "Mon-Fri 9-5" }), false, "hours alone is too thin");
 assert.equal(demoDraftIsUsable({ hoursText: "  ", servicesText: "x" }), false);
 assert.equal(demoDraftIsUsable(null), false);
+assert.equal(demoDraftIsUsable({ hoursText: "By appointment only", servicesText: "x" }), false, "unreadable hours must not become \"closed all week\"");
+assert.equal(demoDraftIsUsable({ hoursText: "Open 24 hours", servicesText: "x" }), true);
 assert.equal(demoDraftIsUsable(undefined), false);
 
 // ids
