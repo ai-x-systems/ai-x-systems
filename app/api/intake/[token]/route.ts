@@ -4,7 +4,7 @@ import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { businessIdTaken, deleteBusinessRow, installSnippet, saveNewBusiness, type Services } from "@/lib/config/business-store";
-import { buildBusinessConfig, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
+import { buildBusinessConfig, HoursError, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
 import { hashIntakeToken, intakeIsUsable, looksLikeIntakeToken } from "@/lib/onboarding/intake-token";
 import { rateLimit, clientIp } from "@/lib/security/rate-limit";
 import { sendEmailTo, sendFounderAlert } from "@/lib/integrations/notify";
@@ -86,6 +86,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
     // Release the link so the client can fix whatever failed and try again, and drop any half-made business.
     if (createdId) await deleteBusinessRow(createdId).catch(() => undefined);
     await db.from("client_intakes").update({ status: "pending" }).eq("id", row.id);
+    if (err instanceof HoursError) return NextResponse.json({ success: false, error: err.message }, { status: 400 });
     if (err instanceof ZodError) return NextResponse.json({ success: false, error: "Some details look invalid. Please check them and try again." }, { status: 400 });
     if (err instanceof Error && err.message === "account-exists") return NextResponse.json({ success: false, error: "An account already exists for this email. Please contact us." }, { status: 409 });
     console.error("[intake] failed:", err);
