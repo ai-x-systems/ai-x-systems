@@ -28,7 +28,7 @@ export function RunButtons({ manual }: { manual: boolean }) {
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {[['all', 'Run full cycle'], ['discover', 'Find leads'], ['enrich', 'Find emails'], ['draft', 'Write emails'], ...(manual ? [] : [['send', 'Send approved']])].map(([t, label]) => (
+        {[['all', 'Run full cycle'], ['discover', 'Find leads'], ['enrich', 'Find emails'], ['demo', 'Build previews'], ['draft', 'Write emails'], ...(manual ? [] : [['send', 'Send approved']])].map(([t, label]) => (
           <Button key={t} size="sm" variant={t === 'all' ? 'default' : 'outline'} disabled={!!busy} onClick={() => run(t)}>
             {busy === t ? 'Running…' : label}
           </Button>
@@ -183,9 +183,9 @@ export function AddLeadsForm({ defaultIndustry }: { defaultIndustry: string }) {
     try {
       const data = await post('/api/admin/growth/leads/add', f)
       if (!data.success) { setMsg(data.error ?? 'Failed'); return }
-      setMsg(`Added ${data.added}${data.duplicates ? `, ${data.duplicates} already in the list` : ''}. Press "Run full cycle" (or wait for the daily run) to find emails, build previews and write the emails.`)
+      setMsg(`Added ${data.added}${data.updated ? `, ${data.updated} completed with the email you gave` : ''}${data.duplicates ? `, ${data.duplicates} already in the list` : ''}. Press "Run full cycle" (or wait for the daily run) to find emails, build previews and write the emails.`)
       setRejected(data.rejected ?? [])
-      if (data.added) { setF({ ...f, text: '' }); router.refresh() }
+      if (data.added || data.updated) { setF({ ...f, text: '' }); router.refresh() }
     } finally { setBusy(false) }
   }
 
