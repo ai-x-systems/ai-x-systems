@@ -50,3 +50,9 @@ Previews are deleted after 30 days unless the prospect replied, booked or bought
 - Week 1: do the tests above. Send 5 emails a day by hand. Reply to every response the same day.
 - Weeks 2-4: send the day-3 and day-7 follow-ups, open every preview signal, offer a short free pilot to anyone who tried the preview.
 - First paying client: collect the setup fee, send the setup link, then buy the domain and apply to a payment processor.
+
+## Who to skip
+- Businesses that already answer 24/7 with live people, or that advertise "speak to a live person, no answering service". Their own pitch is the opposite of yours.
+- Chains, franchises and anyone with a call center.
+- Large established shops with hundreds of reviews and a big team: they rarely miss calls. The best targets are small, owner-run, close early or skip weekends, and have a phone number but no live chat.
+- Tip: the preview step needs readable opening hours on their site. If the site doesn't state them, that lead gets the plain email instead of a preview.
