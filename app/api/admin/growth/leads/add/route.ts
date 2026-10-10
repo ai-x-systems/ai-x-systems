@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const { leads, rejected } = parseManualLeads(b.text, 100);
   const settings = await getSettings();
-  let added = 0, duplicates = 0;
+  let added = 0, updated = 0, duplicates = 0;
 
   for (const l of leads) {
     try {
@@ -21,11 +21,11 @@ export async function POST(req: NextRequest) {
         host: l.host, website: l.website, name: l.name, email: l.email,
         industry: b.industry?.trim().slice(0, 120) || undefined, city: b.city?.trim().slice(0, 120) || undefined, country: settings.country,
       });
-      if (r === "added") added++; else duplicates++;
+      if (r === "added") added++; else if (r === "updated") updated++; else duplicates++;
     } catch (err) {
       console.error("[growth] manual lead failed:", err);
       rejected.push({ line: l.website, reason: "Could not be saved" });
     }
   }
-  return NextResponse.json({ success: true, added, duplicates, rejected: rejected.slice(0, 20) });
+  return NextResponse.json({ success: true, added, updated, duplicates, rejected: rejected.slice(0, 20) });
 }
