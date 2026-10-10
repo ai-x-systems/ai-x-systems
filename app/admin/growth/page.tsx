@@ -23,7 +23,7 @@ export default async function GrowthPage() {
   const day = new Date(); day.setUTCHours(0, 0, 0, 0)
   const [settings, counts, queue, leads, inbound, sentToday, sent7d] = await Promise.all([
     getSettings(), stageCounts(), listMessages('draft', 30),
-    listLeads({ stage: ['contacted', 'replied', 'demo_booked', 'won', 'queued', 'drafted'], limit: 60 }),
+    listLeads({ stage: ['discovered', 'enriched', 'no_email', 'drafted', 'queued', 'contacted', 'replied', 'demo_booked', 'won'], limit: 60 }),
     listProspects(), sentSince(day.toISOString()), sentSince(new Date(Date.now() - 7 * 86400000).toISOString()),
   ])
   const readiness = growthReadiness()
@@ -106,7 +106,7 @@ export default async function GrowthPage() {
             <th className="px-4 py-3 font-medium">Business</th><th className="px-4 py-3 font-medium">Stage</th>
             <th className="px-4 py-3 font-medium">Preview</th><th className="px-4 py-3 font-medium">Score</th><th className="px-4 py-3 font-medium">Contact</th><th className="px-4 py-3 font-medium">Mark</th></tr></thead>
           <tbody>
-            {leads.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No active leads yet. Add cities in settings, then press “Run full cycle”.</td></tr> :
+            {leads.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No leads yet. Paste some websites into “Add leads by hand” below, then press “Run full cycle”.</td></tr> :
               leads.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3"><div className="font-medium">{l.businessName}</div><div className="text-xs text-muted-foreground">{[l.industry, l.city].filter(Boolean).join(' · ')}{l.signals.chatWidget === false ? ' · no chat widget' : ''}</div></td>
