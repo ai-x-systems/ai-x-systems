@@ -63,7 +63,25 @@ export function parseHours(text: string | undefined): BusinessConfig["hours"] {
     return out as BusinessConfig["hours"];
   }
 
-  for (const line of lines) {
+  for (const rawLine of lines) {
+    // Friendly words people actually write.
+    const line = rawLine
+      .replace(/\bweekdays?\b/i, "Mon-Fri")
+      .replace(/\bweekends?\b/i, "Sat-Sun")
+      .replace(/\b(daily|every\s*day|7\s*days(\s*a\s*week)?)\b/i, "Mon-Sun");
+
+    // "Open 24 hours", "Mon-Sat 24 hours", "24/7" (only when no explicit time range is given).
+    const hasRange = /\d{1,2}(?::\d{2})?\s*(am|pm)?\s*(?:-|–|to)\s*\d{1,2}/i.test(line);
+    if (!hasRange && /24\s*(hours|hrs|h)\b|24\s*\/\s*7|round the clock|all day/i.test(line) && !/closed/i.test(line)) {
+      const m = line.match(/^([a-z]{3,9})(?:\s*[-–to]+\s*([a-z]{3,9}))?/i);
+      const s0 = m ? DAY_ALIASES[m[1].slice(0, 3).toLowerCase()] : undefined;
+      const e0 = m?.[2] ? DAY_ALIASES[m[2].slice(0, 3).toLowerCase()] : s0;
+      const from = s0 !== undefined && e0 !== undefined ? s0 : 0;
+      const to = s0 !== undefined && e0 !== undefined ? (e0 >= s0 ? e0 : 6) : 6;
+      for (let i = from; i <= to; i++) out[DAYS[i]] = { open: "00:00", close: "23:59" };
+      continue;
+    }
+
     const dayMatch = line.match(/^([a-z]{3,9})(?:\s*[-–to]+\s*([a-z]{3,9}))?/i);
     if (!dayMatch) continue;
     const start = DAY_ALIASES[dayMatch[1].slice(0, 3).toLowerCase()];
@@ -86,6 +104,15 @@ export function parseHours(text: string | undefined): BusinessConfig["hours"] {
   }
   return out as BusinessConfig["hours"];
 }
+
+export class HoursError extends Error {
+  constructor() {
+    super("We couldn't read the opening hours. Please write one line per day range, like: Mon-Fri 9am-5pm");
+    this.name = "HoursError";
+  }
+}
+
+export const hoursAreUsable = (hours: BusinessConfig["hours"]) => Object.values(hours).some((d) => !d.closed);
 
 /** One service per line: "Name | price | minutes | description" (all after the name optional). */
 export function parseServices(text: string | undefined): BusinessConfig["knowledge"]["services"] {
@@ -121,6 +148,9 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
   const general = (input.policiesText ?? "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 30);
   const webhookUrl = input.webhookUrl?.trim() || undefined;
 
+  const hours = parseHours(input.hoursText);
+  if (input.hoursText?.trim() && !hoursAreUsable(hours)) throw new HoursError();
+
   const config = {
     id,
     name: input.name.trim().slice(0, 120),
@@ -134,7 +164,7 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
       email: (input.contactEmail || input.notifyEmail).trim(),
     },
     client: { id, name: input.name.trim(), status: input.demo ? "demo" : "onboarding", deploymentType: input.demo ? "demo_preview" : "client_deployment" },
-    hours: parseHours(input.hoursText),
+    hours,
     knowledge: {
       services: parseServices(input.servicesText),
       faqs: parseFaqs(input.faqsText),
@@ -177,6 +207,7 @@ export const isServices = (v: unknown): v is Services => v === "chat" || v === "
  */
 export function demoDraftIsUsable(d?: { hoursText?: string; servicesText?: string; faqsText?: string } | null): boolean {
   if (!d?.hoursText?.trim()) return false;
+  if (!hoursAreUsable(parseHours(d.hoursText))) return false;
   return !!(d.servicesText?.trim() || d.faqsText?.trim());
 }
 
