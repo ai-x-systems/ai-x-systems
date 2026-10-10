@@ -143,7 +143,7 @@ export async function getMessageStep(messageId: string): Promise<number | null> 
 }
 
 /** Adds one hand-entered lead. The place_id "manual:<host>" makes the same site a duplicate, so pasting it twice is harmless. */
-export async function insertManualLead(row: { host: string; website: string; name: string; email?: string; industry?: string; city?: string; country?: string }): Promise<"added" | "duplicate"> {
+export async function insertManualLead(row: { host: string; website: string; name: string; email?: string; industry?: string; city?: string; country?: string }): Promise<"added" | "updated" | "duplicate"> {
   const { error } = await db().from("outreach_leads").insert({
     place_id: `manual:${row.host}`,
     business_name: row.name,
@@ -157,6 +157,14 @@ export async function insertManualLead(row: { host: string; website: string; nam
     stage: row.email ? "enriched" : "discovered",
   });
   if (!error) return "added";
-  if (error.code === "23505") return "duplicate"; // same site, or the email already belongs to another lead
-  throw error;
+  if (error.code !== "23505") throw error;
+
+  // Already in the list. If you pasted it again WITH an email and we had none, fill it in.
+  if (row.email) {
+    const { data } = await db().from("outreach_leads")
+      .update({ email: row.email, stage: "enriched", updated_at: new Date().toISOString() })
+      .eq("place_id", `manual:${row.host}`).is("email", null).in("stage", ["discovered", "no_email"]).select("id");
+    if (data?.length) return "updated";
+  }
+  return "duplicate"; // same site, or the email already belongs to another lead
 }
