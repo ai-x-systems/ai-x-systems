@@ -4,7 +4,7 @@ import { getAdminSession } from "@/lib/accounts/session";
 import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
 import { businessIdTaken, saveNewBusiness, installSnippet } from "@/lib/config/business-store";
-import { buildBusinessConfig, generatePassword, isServices, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
+import { buildBusinessConfig, generatePassword, HoursError, isServices, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
 import { siteConfig } from "@/lib/site-config";
 
 export const runtime = "nodejs";
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   try {
     config = buildBusinessConfig(b, id);
   } catch (err) {
-    const msg = err instanceof ZodError ? err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") : "Invalid business details.";
+    const msg = err instanceof HoursError ? err.message : err instanceof ZodError ? err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") : "Invalid business details.";
     return NextResponse.json({ success: false, error: msg }, { status: 400 });
   }
 
