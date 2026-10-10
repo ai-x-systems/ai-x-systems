@@ -34,3 +34,25 @@ assert.throws(() => buildBusinessConfig({ name: "X", industry: "Y", notifyEmail:
 
 const p = generatePassword(); assert.equal(p.length, 16); assert.notEqual(p, generatePassword());
 console.log("onboarding tests: all passed");
+
+// ── hours hardening ──
+import { HoursError, hoursAreUsable } from "../lib/onboarding/build-config.ts";
+{
+  const wd = parseHours("Weekdays 9am-5pm; Sat 10am-2pm");
+  assert.deepEqual(wd.wednesday, { open: "09:00", close: "17:00" });
+  assert.deepEqual(wd.saturday, { open: "10:00", close: "14:00" });
+  assert.equal(wd.sunday.closed, true);
+  const we = parseHours("Mon-Fri 8-5\nWeekends 10am-2pm");
+  assert.deepEqual(we.sunday, { open: "10:00", close: "14:00" });
+  const all = parseHours("Open 24 hours");
+  for (const d of Object.values(all)) assert.deepEqual(d, { open: "00:00", close: "23:59" });
+  assert.deepEqual(parseHours("24/7").friday, { open: "00:00", close: "23:59" });
+  const partial = parseHours("Mon-Sat 24 hours\nSun closed");
+  assert.deepEqual(partial.saturday, { open: "00:00", close: "23:59" });
+  assert.equal(partial.sunday.closed, true);
+  assert.deepEqual(parseHours("Daily 7am-7pm").sunday, { open: "07:00", close: "19:00" });
+  assert.equal(hoursAreUsable(parseHours("By appointment only")), false);
+  assert.throws(() => buildBusinessConfig({ name: "X", industry: "Y", notifyEmail: "a@b.co", hoursText: "By appointment only" }, "x"), HoursError);
+  assert.doesNotThrow(() => buildBusinessConfig({ name: "X", industry: "Y", notifyEmail: "a@b.co", hoursText: "" }, "x"), "empty still defaults to Mon-Fri 9-5");
+  console.log("hours hardening tests: all passed");
+}
