@@ -4,7 +4,7 @@ import { getAdminSession } from "@/lib/accounts/session";
 import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
 import { businessIdTaken, saveNewBusiness, installSnippet } from "@/lib/config/business-store";
-import { buildBusinessConfig, generatePassword, HoursError, isServices, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
+import { buildBusinessConfig, generatePassword, HoursError, isServices, realBusinessSlug, type OnboardInput } from "@/lib/onboarding/build-config";
 import { siteConfig } from "@/lib/site-config";
 
 export const runtime = "nodejs";
@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
   if (b.clientPassword && b.clientPassword.length < 8) return NextResponse.json({ success: false, error: "Password must be at least 8 characters." }, { status: 400 });
   if (await accountStore.findByEmail(clientEmail)) return NextResponse.json({ success: false, error: "A login with that email already exists." }, { status: 409 });
 
-  let id = slugify(b.name);
-  for (let n = 2; await businessIdTaken(id); n++) id = `${slugify(b.name)}-${n}`;
+  let id = realBusinessSlug(b.name);
+  for (let n = 2; await businessIdTaken(id); n++) id = `${realBusinessSlug(b.name)}-${n}`;
 
   let config;
   try {
