@@ -7,11 +7,13 @@ import { listLeads, updateLead } from "./store";
 const MAX_ATTEMPTS = 3;
 
 /** Builds a private preview for up to `limit` enriched leads per run (each takes ~10-20s: site fetch + AI). */
-export async function demoBatch(limit = 3): Promise<{ built: number; skipped: number; retry: number }> {
+export async function demoBatch(limit = 3, deadline?: number): Promise<{ built: number; skipped: number; retry: number }> {
   const leads = (await listLeads({ stage: "enriched", limit: 40 })).filter((l) => !l.demoBusinessId && !l.signals.demoSkipped);
   let built = 0, skipped = 0, retry = 0;
 
   for (const lead of leads.slice(0, limit)) {
+    // One preview takes ~10-25s (site fetch + AI): never start one we can't finish.
+    if (deadline && Date.now() + 28_000 > deadline) break;
     if (!lead.website) { await updateLead(lead.id, { signals: { ...lead.signals, demoSkipped: true } }); skipped++; continue; }
     let res;
     try {
