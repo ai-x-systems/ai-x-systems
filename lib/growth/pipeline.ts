@@ -13,11 +13,12 @@ export const ALL_TASKS: GrowthTask[] = ["discover", "enrich", "demo", "draft", "
 export async function runGrowth(tasks: GrowthTask[] = ALL_TASKS): Promise<Record<string, unknown>> {
   const settings = await getSettings();
   const out: Record<string, unknown> = {};
+  const deadline = Date.now() + 52_000; // function limit is 60s
   for (const t of tasks) {
     try {
       if (t === "discover") out.discover = await discover(settings);
-      if (t === "enrich") out.enrich = await enrichBatch(10);
-      if (t === "demo") out.demo = { ...(await demoBatch(3)), ...(await cleanupDemos()) };
+      if (t === "enrich") out.enrich = await enrichBatch(10, deadline);
+      if (t === "demo") out.demo = { ...(await demoBatch(3, deadline)), ...(await cleanupDemos()) };
       if (t === "draft") out.draft = await draftBatch(settings);
       if (t === "send") out.send = await sendApproved(settings);
     } catch (err) {
