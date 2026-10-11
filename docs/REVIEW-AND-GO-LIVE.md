@@ -141,6 +141,25 @@ See `docs/AUTOMATION-FLOW.md` (flow + checklist).
 ### Round 5b: no Google key needed
 `GOOGLE_PLACES_API_KEY` is optional. Growth -> "Add leads by hand" takes a pasted list of websites (one per line, optional name and email) and the daily run finds emails, builds previews and drafts emails for them. Google Cloud billing requires a card with a temporary hold, so this keeps the whole loop usable at zero cost.
 
+## Repo review (October): found and fixed
+Checked the live GitHub repo against the tested code: everything matched except the items below. No secrets or env files were committed in any of the 308 commits.
+1. **Preview page was in the wrong folder** (`app/api/try/...` instead of `app/try/...`). Every preview link in your emails would have shown a 404. Moved.
+2. **`package-lock.json` was stale** (missing `@supabase/supabase-js`). Vercel's `npm install` tolerated it, but `npm ci` would fail. Replaced.
+3. **Daily run could exceed Vercel's 60s limit** (previews take 10-25s each). The run now has a time budget and picks up unfinished leads next time.
+4. **Email abuse**: anyone could type an address into the public chat and make the system email it, or flood a client with fake-lead alerts, or burn Gmail's daily allowance. Added caps: 3 confirmations per address per day, 30 alerts per owner per hour, 400 emails a day overall (`EMAILS_PER_DAY`). Leads are still saved in the dashboard.
+5. **A real client named "Demo ..." could look like a preview.** Real ids now never start with `demo-`.
+6. **No frame protection**: the admin and client dashboards could be framed by other sites. Added headers (the embeddable chat stays framable); private links no longer leak through the Referer header.
+7. `.gitignore` only ignored `.env*.local`; it now ignores every real env file. `.env.example` was missing from the repo; added.
+8. Privacy page: added what previews are, retention and deletion, and a real date.
+
+### Still needs a human decision (not code)
+- **Terms of Service**: say what happens to unused prepaid minutes (refundable or not), cancellation, and who is responsible for what the assistant says. A lawyer should review both legal pages before real clients; the draft banner is intentionally still there.
+- **Postal address** before any cold email.
+- **Vapi Server URL contains the secret** (`?k=`). Anyone with access to your Vercel logs could see it. Fine for one person; when others get access, move it to a Vapi credential header instead.
+- **Concurrent calls can overdraw a client's minutes slightly** (two calls started with the same balance). Acceptable at this scale.
+- **Data grows without limit** (leads and call records). Fine for now; add a retention job when you have many clients.
+- **OpenRouter free models** are the chat backup; they can send conversations to third-party models. Don't put regulated-industry clients on it.
+
 ## 8. Still open (roadmap)
 1. Edit services, hours and booking from the UI after onboarding.
 2. Paddle integration (after approval) so payment triggers setup and minutes by itself.
