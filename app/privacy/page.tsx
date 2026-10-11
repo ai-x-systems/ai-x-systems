@@ -28,7 +28,7 @@ export default function PrivacyPage() {
 
           <div className="mt-10 text-sm [&_h2]:mt-8 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:tracking-tight [&_li]:mt-1.5 [&_li]:leading-relaxed [&_li]:text-muted-foreground [&_p]:mt-2 [&_p]:leading-relaxed [&_p]:text-muted-foreground [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary [&_a]:underline">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Last updated: [date]
+              Last updated: October 2026
             </p>
 
             <h2>Overview</h2>
@@ -69,6 +69,24 @@ export default function PrivacyPage() {
               and chat transcripts, appointment details, contact information) only as instructed by
               the client, and only to deliver the AI Receptionist service. A separate data
               processing agreement is available for clients on request.
+            </p>
+
+            <h2>Previews and demo pages</h2>
+            <p>
+              To show a business what the service would look like, we may build a private preview
+              from information that is publicly available on that business&apos;s own website. We
+              do not contact the business&apos;s customers through a preview. Anything typed into a
+              preview is visible to us. Previews are deleted after 30 days unless the business
+              has replied to us or become a client.
+            </p>
+
+            <h2>Retention and deletion</h2>
+            <p>
+              Leads, bookings and call records handled for a client are kept for as long as the
+              client uses the service, so they can see them in their dashboard, and are deleted on
+              the client&apos;s request. Voice call audio is not recorded by default. If you are
+              an end customer of one of our clients and want your information deleted, contact
+              that business or us at {siteConfig.contact.email} and we will pass the request on.
             </p>
 
             <h2>Sharing</h2>
