@@ -1,5 +1,6 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 /**
  * lib/integrations/notify.ts
@@ -68,11 +69,27 @@ export interface NotifyResult {
  * Never throws. Every failure comes back as `{ success: false, error }`,
  * with full detail logged server-side via console.error.
  */
+/**
+ * Anyone can type an email address into the public chat, and every lead/booking
+ * emails someone. Without caps a script could (a) bomb a third party's inbox from
+ * your sender, (b) flood a client with fake-lead alerts, or (c) burn the whole
+ * daily Gmail allowance (~500/day) so real alerts stop. The lead itself is
+ * always still saved in the dashboard; only the email is skipped.
+ */
+const EMAILS_PER_DAY = Number(process.env.EMAILS_PER_DAY) || 400;
+async function withinEmailBudget(keys: Array<[string, number, number]>): Promise<boolean> {
+  const results = await Promise.all(keys.map(([k, max, windowSec]) => rateLimit(k, max, windowSec)));
+  return results.every((r) => !r.limited);
+}
+
 export async function sendCallerConfirmation(
   confirmation: AppointmentConfirmation
 ): Promise<NotifyResult> {
   if (!confirmation.toEmail) {
     return { success: false, error: "No recipient email available for this confirmation." };
+  }
+  if (!(await withinEmailBudget([[`visitor-email:${confirmation.toEmail.toLowerCase()}`, 3, 86400], ["email-global", EMAILS_PER_DAY, 86400]]))) {
+    return { success: false, error: "Confirmation limit reached for this address." };
   }
 
   const sender = getSender();
@@ -101,6 +118,9 @@ export async function sendCallerConfirmation(
 export async function sendOwnerAlert(alert: OwnerAlert): Promise<NotifyResult> {
   if (!alert.ownerEmail) {
     return { success: false, error: "No owner email configured for this business." };
+  }
+  if (!(await withinEmailBudget([[`owner-alert:${alert.ownerEmail.toLowerCase()}`, 30, 3600], ["email-global", EMAILS_PER_DAY, 86400]]))) {
+    return { success: false, error: "Alert limit reached; the lead is still saved in the dashboard." };
   }
 
   const sender = getSender();
@@ -177,6 +197,7 @@ export async function sendEmailTo(to: string, subject: string, lines: string[]):
 export async function sendFounderAlert(subject: string, lines: string[]): Promise<NotifyResult> {
   const to = process.env.FOUNDER_NOTIFY_EMAIL;
   if (!to) return { success: false, error: "FOUNDER_NOTIFY_EMAIL is not set." };
+  if (!(await withinEmailBudget([["founder-alert", 60, 3600]]))) return { success: false, error: "Founder alert limit reached." };
   return sendEmailTo(to, subject, lines);
 }
 
