@@ -216,6 +216,12 @@ export function demoId(name: string, rand: string): string {
 }
 export const isDemoId = (id: string) => id.startsWith("demo-");
 
+/** Slug for a REAL client. Never starts with "demo-", which is reserved for generated previews. */
+export function realBusinessSlug(name: string): string {
+  const s = slugify(name);
+  return isDemoId(s) ? `c-${s}` : s;
+}
+
 export function buildDemoConfig(
   input: OnboardInput & { demo?: never },
   id: string
