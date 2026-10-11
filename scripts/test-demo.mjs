@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { demoDraftIsUsable, demoId, isDemoId, buildDemoConfig, buildBusinessConfig, isServices } from "../lib/onboarding/build-config.ts";
+import { demoDraftIsUsable, demoId, isDemoId, buildDemoConfig, buildBusinessConfig, isServices, realBusinessSlug } from "../lib/onboarding/build-config.ts";
 import { newIntakeToken, hashIntakeToken, intakeIsUsable, intakeExpiry, looksLikeIntakeToken, INTAKE_TTL_DAYS } from "../lib/onboarding/intake-token.ts";
 import { buildEmail } from "../lib/growth/pure.ts";
 
@@ -73,4 +73,7 @@ assert.doesNotMatch(plain.body, /\/try\//);
 assert.match(plain.body, /https:\/\/x\/demo/);
 // honesty: never claims a relationship, results, or that the prospect asked
 for (const e of [e1, plain]) assert.doesNotMatch(e.body, /as you requested|you asked|guarantee|increase your/i);
+assert.equal(realBusinessSlug("Demo Plumbing Co"), "c-demo-plumbing-co", "a real client can never look like a preview");
+assert.equal(isDemoId(realBusinessSlug("Demo Plumbing Co")), false);
+assert.equal(realBusinessSlug("Bright Smile"), "bright-smile");
 console.log("demo tests: all passed");
