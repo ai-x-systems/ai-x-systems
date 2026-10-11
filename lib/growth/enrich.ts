@@ -23,7 +23,7 @@ async function fetchText(url: string): Promise<string> {
 }
 
 /** Reads each lead's site (home + contact pages), finds a public business email, and records website signals. */
-export async function enrichBatch(limit = 10): Promise<{ enriched: number; noEmail: number }> {
+export async function enrichBatch(limit = 10, deadline?: number): Promise<{ enriched: number; noEmail: number }> {
   const leads = await listLeads({ stage: "discovered", limit });
   let enriched = 0, noEmail = 0;
 
@@ -32,6 +32,8 @@ export async function enrichBatch(limit = 10): Promise<{ enriched: number; noEma
   await Promise.all(
     Array.from({ length: 5 }, async () => {
       for (let lead = queue.shift(); lead; lead = queue.shift()) {
+        // Stop before the serverless time limit; unfinished leads are picked up next run.
+        if (deadline && Date.now() + 9_000 > deadline) break;
         const base = lead.website!;
         let origin = base;
         try { origin = new URL(/^https?:/i.test(base) ? base : `https://${base}`).origin; } catch { /* keep */ }
