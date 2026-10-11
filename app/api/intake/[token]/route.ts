@@ -4,7 +4,7 @@ import { accountStore } from "@/lib/accounts/store";
 import { hashPassword } from "@/lib/accounts/password";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { businessIdTaken, deleteBusinessRow, installSnippet, saveNewBusiness, type Services } from "@/lib/config/business-store";
-import { buildBusinessConfig, HoursError, slugify, type OnboardInput } from "@/lib/onboarding/build-config";
+import { buildBusinessConfig, HoursError, realBusinessSlug, type OnboardInput } from "@/lib/onboarding/build-config";
 import { hashIntakeToken, intakeIsUsable, looksLikeIntakeToken } from "@/lib/onboarding/intake-token";
 import { rateLimit, clientIp } from "@/lib/security/rate-limit";
 import { sendEmailTo, sendFounderAlert } from "@/lib/integrations/notify";
@@ -48,8 +48,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
   let createdId: string | undefined;
   try {
     if (await accountStore.findByEmail(row.client_email)) throw new Error("account-exists");
-    let id = slugify(row.business_name);
-    for (let n = 2; await businessIdTaken(id); n++) id = `${slugify(row.business_name)}-${n}`;
+    let id = realBusinessSlug(row.business_name);
+    for (let n = 2; await businessIdTaken(id); n++) id = `${realBusinessSlug(row.business_name)}-${n}`;
 
     const input: OnboardInput = {
       name: row.business_name, industry: cap(b.industry, 120), website: cap(b.website, 200) || row.website || undefined,
