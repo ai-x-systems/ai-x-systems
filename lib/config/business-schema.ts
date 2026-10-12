@@ -281,6 +281,8 @@ export const BusinessConfigSchema = z.object({
   client: ClientSchema,
 
   hours: WeeklyHoursSchema,
+  /** false = opening hours are unknown (previews built from a site that doesn't list them): the assistant must not state any. */
+  hoursKnown: z.boolean().optional(),
   knowledge: KnowledgeSchema,
   voice: VoiceSettingsSchema,
   booking: BookingSettingsSchema,
