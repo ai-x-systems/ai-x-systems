@@ -1,18 +1,21 @@
 import assert from "node:assert/strict";
-import { demoDraftIsUsable, demoId, isDemoId, buildDemoConfig, buildBusinessConfig, isServices, realBusinessSlug } from "../lib/onboarding/build-config.ts";
+import { demoDraftIsUsable, demoId, isDemoId, buildDemoConfig, buildBusinessConfig, isServices, realBusinessSlug, draftHoursAreKnown } from "../lib/onboarding/build-config.ts";
 import { newIntakeToken, hashIntakeToken, intakeIsUsable, intakeExpiry, looksLikeIntakeToken, INTAKE_TTL_DAYS } from "../lib/onboarding/intake-token.ts";
 import { buildEmail } from "../lib/growth/pure.ts";
 
-// a preview needs hours AND (a service or an FAQ)
+// a preview needs something to answer from: a service or an FAQ. Hours are optional (hours-unknown mode).
 assert.equal(demoDraftIsUsable({ hoursText: "Mon-Fri 9-5", servicesText: "Cleaning" }), true);
 assert.equal(demoDraftIsUsable({ hoursText: "Mon-Fri 9-5", faqsText: "Parking? | Free." }), true);
-assert.equal(demoDraftIsUsable({ servicesText: "Cleaning", faqsText: "Q | A" }), false, "no hours = would invent hours");
-assert.equal(demoDraftIsUsable({ hoursText: "Mon-Fri 9-5" }), false, "hours alone is too thin");
-assert.equal(demoDraftIsUsable({ hoursText: "  ", servicesText: "x" }), false);
+assert.equal(demoDraftIsUsable({ servicesText: "Cleaning" }), true, "no hours is fine: the assistant will say the team confirms them");
+assert.equal(demoDraftIsUsable({ hoursText: "Mon-Fri 9-5" }), false, "hours alone is too thin to demo");
+assert.equal(demoDraftIsUsable({ hoursText: "  ", servicesText: "  " }), false);
 assert.equal(demoDraftIsUsable(null), false);
-assert.equal(demoDraftIsUsable({ hoursText: "By appointment only", servicesText: "x" }), false, "unreadable hours must not become \"closed all week\"");
-assert.equal(demoDraftIsUsable({ hoursText: "Open 24 hours", servicesText: "x" }), true);
 assert.equal(demoDraftIsUsable(undefined), false);
+assert.equal(draftHoursAreKnown("Open 24 hours"), true);
+assert.equal(draftHoursAreKnown("Mon-Fri 8am-5pm"), true);
+assert.equal(draftHoursAreKnown("By appointment only"), false, "unreadable hours must not become \"closed all week\"");
+assert.equal(draftHoursAreKnown(""), false);
+assert.equal(draftHoursAreKnown(undefined), false);
 
 // ids
 const id = demoId("Bright Smile Dental, LLC!!", "a1b2c3");
@@ -30,6 +33,13 @@ for (const svc of cfg.knowledge.services) assert.equal("price" in svc, false, "A
 assert.match(cfg.knowledge.policies.general[0], /preview/i);
 assert.match(cfg.knowledge.policies.general[1], /pricing/i);
 assert.equal(cfg.hours.monday.close, "16:00");
+
+// hours-unknown preview: flagged, so the prompt never prints invented hours
+const unk = buildDemoConfig({ name: "No Hours Co", industry: "Plumber", notifyEmail: "demo@example.com", hoursUnknown: true, servicesText: "Leak repair" }, "demo-no-hours-co-aaaaaa");
+assert.equal(unk.hoursKnown, false);
+assert.equal(unk.demo, true);
+const known = buildDemoConfig({ name: "Has Hours Co", industry: "Plumber", notifyEmail: "demo@example.com", hoursText: "Mon-Fri 8-5", servicesText: "Leak repair" }, "demo-has-hours-co-aaaaaa");
+assert.equal(known.hoursKnown, undefined);
 
 // a real client is never a demo, and keeps its prices
 const real = buildBusinessConfig({ name: "Real Co", industry: "Plumber", notifyEmail: "a@b.co", servicesText: "Leak repair | $90" }, "real-co");
@@ -77,3 +87,15 @@ assert.equal(realBusinessSlug("Demo Plumbing Co"), "c-demo-plumbing-co", "a real
 assert.equal(isDemoId(realBusinessSlug("Demo Plumbing Co")), false);
 assert.equal(realBusinessSlug("Bright Smile"), "bright-smile");
 console.log("demo tests: all passed");
+
+// ── the assistant's actual instructions for an hours-unknown preview ──
+{
+  const { buildSystemPrompt } = await import("../lib/prompt/prompt-builder.ts");
+  const withUnknown = buildSystemPrompt(unk);
+  assert.match(withUnknown, /Never state or guess opening hours/);
+  assert.doesNotMatch(withUnknown, /Monday/i, "no invented schedule may reach the prompt");
+  const withKnown = buildSystemPrompt(known);
+  assert.match(withKnown, /Monday/);
+  assert.doesNotMatch(withKnown, /Never state or guess opening hours/);
+  console.log("hours-unknown prompt tests: all passed");
+}
