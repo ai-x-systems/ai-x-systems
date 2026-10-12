@@ -152,6 +152,9 @@ Checked the live GitHub repo against the tested code: everything matched except 
 7. `.gitignore` only ignored `.env*.local`; it now ignores every real env file. `.env.example` was missing from the repo; added.
 8. Privacy page: added what previews are, retention and deletion, and a real date.
 
+### Previews on more websites (follow-up)
+Previews failed on sites that don't put hours on the home page. The reader now follows the site's own contact/about/services/FAQ links, reads the structured data sites publish for Google (the most reliable source for hours), finds explicit "Mon-Fri 9-5" text, and picks the relevant parts of long pages instead of just the first 14,000 characters. Hours are never left to the AI. Hours are now optional: without them the assistant says the team will confirm. The admin can also type hours and services (from Google Maps) when a site has none.
+
 ### Still needs a human decision (not code)
 - **Terms of Service**: say what happens to unused prepaid minutes (refundable or not), cancellation, and who is responsible for what the assistant says. A lawyer should review both legal pages before real clients; the draft banner is intentionally still there.
 - **Postal address** before any cold email.
