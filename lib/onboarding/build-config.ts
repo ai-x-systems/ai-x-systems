@@ -27,6 +27,8 @@ export interface OnboardInput {
   leadSheetId?: string;
   /** true = a preview business: no alerts, no sheet, no billing. */
   demo?: boolean;
+  /** true = we don't know their opening hours (the assistant will say so instead of guessing). */
+  hoursUnknown?: boolean;
 }
 
 export function slugify(name: string): string {
@@ -148,8 +150,9 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
   const general = (input.policiesText ?? "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 30);
   const webhookUrl = input.webhookUrl?.trim() || undefined;
 
-  const hours = parseHours(input.hoursText);
-  if (input.hoursText?.trim() && !hoursAreUsable(hours)) throw new HoursError();
+  const closedWeek = parseHours("Sun closed");
+  const hours = input.hoursUnknown ? closedWeek : parseHours(input.hoursText);
+  if (!input.hoursUnknown && input.hoursText?.trim() && !hoursAreUsable(hours)) throw new HoursError();
 
   const config = {
     id,
@@ -165,6 +168,7 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
     },
     client: { id, name: input.name.trim(), status: input.demo ? "demo" : "onboarding", deploymentType: input.demo ? "demo_preview" : "client_deployment" },
     hours,
+    ...(input.hoursUnknown ? { hoursKnown: false } : {}),
     knowledge: {
       services: parseServices(input.servicesText),
       faqs: parseFaqs(input.faqsText),
@@ -200,15 +204,18 @@ export type Services = "chat" | "voice" | "both";
 export const isServices = (v: unknown): v is Services => v === "chat" || v === "voice" || v === "both";
 
 /**
- * A preview is only worth showing a prospect if we found their opening
- * hours AND at least a service or an FAQ. Without hours the assistant
- * would have to invent them, and a wrong answer in front of the owner
- * loses the sale.
+ * A preview needs something real to answer from: at least one service or FAQ.
+ * Opening hours are optional: when the site doesn't state readable hours the
+ * preview is built in "hours unknown" mode and the assistant says the team will
+ * confirm them, instead of inventing any.
  */
 export function demoDraftIsUsable(d?: { hoursText?: string; servicesText?: string; faqsText?: string } | null): boolean {
-  if (!d?.hoursText?.trim()) return false;
-  if (!hoursAreUsable(parseHours(d.hoursText))) return false;
-  return !!(d.servicesText?.trim() || d.faqsText?.trim());
+  return !!(d?.servicesText?.trim() || d?.faqsText?.trim());
+}
+
+/** True when the draft's hours text is present AND readable by the hours parser. */
+export function draftHoursAreKnown(hoursText?: string): boolean {
+  return !!hoursText?.trim() && hoursAreUsable(parseHours(hoursText));
 }
 
 export function demoId(name: string, rand: string): string {
