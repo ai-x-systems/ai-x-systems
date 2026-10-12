@@ -56,3 +56,16 @@ Previews are deleted after 30 days unless the prospect replied, booked or bought
 - Chains, franchises and anyone with a call center.
 - Large established shops with hundreds of reviews and a big team: they rarely miss calls. The best targets are small, owner-run, close early or skip weekends, and have a phone number but no live chat.
 - Tip: the preview step needs readable opening hours on their site. If the site doesn't state them, that lead gets the plain email instead of a preview.
+
+## Why a preview sometimes can't be built, and what to do
+The preview reads the home page plus the contact, about, services and FAQ pages it links to. For opening hours it trusts, in this order: the site's own structured data (what it publishes for Google), explicit text like "Mon-Fri 8am-5pm", and never the AI's guess. The AI only organises services, FAQs and policies.
+
+It still needs at least one service or FAQ to answer from. It fails when:
+- the site is built with JavaScript only, so there is nothing to read (the message says so);
+- the site blocks automated visits;
+- the business is a chain whose hours and services live in an app or store locator (Starbucks-type sites);
+- the site is a thin duplicate page with no real content.
+
+**Fix for any of these:** in Create preview, open "Their site doesn't list hours or services?" and type the hours and what they do (copy them from their Google Maps listing). That always works. Leave hours empty and the preview says the team will confirm them; it never makes hours up.
+
+Quick test before you spend time on a prospect: open their site, press Ctrl+F and search "Mon" or "hours". If you can see real hours and a services list in plain text on the page or its contact page, the preview will build by itself.
