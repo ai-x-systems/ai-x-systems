@@ -1,6 +1,6 @@
-import { BusinessConfig } from "@/lib/config/business-schema";
+import type { BusinessConfig } from "@/lib/config/business-schema";
 import { buildBusinessKnowledge, getKnowledgeSection } from "@/lib/knowledge/knowledge-builder";
-import { BusinessKnowledge, KnowledgeSectionId } from "@/types/knowledge";
+import type { BusinessKnowledge, KnowledgeSectionId } from "@/types/knowledge";
 
 /**
  * Sources a section's text from the Knowledge Builder, falling back to
@@ -26,7 +26,9 @@ function textOrFallback(knowledge: BusinessKnowledge, id: KnowledgeSectionId): s
 export function buildSystemPrompt(config: BusinessConfig): string {
   const knowledge = buildBusinessKnowledge(config);
 
-  const hours = textOrFallback(knowledge, "hours");
+  const hours = config.hoursKnown === false
+    ? "Not available. Never state or guess opening hours. If asked, say the team will confirm them and offer to take the visitor's details."
+    : textOrFallback(knowledge, "hours");
   const services = textOrFallback(knowledge, "services");
   const faqs = textOrFallback(knowledge, "faqs");
   const policies = textOrFallback(knowledge, "policies");
