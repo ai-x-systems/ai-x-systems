@@ -1,7 +1,7 @@
 import "server-only";
 
-import { BusinessConfig } from "@/lib/config/business-schema";
-import { BusinessKnowledge, KnowledgeSection, KnowledgeSectionId } from "@/types/knowledge";
+import type { BusinessConfig } from "@/lib/config/business-schema";
+import type { BusinessKnowledge, KnowledgeSection, KnowledgeSectionId } from "@/types/knowledge";
 
 /**
  * lib/knowledge/knowledge-builder.ts
