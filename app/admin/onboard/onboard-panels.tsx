@@ -72,7 +72,7 @@ export function IntakePanel() {
 
 /** For a prospect who replied: a private preview built from their website in ~15 seconds. */
 export function PreviewPanel() {
-  const [f, setF] = useState({ website: '', name: '', industry: '' })
+  const [f, setF] = useState({ website: '', name: '', industry: '', hoursText: '', servicesText: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ tryUrl: string; businessId: string; name: string } | null>(null)
@@ -108,19 +108,29 @@ export function PreviewPanel() {
           <Button size="sm" variant="outline" onClick={useLine}>Point the demo line at this preview</Button>
           {lineMsg ? <p className="text-xs text-muted-foreground">{lineMsg}</p> : null}
         </div>
-        <Button size="sm" variant="outline" onClick={() => { setResult(null); setF({ website: '', name: '', industry: '' }) }}>Create another</Button>
+        <Button size="sm" variant="outline" onClick={() => { setResult(null); setF({ website: '', name: '', industry: '', hoursText: '', servicesText: '' }) }}>Create another</Button>
       </div>
     )
   }
 
   return (
     <form onSubmit={submit} className="space-y-4 text-sm">
-      <p className="text-xs text-muted-foreground">Needs a public website that states opening hours and at least a service or FAQ. Takes about 15 seconds.</p>
+      <p className="text-xs text-muted-foreground">Reads their website (home page plus contact, about, services and FAQ pages) and builds the preview in about 15 seconds. If their site doesn&apos;t list hours or services, type them below: copy them from their Google Maps listing.</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-1.5 sm:col-span-2"><span className="font-medium">Their website *</span><input required className={input} placeholder="https://" value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} /></label>
         <label className="space-y-1.5"><span className="font-medium">Business name <span className="font-normal text-muted-foreground">(optional)</span></span><input className={input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
         <label className="space-y-1.5"><span className="font-medium">Industry <span className="font-normal text-muted-foreground">(optional)</span></span><input className={input} value={f.industry} onChange={(e) => setF({ ...f, industry: e.target.value })} /></label>
       </div>
+      <details className="rounded-lg border border-border p-3" open={!!error}>
+        <summary className="cursor-pointer text-xs font-medium">Their site doesn&apos;t list hours or services? Add them here (optional)</summary>
+        <div className="mt-3 grid gap-3">
+          <label className="space-y-1.5"><span className="font-medium">Opening hours <span className="font-normal text-muted-foreground">(one line each, from Google Maps)</span></span>
+            <textarea className={input + ' min-h-20 font-mono text-xs'} placeholder={'Mon-Fri 8am-5pm\nSat 9am-1pm'} value={f.hoursText} onChange={(e) => setF({ ...f, hoursText: e.target.value })} /></label>
+          <label className="space-y-1.5"><span className="font-medium">What they do <span className="font-normal text-muted-foreground">(one per line)</span></span>
+            <textarea className={input + ' min-h-20 font-mono text-xs'} placeholder={'AC repair\nAC installation\nMaintenance plans'} value={f.servicesText} onChange={(e) => setF({ ...f, servicesText: e.target.value })} /></label>
+          <p className="text-xs text-muted-foreground">Leave hours empty and the preview simply says the team will confirm them. It never guesses.</p>
+        </div>
+      </details>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button type="submit" disabled={busy}>{busy ? 'Building preview…' : 'Create preview'}</Button>
     </form>
