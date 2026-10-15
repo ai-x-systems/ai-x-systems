@@ -85,9 +85,7 @@ function linkify(text: string): ReactNode[] {
 export default function EmbeddedChatPage() {
   const { businessId } = useParams<{ businessId: string }>();
 
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hi! How can I help you today?" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   // Round-tripped to the server on every request once true — see
   // chat-request-schema.ts's leadAlreadyLogged for why this can't just
@@ -96,6 +94,23 @@ export default function EmbeddedChatPage() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // The first message comes from the business's own config (one source of truth with the
+  // widget bubble and the phone greeting). A failed fetch falls back to a plain default.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/business-info/${businessId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((d) => {
+        if (cancelled) return;
+        const text = d && typeof d.greeting === "string" && d.greeting.trim() ? d.greeting : "Hi! How can I help you today?";
+        setMessages((prev) => (prev[0]?.role === "assistant" ? prev : [{ role: "assistant", content: text }, ...prev]));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [businessId]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
