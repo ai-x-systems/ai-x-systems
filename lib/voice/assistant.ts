@@ -4,6 +4,7 @@ import { buildSystemPrompt } from "@/lib/prompt/prompt-builder";
 import { TOOL_DEFINITIONS } from "@/lib/tools/tool-definitions";
 import { getEffectiveBusinessConfig } from "@/lib/config/overrides";
 import { PHONE_ADDENDUM } from "./pure";
+import { resolvePhoneGreeting } from "@/lib/config/greetings";
 
 /**
  * Builds the transient assistant returned to Vapi's `assistant-request`.
@@ -29,7 +30,7 @@ export async function buildTransientAssistant(
 
   const name = effective.name;
   const assistantName = effective.voice.assistantName;
-  const firstMessage = `Thanks for calling ${name}, this is ${assistantName}, the virtual assistant. How can I help you today?`;
+  const firstMessage = resolvePhoneGreeting(effective);
 
   return {
     name: `${assistantName} — ${name}`.slice(0, 40),
