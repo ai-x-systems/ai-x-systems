@@ -227,7 +227,12 @@
     "assistantName": "Alex",
     "tone": "professional",
     "language": "en-US",
-    "greeting": "Thanks for calling AI X Systems, this is Alex — how can I help you today?"
+    "greeting": "Thanks for calling AI x Systems, this is Alex, our virtual assistant. What kind of business do you run, and how can I help?"
+  },
+
+  "chat": {
+    "greeting": "Hi, thanks for stopping by AI x Systems. I'm Alex, our virtual assistant. Are you looking for an AI receptionist for your business? Tell me what you do and I'll show you how it could help.",
+    "bubble": "👋 Wondering what an AI receptionist could do for your business? Ask me."
   },
 
   "booking": {
