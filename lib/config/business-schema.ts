@@ -284,6 +284,8 @@ export const BusinessConfigSchema = z.object({
   /** false = opening hours are unknown (previews built from a site that doesn't list them): the assistant must not state any. */
   hoursKnown: z.boolean().optional(),
   knowledge: KnowledgeSchema,
+  /** Website-chat copy. Optional: sensible defaults are generated from the business and assistant name. */
+  chat: z.object({ greeting: z.string().max(400).optional(), bubble: z.string().max(160).optional() }).optional(),
   voice: VoiceSettingsSchema,
   booking: BookingSettingsSchema,
   integrations: IntegrationSettingsSchema,
