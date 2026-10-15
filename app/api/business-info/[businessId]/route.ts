@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBusiness } from "@/lib/config/business-store";
+import { resolveBubble, resolveChatGreeting } from "@/lib/config/greetings";
 
 export const runtime = "nodejs";
 
@@ -18,5 +19,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ busines
     return NextResponse.json({ success: false, error: "Unknown business." }, { status: 404 });
   }
 
-  return NextResponse.json({ success: true, name: business.name });
+  return NextResponse.json({
+    success: true,
+    name: business.name,
+    greeting: resolveChatGreeting(business),
+    bubble: resolveBubble(business),
+  });
 }
