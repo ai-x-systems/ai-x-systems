@@ -67,3 +67,35 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/*
+ * Dropdowns (<select>): the native popup list ignored the dark theme and showed pale text on a
+ * white list. One rule makes every dropdown in the app match: opaque dark field, light text,
+ * the same chevron, and an opaque dark option list. Unlayered on purpose so it wins over the
+ * semi-transparent utility backgrounds used on the form fields.
+ */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--card);
+  color: var(--foreground);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+select option,
+select optgroup {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+select option:checked {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
