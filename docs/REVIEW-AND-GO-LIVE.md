@@ -155,6 +155,16 @@ Checked the live GitHub repo against the tested code: everything matched except 
 ### Previews on more websites (follow-up)
 Previews failed on sites that don't put hours on the home page. The reader now follows the site's own contact/about/services/FAQ links, reads the structured data sites publish for Google (the most reliable source for hours), finds explicit "Mon-Fri 9-5" text, and picks the relevant parts of long pages instead of just the first 14,000 characters. Hours are never left to the AI. Hours are now optional: without them the assistant says the team will confirm. The admin can also type hours and services (from Google Maps) when a site has none.
 
+### Dropdowns and greetings (follow-up)
+- Every dropdown in the app now shares one style (opaque dark field, light text, same arrow, dark option list). The native list was pale text on a white background in the dark theme.
+- Greetings come from one place per business: `chat.greeting` (first message in the chat window), `chat.bubble` (the pop-up beside the chat button) and `voice.greeting` (what the phone assistant says). Defaults are generated from the business and assistant name. Any greeting that doesn't say it is a virtual assistant gets that added, so the disclosure can't be dropped by an edit.
+- The assistant's instructions now teach a natural front-desk style: acknowledge first, one question at a time, plain words, no stock phrases, and never claim to be a human.
+
+### Greetings and dropdowns (follow-up)
+- One source of truth for what visitors and callers hear: the chat's first message, the pop-up bubble beside the chat button, and the phone greeting all come from each business's config (`chat.greeting`, `chat.bubble`, `voice.greeting`). Before this, the chat said a generic "Hi! How can I help you today?" and ignored the config. If a custom greeting forgets to say it's a virtual assistant, the disclosure is added automatically.
+- The assistant's instructions now teach a natural front-desk style (acknowledge first, one question at a time, plain words, no stock phrases) while staying honest that it is a virtual assistant.
+- Dropdowns: the native list showed pale text on a white background in the dark theme. One global rule gives every dropdown the same dark field, readable list and chevron.
+
 ### Still needs a human decision (not code)
 - **Terms of Service**: say what happens to unused prepaid minutes (refundable or not), cancellation, and who is responsible for what the assistant says. A lawyer should review both legal pages before real clients; the draft banner is intentionally still there.
 - **Postal address** before any cold email.
