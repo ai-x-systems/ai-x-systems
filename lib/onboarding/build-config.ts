@@ -1,4 +1,5 @@
 import { BusinessConfigSchema, type BusinessConfig } from "../config/business-schema";
+import { defaultPhoneGreeting } from "../config/greetings";
 
 /**
  * Pure (no I/O) so it can be unit tested. Turns the flat onboarding form
@@ -178,7 +179,7 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
       assistantName,
       tone: input.tone ?? "friendly",
       language: "en-US",
-      greeting: `Thanks for contacting ${input.name.trim()}, this is ${assistantName} — how can I help you today?`,
+      greeting: defaultPhoneGreeting(input.name.trim(), assistantName),
     },
     booking: { enabled: false, appointmentTypes: [], bufferMinutes: 10, timezone },
     integrations: {
