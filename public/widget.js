@@ -258,6 +258,10 @@
         if (data && data.success && data.name) {
           headerLabel.textContent = data.name;
         }
+        // The pop-up bubble's wording also comes from the business's config.
+        if (data && data.success && typeof data.bubble === "string" && data.bubble) {
+          GREETING_MESSAGE = data.bubble;
+        }
       })
       .catch(function () {
         // Silent — generic label already showing.
