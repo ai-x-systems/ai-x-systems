@@ -12,7 +12,9 @@
 export interface GreetingSource {
   name: string;
   voice: { assistantName: string; greeting?: string };
-  chat?: { greeting?: string; bubble?: string };
+  chat?: { greeting?: string; bubble?: string; headline?: string; subtitle?: string; suggestions?: string[]; brandColor?: string };
+  hoursKnown?: boolean;
+  knowledge?: { services?: unknown[] };
 }
 
 const DISCLOSURE = /\b(virtual|automated|digital)\s+(assistant|receptionist)\b|\bAI\b/i;
@@ -43,4 +45,27 @@ export function resolveBubble(c: GreetingSource): string {
 export function resolvePhoneGreeting(c: GreetingSource): string {
   const custom = clean(c.voice.greeting);
   return custom && DISCLOSURE.test(custom) ? custom : defaultPhoneGreeting(c.name, c.voice.assistantName);
+}
+
+// ── what sits at the top of the chat window ─────────────────────────────
+export const defaultHeadline = (name: string) => `Welcome to ${name}`;
+export const defaultSubtitle = (assistant: string) =>
+  `${assistant} is our virtual assistant. Ask anything, or leave your details and the team will follow up.`;
+
+export function resolveHeadline(c: GreetingSource): string {
+  return clean(c.chat?.headline) || defaultHeadline(c.name);
+}
+export function resolveSubtitle(c: GreetingSource): string {
+  return clean(c.chat?.subtitle) || defaultSubtitle(c.voice.assistantName);
+}
+
+/** One-tap starter questions. Defaults only ask what the assistant can really answer for this business. */
+export function resolveSuggestions(c: GreetingSource): string[] {
+  const custom = (c.chat?.suggestions ?? []).map(clean).filter(Boolean).slice(0, 4);
+  if (custom.length) return custom.map((s) => s.slice(0, 60));
+  const out: string[] = [];
+  if ((c.knowledge?.services?.length ?? 0) > 0) out.push("What services do you offer?");
+  if (c.hoursKnown !== false) out.push("What are your hours?");
+  out.push("I'd like someone to contact me");
+  return out.slice(0, 3);
 }
