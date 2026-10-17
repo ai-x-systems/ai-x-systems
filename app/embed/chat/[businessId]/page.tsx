@@ -27,7 +27,20 @@ interface Message {
   content: string;
 }
 
-const GRADIENT = "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)";
+const DEFAULT_GRADIENT = "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)";
+const HEX6 = /^#[0-9a-f]{6}$/i;
+
+interface Info {
+  name: string;
+  assistantName: string;
+  headline: string;
+  subtitle: string;
+  suggestions: string[];
+  brand: { from: string; to: string } | null;
+}
+
+const initials = (name: string) =>
+  name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") || "AI";
 
 /**
  * Turns any link in a message into a real clickable link, styled to
@@ -86,6 +99,9 @@ export default function EmbeddedChatPage() {
   const { businessId } = useParams<{ businessId: string }>();
 
   const [messages, setMessages] = useState<Message[]>([]);
+  // Nothing is drawn until the business's own look and wording has loaded, so the chat never flashes the wrong colour.
+  const [info, setInfo] = useState<Info | null>(null);
+  const [ready, setReady] = useState(false);
   const [input, setInput] = useState("");
   // Round-tripped to the server on every request once true — see
   // chat-request-schema.ts's leadAlreadyLogged for why this can't just
@@ -95,8 +111,8 @@ export default function EmbeddedChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // The first message comes from the business's own config (one source of truth with the
-  // widget bubble and the phone greeting). A failed fetch falls back to a plain default.
+  // Everything the visitor sees first (greeting, headline, colour, starter questions) comes from the
+  // business's own config. A failed fetch falls back to a plain default.
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/business-info/${businessId}`)
@@ -104,8 +120,21 @@ export default function EmbeddedChatPage() {
       .catch(() => null)
       .then((d) => {
         if (cancelled) return;
-        const text = d && typeof d.greeting === "string" && d.greeting.trim() ? d.greeting : "Hi! How can I help you today?";
+        const str = (v: unknown, fallback: string) => (typeof v === "string" && v.trim() ? v : fallback);
+        const brandOk = d?.brand && HEX6.test(d.brand.from) && HEX6.test(d.brand.to);
+        if (d) {
+          setInfo({
+            name: str(d.name, "Chat"),
+            assistantName: str(d.assistantName, "Assistant"),
+            headline: str(d.headline, ""),
+            subtitle: str(d.subtitle, ""),
+            suggestions: Array.isArray(d.suggestions) ? d.suggestions.filter((x: unknown): x is string => typeof x === "string").slice(0, 4) : [],
+            brand: brandOk ? { from: d.brand.from, to: d.brand.to } : null,
+          });
+        }
+        const text = str(d?.greeting, "Hi! How can I help you today?");
         setMessages((prev) => (prev[0]?.role === "assistant" ? prev : [{ role: "assistant", content: text }, ...prev]));
+        setReady(true);
       });
     return () => {
       cancelled = true;
@@ -116,10 +145,15 @@ export default function EmbeddedChatPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
 
-  async function sendMessage() {
-    if (!input.trim() || loading) return;
+  const GRADIENT = info?.brand ? `linear-gradient(135deg, ${info.brand.from} 0%, ${info.brand.to} 100%)` : DEFAULT_GRADIENT;
+  const accent = info?.brand?.from ?? "#4f46e5";
+  const showChips = !!info && info.suggestions.length > 0 && !loading && !messages.some((m) => m.role === "user");
 
-    const nextMessages: Message[] = [...messages, { role: "user", content: input }];
+  async function sendMessage(preset?: string) {
+    const content = (preset ?? input).trim();
+    if (!content || loading) return;
+
+    const nextMessages: Message[] = [...messages, { role: "user", content }];
     setMessages(nextMessages);
     setInput("");
     if (inputRef.current) inputRef.current.style.height = "auto";
@@ -146,6 +180,8 @@ export default function EmbeddedChatPage() {
     }
   }
 
+  if (!ready) return <div style={{ height: "100dvh", background: "#ffffff" }} />;
+
   return (
     <div
       style={{
@@ -171,6 +207,21 @@ export default function EmbeddedChatPage() {
       `}</style>
 
       <div ref={scrollRef} className="aixw-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 14px" }}>
+        {info && (info.headline || info.subtitle) && (
+          <div style={{ textAlign: "center", padding: "6px 8px 20px" }}>
+            <div
+              style={{
+                width: 54, height: 54, borderRadius: "50%", background: GRADIENT, color: "#fff", margin: "0 auto 12px",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, fontWeight: 700, letterSpacing: 0.5,
+              }}
+              aria-hidden="true"
+            >
+              {initials(info.name)}
+            </div>
+            {info.headline && <div style={{ fontSize: 17, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>{info.headline}</div>}
+            {info.subtitle && <div style={{ fontSize: 13, color: "#6b7280", marginTop: 5, lineHeight: 1.5 }}>{info.subtitle}</div>}
+          </div>
+        )}
         {messages.map((m, i) => (
           <div key={i} style={{ display: "flex", marginBottom: 12, justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
             {m.role === "assistant" && (
@@ -196,6 +247,23 @@ export default function EmbeddedChatPage() {
             </div>
           </div>
         ))}
+        {showChips && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "2px 0 12px 34px" }}>
+            {info!.suggestions.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => sendMessage(q)}
+                style={{
+                  border: `1px solid ${accent}`, color: accent, background: "#ffffff", borderRadius: 999,
+                  padding: "7px 13px", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
         {loading && (
           <div style={{ display: "flex", alignItems: "center" }}>
             <div style={{ width: 26, height: 26, borderRadius: "50%", background: GRADIENT, flexShrink: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff" }}>
@@ -262,7 +330,7 @@ export default function EmbeddedChatPage() {
           }}
         />
         <button
-          onClick={sendMessage}
+          onClick={() => sendMessage()}
           disabled={loading || !input.trim()}
           style={{
             flexShrink: 0,
