@@ -5,6 +5,8 @@
  * Hours are never left to the AI when the site states them in a form we can read.
  */
 
+import { hexToHsl, normalizeHex, rgbToHex } from "../config/brand";
+
 const DAY3 = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const LONG_TO_IDX: Record<string, number> = { monday: 0, tuesday: 1, wednesday: 2, thursday: 3, friday: 4, saturday: 5, sunday: 6 };
 const SHORT2_TO_IDX: Record<string, number> = { mo: 0, tu: 1, we: 2, th: 3, fr: 4, sa: 5, su: 6 };
@@ -200,4 +202,32 @@ export function extractMeta(html: string): { title?: string; description?: strin
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim();
   const d = html.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']+)["']/i) ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*name=["']description["']/i);
   return { title: title?.slice(0, 200), description: d?.[1]?.trim().slice(0, 400) };
+}
+
+// ── brand colour ────────────────────────────────────────────────────────
+const usableBrand = (hex: string) => {
+  const { s, l } = hexToHsl(hex);
+  return s >= 0.3 && l >= 0.15 && l <= 0.85; // skips whites, blacks and greys
+};
+
+/** The colour a website uses for its brand: its theme-color tag, else the most-used saturated colour in its styles. */
+export function extractBrandColor(html: string, cssTexts: string[] = []): string | undefined {
+  const meta = html.match(/<meta[^>]+name=["']theme-color["'][^>]*content=["']([^"']+)["']/i) ?? html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*name=["']theme-color["']/i);
+  const themed = normalizeHex(meta?.[1]);
+  if (themed && usableBrand(themed)) return themed;
+
+  const source = (html.replace(/<script[\s\S]*?<\/script>/gi, " ") + " " + cssTexts.join(" ")).slice(0, 500_000);
+  const weight = new Map<string, number>();
+  const add = (hex: string | undefined, w: number) => { if (hex && usableBrand(hex)) weight.set(hex, (weight.get(hex) ?? 0) + w); };
+
+  for (const m of source.matchAll(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g)) {
+    const before = source.slice(Math.max(0, (m.index ?? 0) - 50), m.index);
+    add(normalizeHex(m[0]), /--[\w-]*(primary|brand|accent|theme|main)[\w-]*\s*:\s*$/i.test(before) ? 8 : 1);
+  }
+  for (const m of source.matchAll(/rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/g)) {
+    add(rgbToHex(+m[1], +m[2], +m[3]), 1);
+  }
+  let best: string | undefined, bestW = 0;
+  for (const [hex, w] of weight) if (w > bestW) { best = hex; bestW = w; }
+  return best;
 }
