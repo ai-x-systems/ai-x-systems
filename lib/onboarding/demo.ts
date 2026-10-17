@@ -25,6 +25,8 @@ export async function createPreviewBusiness(input: {
   /** typed by the admin when the site doesn't state them (e.g. copied from Google Maps): always wins over the site */
   hoursText?: string;
   servicesText?: string;
+  /** typed by the admin; wins over the colour detected on the site */
+  brandColor?: string;
 }): Promise<DemoResult> {
   const r = await draftFromWebsite(input.website);
   const overrides = !!(input.hoursText?.trim() || input.servicesText?.trim());
@@ -57,6 +59,7 @@ export async function createPreviewBusiness(input: {
       notifyEmail: process.env.FOUNDER_NOTIFY_EMAIL || "demo@example.com",
       hoursText: hoursKnown ? draft.hoursText : undefined,
       hoursUnknown: !hoursKnown,
+      brandColor: input.brandColor || (draft as { brandColor?: string }).brandColor,
       servicesText: draft.servicesText,
       faqsText: (draft as { faqsText?: string }).faqsText,
       policiesText: (draft as { policiesText?: string }).policiesText,
