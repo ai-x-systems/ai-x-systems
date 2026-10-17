@@ -72,7 +72,7 @@ export function IntakePanel() {
 
 /** For a prospect who replied: a private preview built from their website in ~15 seconds. */
 export function PreviewPanel() {
-  const [f, setF] = useState({ website: '', name: '', industry: '', hoursText: '', servicesText: '' })
+  const [f, setF] = useState({ website: '', name: '', industry: '', hoursText: '', servicesText: '', brandColor: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ tryUrl: string; businessId: string; name: string } | null>(null)
@@ -108,7 +108,7 @@ export function PreviewPanel() {
           <Button size="sm" variant="outline" onClick={useLine}>Point the demo line at this preview</Button>
           {lineMsg ? <p className="text-xs text-muted-foreground">{lineMsg}</p> : null}
         </div>
-        <Button size="sm" variant="outline" onClick={() => { setResult(null); setF({ website: '', name: '', industry: '', hoursText: '', servicesText: '' }) }}>Create another</Button>
+        <Button size="sm" variant="outline" onClick={() => { setResult(null); setF({ website: '', name: '', industry: '', hoursText: '', servicesText: '', brandColor: '' }) }}>Create another</Button>
       </div>
     )
   }
@@ -128,6 +128,8 @@ export function PreviewPanel() {
             <textarea className={input + ' min-h-20 font-mono text-xs'} placeholder={'Mon-Fri 8am-5pm\nSat 9am-1pm'} value={f.hoursText} onChange={(e) => setF({ ...f, hoursText: e.target.value })} /></label>
           <label className="space-y-1.5"><span className="font-medium">What they do <span className="font-normal text-muted-foreground">(one per line)</span></span>
             <textarea className={input + ' min-h-20 font-mono text-xs'} placeholder={'AC repair\nAC installation\nMaintenance plans'} value={f.servicesText} onChange={(e) => setF({ ...f, servicesText: e.target.value })} /></label>
+          <label className="space-y-1.5"><span className="font-medium">Chat colour <span className="font-normal text-muted-foreground">(optional: leave empty and we use the colour found on their website)</span></span>
+            <input className={input} placeholder="#c8102e" value={f.brandColor} onChange={(e) => setF({ ...f, brandColor: e.target.value })} /></label>
           <p className="text-xs text-muted-foreground">Leave hours empty and the preview simply says the team will confirm them. It never guesses.</p>
         </div>
       </details>
