@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { BusinessConfigSchema, BusinessConfig } from "./business-schema";
+import { BusinessConfigSchema, type BusinessConfig } from "./business-schema";
 
 const DATA_DIR = path.join(process.cwd(), "data", "businesses");
 
