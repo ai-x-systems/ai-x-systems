@@ -1,6 +1,7 @@
 import "server-only";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { BusinessConfig } from "@/lib/config/business-schema";
+import type { BusinessConfig } from "@/lib/config/business-schema";
+import { mergeChat, type ChatSettings } from "@/lib/config/chat-settings";
 
 /**
  * lib/config/overrides.ts
@@ -29,15 +30,25 @@ import { BusinessConfig } from "@/lib/config/business-schema";
 export interface BusinessOverride {
   faqs?: { question: string; answer: string }[];
   notifyEmail?: string;
+  /** How the chat looks and sounds (colour, headline, greeting...). Needs the `chat` column on business_overrides. */
+  chat?: ChatSettings;
 }
 
 export async function getBusinessOverride(businessId: string): Promise<BusinessOverride | null> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("business_overrides")
-    .select("faqs, notify_email")
+    .select("faqs, notify_email, chat")
     .eq("business_id", businessId)
     .maybeSingle();
+
+  // The `chat` column arrives with a database update. Until it exists, keep FAQs and the
+  // notification email working instead of failing the whole lookup.
+  if (error && (error.code === "42703" || error.code === "PGRST204" || /chat/.test(error.message ?? ""))) {
+    const retry = await supabase.from("business_overrides").select("faqs, notify_email").eq("business_id", businessId).maybeSingle();
+    data = retry.data ? { ...retry.data, chat: null } : null;
+    error = retry.error;
+  }
 
   if (error) {
     console.error("[overrides] failed to read:", error);
@@ -48,6 +59,7 @@ export async function getBusinessOverride(businessId: string): Promise<BusinessO
   return {
     faqs: data.faqs ?? undefined,
     notifyEmail: data.notify_email ?? undefined,
+    chat: data.chat ?? undefined,
   };
 }
 
@@ -65,12 +77,29 @@ export async function saveBusinessOverride(
   if (error) throw error;
 }
 
+/** Saves only the chat appearance, leaving FAQs and the notification email untouched. */
+export async function saveChatOverride(businessId: string, chat: ChatSettings): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.from("business_overrides").upsert({
+    business_id: businessId,
+    chat,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) {
+    const missing = error.code === "42703" || error.code === "PGRST204" || /chat/.test(error.message ?? "");
+    console.error("[overrides] failed to save chat settings:", error);
+    return { ok: false, error: missing ? "Appearance settings need a one-time database update (see docs)." : "Could not save. Please try again." };
+  }
+  return { ok: true };
+}
+
 /** Merges an override onto a base config. Only faqs/notifyEmail can change; everything else is the base config, untouched. */
 export function applyOverride(base: BusinessConfig, override: BusinessOverride | null): BusinessConfig {
   if (!override) return base;
 
   return {
     ...base,
+    chat: mergeChat(base.chat, override.chat),
     knowledge: {
       ...base.knowledge,
       faqs: override.faqs ?? base.knowledge.faqs,
