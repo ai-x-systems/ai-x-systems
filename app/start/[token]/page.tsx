@@ -51,7 +51,7 @@ export default async function StartPage({ params }: { params: Promise<{ token: s
           initial={{
             industry: d.industry ?? '', website: row!.website ?? '', phone: d.phone ?? '', address: d.address ?? '',
             hoursText: d.hoursText ?? '', servicesText: d.servicesText ?? '', faqsText: d.faqsText ?? '', policiesText: d.policiesText ?? '',
-            notifyEmail: row!.client_email,
+            notifyEmail: row!.client_email, brandColor: d.brandColor ?? '',
           }}
           prefilled={!!d.hoursText || !!d.servicesText || !!d.faqsText}
         />
