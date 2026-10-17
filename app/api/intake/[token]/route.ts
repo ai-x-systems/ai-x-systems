@@ -55,7 +55,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
       name: row.business_name, industry: cap(b.industry, 120), website: cap(b.website, 200) || row.website || undefined,
       phone: cap(b.phone, 40), address: cap(b.address, 200), notifyEmail, contactEmail: notifyEmail,
       hoursText: cap(b.hoursText, 800), servicesText: cap(b.servicesText, 4000), faqsText: cap(b.faqsText, 6000),
-      policiesText: cap(b.policiesText, 2000), webhookUrl: cap(b.webhookUrl, 300),
+      policiesText: cap(b.policiesText, 2000), webhookUrl: cap(b.webhookUrl, 300), brandColor: cap(b.brandColor, 9),
     };
     const config = buildBusinessConfig(input, id);
     const services = row.services as Services;
