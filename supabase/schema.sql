@@ -205,3 +205,6 @@ create table if not exists client_intakes (
   created_at timestamptz not null default now()
 );
 alter table client_intakes enable row level security;
+
+-- ── Chat appearance (colour, headline, greeting) editable by owners ─────
+alter table business_overrides add column if not exists chat jsonb;
