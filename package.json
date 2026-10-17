@@ -10,12 +10,13 @@
     "typecheck": "tsc --noEmit",
     "test:growth": "node --no-warnings --import ./scripts/register.mjs scripts/test-growth.mjs",
     "test:onboarding": "node --no-warnings --import ./scripts/register.mjs scripts/test-onboarding.mjs",
-    "test": "npm run test:growth && npm run test:onboarding && npm run test:billing && npm run test:voice && npm run test:demo && npm run test:sitefacts && npm run test:greetings",
+    "test": "npm run test:growth && npm run test:onboarding && npm run test:billing && npm run test:voice && npm run test:demo && npm run test:sitefacts && npm run test:greetings && npm run test:brand",
     "test:billing": "node --no-warnings --import ./scripts/register.mjs scripts/test-billing.mjs",
     "test:voice": "node --no-warnings --import ./scripts/register.mjs scripts/test-voice.mjs",
     "test:demo": "node --no-warnings --import ./scripts/register.mjs scripts/test-demo.mjs",
     "test:sitefacts": "node --no-warnings --import ./scripts/register.mjs scripts/test-sitefacts.mjs",
-    "test:greetings": "node --no-warnings --import ./scripts/register.mjs scripts/test-greetings.mjs"
+    "test:greetings": "node --no-warnings --import ./scripts/register.mjs scripts/test-greetings.mjs",
+    "test:brand": "node --no-warnings --import ./scripts/register.mjs scripts/test-brand.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
