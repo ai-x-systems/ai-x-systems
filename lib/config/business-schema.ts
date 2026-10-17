@@ -285,7 +285,17 @@ export const BusinessConfigSchema = z.object({
   hoursKnown: z.boolean().optional(),
   knowledge: KnowledgeSchema,
   /** Website-chat copy. Optional: sensible defaults are generated from the business and assistant name. */
-  chat: z.object({ greeting: z.string().max(400).optional(), bubble: z.string().max(160).optional() }).optional(),
+  chat: z
+    .object({
+      greeting: z.string().max(400).optional(),
+      bubble: z.string().max(160).optional(),
+      headline: z.string().max(80).optional(),
+      subtitle: z.string().max(160).optional(),
+      suggestions: z.array(z.string().max(60)).max(4).optional(),
+      /** "#rrggbb" or "#rgb". The widget darkens it automatically if white text would be hard to read on it. */
+      brandColor: z.string().regex(/^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})|[0-9a-fA-F]{6})$/).optional(),
+    })
+    .optional(),
   voice: VoiceSettingsSchema,
   booking: BookingSettingsSchema,
   integrations: IntegrationSettingsSchema,
