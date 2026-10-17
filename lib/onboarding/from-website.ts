@@ -1,11 +1,13 @@
 import "server-only";
 import { getChatCompletion } from "@/lib/llm/groq-client";
 import { isSafePublicUrl } from "@/lib/growth/pure";
-import { discoverLinks, extractHoursFromText, extractJsonLdFacts, extractMeta, pickRelevantText, type LdFacts } from "./site-facts";
+import { discoverLinks, extractBrandColor, extractHoursFromText, extractJsonLdFacts, extractMeta, pickRelevantText, type LdFacts } from "./site-facts";
 
 export interface WebsiteDraft {
   name?: string; industry?: string; phone?: string; address?: string; contactEmail?: string;
   hoursText?: string; servicesText?: string; faqsText?: string; policiesText?: string;
+  /** the colour the site uses for its brand, "#rrggbb" */
+  brandColor?: string;
 }
 
 export interface DraftDiagnostics {
@@ -38,6 +40,31 @@ async function fetchHtml(url: string): Promise<string> {
   } catch {
     return "";
   }
+}
+
+async function fetchCss(url: string): Promise<string> {
+  const safe = isSafePublicUrl(url);
+  if (!safe) return "";
+  try {
+    const res = await fetch(safe.toString(), { headers: { "User-Agent": "Mozilla/5.0 (compatible; AIxSystemsBot/1.0)", Accept: "text/css,*/*" }, redirect: "follow", signal: AbortSignal.timeout(5000) });
+    if (!res.ok || !isSafePublicUrl(res.url)) return "";
+    return (await res.text()).slice(0, 250_000);
+  } catch {
+    return "";
+  }
+}
+
+/** Up to two stylesheet addresses linked from the page (where a site's brand colour usually lives). */
+function stylesheetLinks(html: string, origin: string): string[] {
+  const out: string[] = [];
+  for (const tag of html.matchAll(/<link\b[^>]*>/gi)) {
+    if (!/rel=["'][^"']*stylesheet/i.test(tag[0])) continue;
+    const href = tag[0].match(/href=["']([^"']+)["']/i)?.[1];
+    if (!href) continue;
+    try { out.push(new URL(href, origin).toString()); } catch { /* skip bad url */ }
+    if (out.length >= 2) break;
+  }
+  return out;
 }
 
 function toText(html: string): string {
@@ -77,7 +104,7 @@ export async function draftFromWebsite(rawUrl: string): Promise<{ draft?: Websit
     ...discoverLinks(home, origin, 5),
     ...["/contact", "/contact-us", "/about", "/about-us", "/services", "/faq", "/hours"].map((p) => `${origin}${p}`),
   ])].filter((u) => u.replace(/\/$/, "") !== safe.toString().replace(/\/$/, "")).slice(0, 8);
-  const rest = await Promise.all(extra.map(fetchHtml));
+  const [rest, cssTexts] = await Promise.all([Promise.all(extra.map(fetchHtml)), Promise.all(stylesheetLinks(home, origin).map(fetchCss))]);
   const pages = [home, ...rest.filter(Boolean)];
 
   const ld = mergeLd(pages.map(extractJsonLdFacts));
@@ -128,6 +155,7 @@ export async function draftFromWebsite(rawUrl: string): Promise<{ draft?: Websit
     contactEmail: s("contactEmail") ?? ld.email,
     hoursText: hoursLines.length ? hoursLines.join("\n") : undefined,
     servicesText, faqsText: s("faqsText"), policiesText: s("policiesText"),
+    brandColor: extractBrandColor(home, cssTexts.filter(Boolean)),
   };
   diagnostics.hoursFound = !!draft.hoursText;
   diagnostics.servicesFound = !!draft.servicesText;
