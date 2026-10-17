@@ -232,7 +232,10 @@
 
   "chat": {
     "greeting": "Hi, thanks for stopping by AI x Systems. I'm Alex, our virtual assistant. Are you looking for an AI receptionist for your business? Tell me what you do and I'll show you how it could help.",
-    "bubble": "👋 Wondering what an AI receptionist could do for your business? Ask me."
+    "bubble": "👋 Wondering what an AI receptionist could do for your business? Ask me.",
+    "headline": "Welcome to AI x Systems",
+    "subtitle": "Alex is our virtual assistant. Ask about AI receptionists, or leave your details and we'll follow up.",
+    "suggestions": ["What does an AI receptionist do?", "How does it work?", "I'd like someone to contact me"]
   },
 
   "booking": {
