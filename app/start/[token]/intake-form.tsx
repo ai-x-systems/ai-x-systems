@@ -6,7 +6,7 @@ const input = 'w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-
 
 interface Initial {
   industry: string; website: string; phone: string; address: string; hoursText: string
-  servicesText: string; faqsText: string; policiesText: string; notifyEmail: string
+  servicesText: string; faqsText: string; policiesText: string; notifyEmail: string; brandColor: string
 }
 interface Done { snippet: string | null; loginUrl: string; services: string }
 
@@ -66,6 +66,13 @@ export function IntakeForm({ token, services, loginEmail, initial, prefilled }: 
           <label className="space-y-1.5"><span className="font-medium">Website</span><input className={input} value={f.website} onChange={set('website')} /></label>
           <label className="space-y-1.5"><span className="font-medium">Phone</span><input className={input} value={f.phone} onChange={set('phone')} /></label>
           <label className="space-y-1.5"><span className="font-medium">Address</span><input className={input} value={f.address} onChange={set('address')} /></label>
+          <div className="space-y-1.5 sm:col-span-2">
+            <span className="font-medium">Chat colour <span className="font-normal text-muted-foreground">(so the chat matches your brand{initial.brandColor ? '; we picked this up from your website' : ''})</span></span>
+            <div className="flex items-center gap-3">
+              <input type="color" aria-label="Pick a colour" value={/^#[0-9a-f]{6}$/i.test(f.brandColor) ? f.brandColor : '#4f46e5'} onChange={(e) => setF({ ...f, brandColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-input bg-transparent p-1" />
+              <input className={input} placeholder="#c8102e (leave empty for our default blue)" value={f.brandColor} onChange={set('brandColor')} />
+            </div>
+          </div>
         </div>
       </div>
 
