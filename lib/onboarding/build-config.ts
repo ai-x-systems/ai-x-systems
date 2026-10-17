@@ -1,5 +1,6 @@
 import { BusinessConfigSchema, type BusinessConfig } from "../config/business-schema";
 import { defaultPhoneGreeting } from "../config/greetings";
+import { normalizeHex } from "../config/brand";
 
 /**
  * Pure (no I/O) so it can be unit tested. Turns the flat onboarding form
@@ -30,6 +31,8 @@ export interface OnboardInput {
   demo?: boolean;
   /** true = we don't know their opening hours (the assistant will say so instead of guessing). */
   hoursUnknown?: boolean;
+  /** the chat's brand colour ("#rrggbb"); anything invalid is ignored and the default look is used */
+  brandColor?: string;
 }
 
 export function slugify(name: string): string {
@@ -170,6 +173,7 @@ export function buildBusinessConfig(input: OnboardInput, id: string): BusinessCo
     client: { id, name: input.name.trim(), status: input.demo ? "demo" : "onboarding", deploymentType: input.demo ? "demo_preview" : "client_deployment" },
     hours,
     ...(input.hoursUnknown ? { hoursKnown: false } : {}),
+    ...(normalizeHex(input.brandColor) ? { chat: { brandColor: normalizeHex(input.brandColor) } } : {}),
     knowledge: {
       services: parseServices(input.servicesText),
       faqs: parseFaqs(input.faqsText),
