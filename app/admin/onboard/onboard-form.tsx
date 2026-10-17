@@ -28,7 +28,7 @@ function Copy({ text, label }: { text: string; label: string }) {
 const empty = {
   name: '', industry: '', website: '', phone: '', address: '', notifyEmail: '', clientEmail: '',
   services: 'chat', assistantName: 'Ava', tone: 'friendly', timezone: 'America/Chicago',
-  hoursText: '', servicesText: '', faqsText: '', policiesText: '', webhookUrl: '', leadSheetId: '',
+  hoursText: '', servicesText: '', faqsText: '', policiesText: '', webhookUrl: '', leadSheetId: '', brandColor: '',
 }
 
 export function OnboardForm() {
@@ -115,6 +115,7 @@ export function OnboardForm() {
           <label className="space-y-1.5"><span className="font-medium">Timezone</span><input className={input} value={f.timezone} onChange={set('timezone')} /></label>
           <label className="space-y-1.5"><span className="font-medium">What did they buy?</span>
             <select className={input} value={f.services} onChange={set('services')}><option value="chat">Website chat</option><option value="voice">Phone assistant</option><option value="both">Both</option></select></label>
+          <label className="space-y-1.5"><span className="font-medium">Chat colour <span className="font-normal text-muted-foreground">(#rrggbb, optional)</span></span><input className={input} placeholder="#c8102e" value={f.brandColor} onChange={set('brandColor')} /></label>
           <label className="space-y-1.5"><span className="font-medium">Assistant name</span><input className={input} value={f.assistantName} onChange={set('assistantName')} /></label>
         </div>
         {note ? <p className="text-xs text-primary">{note}</p> : null}
