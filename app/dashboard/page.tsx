@@ -7,6 +7,9 @@ import { listRecentActivity } from '@/lib/activity/log'
 import { PageHeader } from '@/components/page-header'
 import { AppTopbar } from '@/components/app-topbar'
 import { siteConfig } from '@/lib/site-config'
+import { AppearanceForm } from '@/components/appearance-form'
+import { getBusinessOverride } from '@/lib/config/overrides'
+import { defaultBubble, defaultChatGreeting, defaultHeadline, defaultSubtitle, resolveSuggestions } from '@/lib/config/greetings'
 import { LogoutButton } from './logout-button'
 
 export const metadata = { title: 'Dashboard' }
@@ -26,6 +29,7 @@ export default async function DashboardPage() {
   const services = stored?.services ?? 'both'
   const showVoice = services !== 'chat' || !!line
   const showChat = services !== 'voice'
+  const chatOverride = showChat && business ? await getBusinessOverride(session.businessId) : null
   const topupUrl = process.env.VOICE_TOPUP_URL
   const lowMinutes = balance.balance < (Number(process.env.VOICE_LOW_BALANCE_MINUTES) || 15)
 
@@ -124,6 +128,27 @@ export default async function DashboardPage() {
           <p className="mt-2 text-xs text-muted-foreground">
             No access to your site? Share this chat link anywhere: <span className="break-all">{origin}/embed/chat/{session.businessId}</span>
           </p>
+        </div>
+      ) : null}
+
+      {showChat && business ? (
+        <div className="mt-8 rounded-xl border border-border bg-card p-6">
+          <p className="text-sm font-medium">Make the chat match your brand</p>
+          <p className="mb-4 mt-1 text-xs text-muted-foreground">
+            Pick your colour and change the welcome text. Changes appear on your website within a minute. Leave a field empty to use the default.
+          </p>
+          <AppearanceForm
+            endpoint="/api/client/appearance"
+            businessName={business.name}
+            initial={{ ...(business.chat ?? {}), ...(chatOverride?.chat ?? {}) }}
+            defaults={{
+              greeting: defaultChatGreeting(business.name, business.voice.assistantName),
+              bubble: defaultBubble(business.name),
+              headline: defaultHeadline(business.name),
+              subtitle: defaultSubtitle(business.voice.assistantName),
+              suggestions: resolveSuggestions({ ...business, chat: undefined }),
+            }}
+          />
         </div>
       ) : null}
 
