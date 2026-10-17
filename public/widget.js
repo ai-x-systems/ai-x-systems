@@ -101,7 +101,52 @@
   // -------------------------------------------------------------------------
   // 3. Brand constants (indigo -> sky, per the AI X Systems brand).
   // -------------------------------------------------------------------------
-  var GRADIENT = "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)";
+  var DEFAULT_GRADIENT = "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)";
+  // Each element reads its colour from --aixw-grad, set per business once its settings are known.
+  var GRADIENT = "var(--aixw-grad," + DEFAULT_GRADIENT + ")";
+
+  // Brand colour helpers. Only a validated "#rrggbb" ever reaches a style.
+  function normHex(h) {
+    if (typeof h !== "string") return null;
+    h = h.trim();
+    // A bare 3-letter word ("bad") is not a colour; "#bad" and "c8102e" are.
+    if (h.charAt(0) !== "#" && h.length === 3) return null;
+    if (h.charAt(0) !== "#") h = "#" + h;
+    if (/^#[0-9a-f]{3}$/i.test(h)) h = "#" + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2) + h.charAt(3) + h.charAt(3);
+    return /^#[0-9a-f]{6}$/i.test(h) ? h.toLowerCase() : null;
+  }
+  function rgbOf(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
+  function hexOf(c) {
+    return "#" + c.map(function (v) { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? "0" : "") + v.toString(16); }).join("");
+  }
+  function lumOf(h) {
+    var c = rgbOf(h).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function darken(h, p) { return hexOf(rgbOf(h).map(function (v) { return v * (1 - p); })); }
+  function whiteSafe(h) {
+    for (var i = 0; i < 40 && 1.05 / (lumOf(h) + 0.05) < 4.5; i++) h = darken(h, 0.08);
+    return h;
+  }
+  function gradientOf(from, to) { return "linear-gradient(135deg, " + from + " 0%, " + to + " 100%)"; }
+
+  // The page owner can set the colour straight on the script tag: data-brand-color="#c8102e"
+  var dataColor = normHex(script.getAttribute("data-brand-color"));
+  var dataBrand = dataColor ? (function () { var f = whiteSafe(dataColor); return { from: f, to: darken(f, 0.22) }; })() : null;
+
+  // Start loading the business's settings immediately (name, colour, greeting bubble).
+  var infoData = null;
+  var infoPromise = fetch(businessInfoUrl)
+    .then(function (r) { return r.json(); })
+    .then(function (d) { infoData = d; return d; })
+    .catch(function () { return null; });
+
+  function currentBrand() {
+    if (dataBrand) return dataBrand;
+    var b = infoData && infoData.success && infoData.brand;
+    if (b && b.custom && normHex(b.from) && normHex(b.to)) return { from: normHex(b.from), to: normHex(b.to) };
+    return null;
+  }
   var CHAT_ICON_SVG =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" ' +
     'stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -250,22 +295,25 @@
     // Best-effort: personalize the header with the business's name once it
     // loads. Never blocks the widget's initial render, and a slow/failed
     // fetch just leaves the generic "Chat with us" label in place.
-    fetch(businessInfoUrl)
-      .then(function (res) {
-        return res.ok ? res.json() : null;
-      })
-      .then(function (data) {
-        if (data && data.success && data.name) {
-          headerLabel.textContent = data.name;
-        }
-        // The pop-up bubble's wording also comes from the business's config.
-        if (data && data.success && typeof data.bubble === "string" && data.bubble) {
-          GREETING_MESSAGE = data.bubble;
-        }
-      })
-      .catch(function () {
-        // Silent — generic label already showing.
-      });
+    function applyBrand() {
+      var b = currentBrand();
+      if (!b) return;
+      var g = gradientOf(b.from, b.to);
+      launcher.style.setProperty("--aixw-grad", g);
+      panel.style.setProperty("--aixw-grad", g);
+    }
+    applyBrand();
+
+    infoPromise.then(function (data) {
+      if (data && data.success && data.name) {
+        headerLabel.textContent = data.name;
+      }
+      // The pop-up bubble's wording also comes from the business's config.
+      if (data && data.success && typeof data.bubble === "string" && data.bubble) {
+        GREETING_MESSAGE = data.bubble;
+      }
+      applyBrand();
+    });
 
     var frame = document.createElement("iframe");
     frame.className = "aixw-frame";
@@ -397,16 +445,25 @@
   // -------------------------------------------------------------------------
   // 6. Initialize. Expose a small API as the single global.
   // -------------------------------------------------------------------------
+  // Wait (at most ~1.2s) for the business's settings so the launcher never flashes the default colour first.
+  function whenBrandKnown(fn) {
+    if (dataBrand) return fn();
+    var done = false;
+    function go() { if (!done) { done = true; fn(); } }
+    infoPromise.then(go);
+    setTimeout(go, 1200);
+  }
+
   ready(function () {
     if (document.body) {
-      build();
+      whenBrandKnown(build);
     } else {
       // Extremely defensive: body should exist by DOMContentLoaded, but if
       // something loaded the script even later, wait for it.
       var guard = setInterval(function () {
         if (document.body) {
           clearInterval(guard);
-          build();
+          whenBrandKnown(build);
         }
       }, 50);
     }
