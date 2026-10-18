@@ -38,3 +38,20 @@ Create a plan/pricing per pack (e.g. 100 minutes), then set `FREEMIUS_MINUTE_PAC
 - **Recording** is switched off by default (transcripts still exist). Turn it on only with a consent notice that fits the caller's location.
 - **AI disclosure**: the greeting says "virtual assistant"; some places require telling callers they're talking to AI.
 - The shared website-chat fallback through OpenRouter's free router is **not** used for calls.
+
+## Test for free from a laptop (no phone credit, works from any country)
+A free **Vapi SIP number** has no phone number: it is reached at a SIP address like `sip:aixs-demo@sip.vapi.ai` from any free softphone (Linphone or Zoiper). Nothing touches the phone network, so you can test the whole flow without paying for an international call.
+1. Vapi -> Phone Numbers -> Create -> **Free Vapi SIP**. Choose a username (e.g. `aixs-demo`).
+2. Open that number: leave **Assistant** empty, set Server URL to `https://<your-site>/api/voice/vapi?k=<VOICE_WEBHOOK_SECRET>`.
+3. /admin/voice -> Shared demo line: type the SIP address (`sip:aixs-demo@sip.vapi.ai`) in the number box. Optionally paste the number's Vapi id as a backup match.
+4. Install Linphone (free), dial the SIP address, and talk through your laptop's microphone. If the app insists on an account, create a free one: no payment is needed.
+5. Hang up and check /admin/voice: the call should appear with a length above 0 seconds.
+Test calls still use a little Vapi credit (cents). SIP numbers are inbound only.
+
+### Check your own server without any call at all
+In PowerShell (replace the URL and secret):
+```
+$b = '{"message":{"type":"assistant-request","phoneNumber":{"sipUri":"sip:aixs-demo@sip.vapi.ai"},"call":{"id":"t1"}}}'
+Invoke-RestMethod -Method Post -Uri "https://YOUR-SITE/api/voice/vapi?k=YOUR_SECRET" -ContentType "application/json" -Body $b
+```
+A working setup returns an `assistant` object (with the greeting and instructions). A spoken "can't take your call" error means the line isn't saved in /admin/voice.
