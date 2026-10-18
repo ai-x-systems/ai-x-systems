@@ -98,11 +98,11 @@ export async function findDemoLine(): Promise<VoiceLine | null> {
 }
 
 /** Creates the shared demo line (first time) or re-points it at another business. Only one demo line exists. */
-export async function pointDemoLine(businessId: string, number?: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function pointDemoLine(businessId: string, number?: string, vapiPhoneNumberId?: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const existing = await findDemoLine();
   if (existing) {
     const { error } = await db().from("voice_lines")
-      .update({ business_id: businessId, enabled: true, forward_to: null, sell_cents_per_minute: 0, ...(number ? { e164: number } : {}) })
+      .update({ business_id: businessId, enabled: true, forward_to: null, sell_cents_per_minute: 0, ...(number ? { e164: number } : {}), ...(vapiPhoneNumberId ? { vapi_phone_number_id: vapiPhoneNumberId } : {}) })
       .eq("is_demo_line", true);
     if (error) return { ok: false, error: error.code === "23505" ? "That business already has its own phone line." : "Could not move the demo line." };
     return { ok: true };
@@ -110,6 +110,7 @@ export async function pointDemoLine(businessId: string, number?: string): Promis
   if (!number) return { ok: false, error: "Create the demo line first: enter its phone number." };
   const { error } = await db().from("voice_lines").insert({
     business_id: businessId, e164: number, forward_to: null, sell_cents_per_minute: 0, enabled: true, is_demo_line: true,
+    vapi_phone_number_id: vapiPhoneNumberId ?? null,
   });
   if (error) return { ok: false, error: error.code === "23505" ? "That number or business already has a line." : "Could not create the demo line." };
   return { ok: true };
