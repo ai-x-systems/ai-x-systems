@@ -27,17 +27,19 @@ export function DemoLineForm({ previewIds, hasLine }: { previewIds: string[]; ha
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-1.5"><span className="font-medium">Point the demo line at</span>
           <select className={input} value={businessId} onChange={(e) => setBusinessId(e.target.value)}>{previewIds.map((id) => <option key={id} value={id}>{id}</option>)}</select></label>
-        {!hasLine ? (
-          <label className="space-y-1.5"><span className="font-medium">Demo line: phone number or SIP address *</span>
-            <input required className={input} placeholder="+15125550123 or sip:aixs-demo@sip.vapi.ai" value={number} onChange={(e) => setNumber(e.target.value)} /></label>
-        ) : null}
+        <label className="space-y-1.5">
+          <span className="font-medium">
+            Demo line: phone number or SIP address {hasLine ? <span className="font-normal text-muted-foreground">(leave empty to keep the current one)</span> : '*'}
+          </span>
+          <input required={!hasLine} className={input} placeholder="+15125550123 or sip:aixs-demo@sip.vapi.ai" value={number} onChange={(e) => setNumber(e.target.value)} />
+        </label>
       </div>
-      {!hasLine ? (
+      {true ? (
         <label className="block space-y-1.5"><span className="font-medium">Vapi phone number id <span className="font-normal text-muted-foreground">(optional backup match: open the number in Vapi and copy its id)</span></span>
           <input className={input} value={vapiPhoneNumberId} onChange={(e) => setVapiPhoneNumberId(e.target.value)} /></label>
       ) : null}
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm">{hasLine ? 'Move demo line' : 'Create demo line'}</Button>
+        <Button type="submit" size="sm">{hasLine ? 'Save demo line' : 'Create demo line'}</Button>
         {msg ? <span className="text-xs text-muted-foreground">{msg}</span> : null}
       </div>
     </form>
