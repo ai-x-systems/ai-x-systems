@@ -47,6 +47,23 @@ export function normalizeE164(raw: string | undefined | null): string | undefine
   return d.length === 10 ? `+1${d}` : d.length === 11 && d.startsWith("1") ? `+${d}` : `+${d}`;
 }
 
+/**
+ * Free Vapi "SIP numbers" have no phone number: callers reach them at a SIP address such as
+ * sip:aixs-demo@sip.vapi.ai, from any free softphone on a laptop. That is the zero-cost way to test
+ * the whole phone flow without placing an international call.
+ */
+const SIP_RE = /^sip:[a-z0-9._-]+@[a-z0-9.-]+$/;
+export function normalizeSipUri(raw: string | undefined | null): string | undefined {
+  if (!raw) return undefined;
+  const s = raw.trim().toLowerCase().replace(/;.*$/, "");
+  return SIP_RE.test(s) ? s : undefined;
+}
+
+/** A line is identified by a phone number (+15125550123) or a SIP address (sip:name@sip.vapi.ai). */
+export function normalizeLineAddress(raw: string | undefined | null): string | undefined {
+  return normalizeSipUri(raw) ?? normalizeE164(raw);
+}
+
 /** Answered calls under 5s (hang-ups, wrong numbers) are free; everything else rounds UP to whole minutes. */
 export function billedMinutes(durationSeconds: number): number {
   if (!Number.isFinite(durationSeconds) || durationSeconds < 5) return 0;
@@ -104,7 +121,7 @@ export function extractCalledNumber(message: Obj): string | undefined {
   const call = isObj(message.call) ? message.call : {};
   const a = isObj(message.phoneNumber) ? message.phoneNumber : {};
   const b = isObj(call.phoneNumber) ? call.phoneNumber : {};
-  return normalizeE164((a.number ?? b.number) as string | undefined);
+  return normalizeE164((a.number ?? b.number) as string | undefined) ?? normalizeSipUri((a.sipUri ?? b.sipUri) as string | undefined);
 }
 
 export function extractPhoneNumberId(message: Obj): string | undefined {
