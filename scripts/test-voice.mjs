@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { scopedToken, authorizeVoice, normalizeE164, billedMinutes, maxCallSeconds, parseToolCalls, extractDurationSeconds, extractCostCents, extractCalledNumber, extractCaller, minutesForPayment, parsePacks } from "../lib/voice/pure.ts";
+import { normalizeSipUri, normalizeLineAddress, scopedToken, authorizeVoice, normalizeE164, billedMinutes, maxCallSeconds, parseToolCalls, extractDurationSeconds, extractCostCents, extractCalledNumber, extractCaller, minutesForPayment, parsePacks } from "../lib/voice/pure.ts";
 
 const S = "master-secret";
 // auth
@@ -62,4 +62,17 @@ assert.equal(minutesForPayment({ objects: { subscription: { pricing_id: "222" } 
 assert.equal(minutesForPayment({ objects: { payment: { plan_id: 999 } } }, packs), 0, "unknown plan credits nothing");
 assert.equal(minutesForPayment({}, packs), 0);
 assert.deepEqual(parsePacks("not json"), {});
+// SIP lines (free, test from a laptop softphone)
+assert.equal(normalizeSipUri("sip:AIXS-Demo@SIP.vapi.ai"), "sip:aixs-demo@sip.vapi.ai");
+assert.equal(normalizeSipUri("sip:aixs-demo@sip.vapi.ai;transport=udp"), "sip:aixs-demo@sip.vapi.ai");
+assert.equal(normalizeSipUri("aixs-demo@sip.vapi.ai"), undefined);
+assert.equal(normalizeSipUri("sip:bad user@x.com"), undefined);
+assert.equal(normalizeSipUri(""), undefined);
+assert.equal(normalizeLineAddress("sip:aixs-demo@sip.vapi.ai"), "sip:aixs-demo@sip.vapi.ai");
+assert.equal(normalizeLineAddress("(512) 555-0123"), "+15125550123");
+assert.equal(normalizeLineAddress("sip:123456789@sip.vapi.ai"), "sip:123456789@sip.vapi.ai", "digits inside a SIP address are not a phone number");
+assert.equal(normalizeLineAddress("nonsense"), undefined);
+assert.equal(extractCalledNumber({ phoneNumber: { sipUri: "sip:aixs-demo@sip.vapi.ai" } }), "sip:aixs-demo@sip.vapi.ai");
+assert.equal(extractCalledNumber({ call: { phoneNumber: { sipUri: "SIP:Aixs-Demo@sip.vapi.ai" } } }), "sip:aixs-demo@sip.vapi.ai");
+assert.equal(extractCalledNumber({ phoneNumber: { number: "+15125550123", sipUri: "sip:x@sip.vapi.ai" } }), "+15125550123", "a real number wins");
 console.log("voice tests: all passed");
