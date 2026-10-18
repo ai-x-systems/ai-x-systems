@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/accounts/session";
 import { getBusiness } from "@/lib/config/business-store";
 import { upsertLine } from "@/lib/voice/store";
-import { normalizeE164 } from "@/lib/voice/pure";
+import { normalizeE164, normalizeLineAddress } from "@/lib/voice/pure";
 
 export const runtime = "nodejs";
 
@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
   };
 
   if (!b.businessId || !(await getBusiness(b.businessId))) return NextResponse.json({ success: false, error: "Unknown business id." }, { status: 404 });
-  const e164 = normalizeE164(b.number);
-  if (!e164) return NextResponse.json({ success: false, error: "Enter the phone number with area code, e.g. +15125550123." }, { status: 400 });
+  const e164 = normalizeLineAddress(b.number);
+  if (!e164) return NextResponse.json({ success: false, error: "Enter the phone number with area code, e.g. +15125550123 (or a SIP address like sip:name@sip.vapi.ai)." }, { status: 400 });
   const forwardTo = b.forwardTo?.trim() ? normalizeE164(b.forwardTo) : undefined;
   if (b.forwardTo?.trim() && !forwardTo) return NextResponse.json({ success: false, error: "The fallback number isn't a valid phone number." }, { status: 400 });
 
