@@ -22,10 +22,10 @@ export default async function TryPage({ params }: { params: Promise<{ businessId
   const gradient = `linear-gradient(135deg, ${brand.from} 0%, ${brand.to} 100%)`
   // The shared demo phone line points at one preview at a time; only show it while it points here.
   const line = await getLineForBusiness(businessId).catch(() => null)
-  const phone = line?.isDemoLine && line.enabled ? line.e164 : null
+  // Show the number only once you've confirmed it rings (set VOICE_PHONE_DEMO=on in Vercel); until then prospects use the browser button.
+  const phone = process.env.VOICE_PHONE_DEMO === 'on' && line?.isDemoLine && line.enabled ? line.e164 : null
   // Browser voice demo: needs Vapi's public key (client) and the voice secret (server) to be set.
   const voiceDemo = Boolean(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY && process.env.VOICE_WEBHOOK_SECRET)
-  const mail = `mailto:${siteConfig.contact.email}?subject=${encodeURIComponent(`Preview for ${name}`)}`
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-10">
@@ -43,7 +43,7 @@ export default async function TryPage({ params }: { params: Promise<{ businessId
       </p>
 
       <div className="mt-8 rounded-xl border border-border bg-card p-5 text-sm">
-        <p className="font-medium">Hear it answer the phone</p>
+        <p className="font-medium">Hear it answer a call</p>
         {voiceDemo ? (
           <div className="mt-3">
             <TalkToAva businessId={businessId} assistantName={stored.config.voice.assistantName} from={brand.from} to={brand.to} />
@@ -63,7 +63,7 @@ export default async function TryPage({ params }: { params: Promise<{ businessId
         <p className="mt-1 text-muted-foreground">
           We put it on your website with your real hours, services and answers, send every enquiry to you, and you see everything in a dashboard.
         </p>
-        <a href={mail} className="mt-3 inline-block rounded-lg px-4 py-2 text-sm font-medium" style={{ background: gradient, color: '#ffffff' }}>Get this on my site</a>
+        <a href="/demo" className="mt-3 inline-block rounded-lg px-4 py-2 text-sm font-medium" style={{ background: gradient, color: '#ffffff' }}>Get this on my site</a>
       </div>
     </main>
   )
