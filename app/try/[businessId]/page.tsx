@@ -5,6 +5,7 @@ import { getLineForBusiness } from '@/lib/voice/store'
 import { isDemoId } from '@/lib/onboarding/build-config'
 import { siteConfig } from '@/lib/site-config'
 import { resolveBrand } from '@/lib/config/brand'
+import TalkToAva from '@/components/talk-to-ava'
 
 export const metadata: Metadata = { title: 'Preview', robots: { index: false, follow: false } }
 export const dynamic = 'force-dynamic'
@@ -22,6 +23,8 @@ export default async function TryPage({ params }: { params: Promise<{ businessId
   // The shared demo phone line points at one preview at a time; only show it while it points here.
   const line = await getLineForBusiness(businessId).catch(() => null)
   const phone = line?.isDemoLine && line.enabled ? line.e164 : null
+  // Browser voice demo: needs Vapi's public key (client) and the voice secret (server) to be set.
+  const voiceDemo = Boolean(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY && process.env.VOICE_WEBHOOK_SECRET)
   const mail = `mailto:${siteConfig.contact.email}?subject=${encodeURIComponent(`Preview for ${name}`)}`
 
   return (
@@ -40,14 +43,19 @@ export default async function TryPage({ params }: { params: Promise<{ businessId
       </p>
 
       <div className="mt-8 rounded-xl border border-border bg-card p-5 text-sm">
-        <p className="font-medium">Want the phone version too?</p>
+        <p className="font-medium">Hear it answer the phone</p>
+        {voiceDemo ? (
+          <div className="mt-3">
+            <TalkToAva businessId={businessId} assistantName={stored.config.voice.assistantName} from={brand.from} to={brand.to} />
+          </div>
+        ) : null}
         {phone ? (
-          <p className="mt-1 text-muted-foreground">
-            Call <a href={`tel:${phone}`} className="font-semibold underline underline-offset-4" style={{ color: brand.from }}>{phone}</a> right now and hear it answer as {name}.
+          <p className="mt-2 text-muted-foreground">
+            Or call <a href={`tel:${phone}`} className="font-semibold underline underline-offset-4" style={{ color: brand.from }}>{phone}</a> right now and hear it answer as {name}.
           </p>
-        ) : (
+        ) : !voiceDemo ? (
           <p className="mt-1 text-muted-foreground">Reply to our email and we&apos;ll set up a live call so you can hear it answer as {name}.</p>
-        )}
+        ) : null}
       </div>
 
       <div className="mt-6 text-sm">
