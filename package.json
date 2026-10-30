@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "@vapi-ai/web": "^3.0.1",
     "@vercel/analytics": "1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -27,7 +29,6 @@
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "nodemailer": "^9.0.5",
-    "@supabase/supabase-js": "^2.45.4",
     "react": "^19",
     "react-dom": "^19",
     "server-only": "^0.0.1",
