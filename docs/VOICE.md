@@ -33,6 +33,12 @@
 ## Buying minutes with Freemius
 Create a plan/pricing per pack (e.g. 100 minutes), then set `FREEMIUS_MINUTE_PACKS={"<plan or pricing id>":100}` and `VOICE_TOPUP_URL=<that pack's checkout link>`. A `payment.created` whose payload contains a configured id credits the minutes automatically (once per event). Not verified against a real payload — if a pack payment doesn't credit, the alert email says so and you add the minutes by hand.
 
+## Browser voice demo (no phone number needed)
+Preview pages (`/try/<demo id>`) show a "Talk to <assistant>" button when both env vars are set: `NEXT_PUBLIC_VAPI_PUBLIC_KEY` (Vapi dashboard > API Keys > Public Key, safe to expose) and `VOICE_WEBHOOK_SECRET`. Redeploy after adding the public key, because `NEXT_PUBLIC_*` values are baked in at build time.
+- The button fetches the same assistant the phone line would use from `/api/voice/web-assistant/<id>` (demo previews only) and starts a Vapi web call in the browser. Leads and the end-of-call report reach `/api/voice/vapi` exactly like phone calls.
+- Every call spends your Vapi credits, so it is capped at 2 minutes and rate-limited: `WEB_VOICE_PER_IP_HOURLY` (default 3) and `WEB_VOICE_DAILY_CAP` (default 25 calls a day across all previews).
+- Demo calls are never charged to anyone. If the button doesn't appear, one of the two env vars is missing.
+
 ## Be careful with
 - **Healthcare and legal clients.** Phone calls there involve sensitive personal information; HIPAA-grade voice is a separate, expensive Vapi add-on (third-party sources cite ~$2,000/month — check). Start with home services, salons, trades, real estate, gyms.
 - **Recording** is switched off by default (transcripts still exist). Turn it on only with a consent notice that fits the caller's location.
