@@ -1,4 +1,4 @@
-import { extractBuyerEmail, type BillingStatus } from "@/lib/billing/freemius";
+import { extractBuyerEmail, type BillingStatus } from "@/lib/billing/status";
 
 /**
  * Pure helpers for the Whop billing webhook (no network, no database, so they are unit-tested).
