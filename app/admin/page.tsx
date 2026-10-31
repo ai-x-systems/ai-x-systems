@@ -4,6 +4,7 @@ import { getAdminSession } from '@/lib/accounts/session'
 import { accountStore } from '@/lib/accounts/store'
 import { listStoredBusinesses } from '@/lib/config/business-store'
 import { creditLedger } from '@/lib/billing/credits'
+import { whopConfigured } from '@/lib/billing/whop-checkout'
 import { PageHeader } from '@/components/page-header'
 import { AppTopbar } from '@/components/app-topbar'
 import { LogoutButton } from '@/app/dashboard/logout-button'
@@ -11,6 +12,8 @@ import { CreditAdjustForm } from './credit-adjust-form'
 import { CreateClientForm } from './create-client-form'
 import { TestEmailButton } from './test-email-button'
 import { ClientStatusControls } from './client-status-controls'
+import { PaymentLinkButton } from './payment-link-button'
+import { getSupabaseClient } from '@/lib/supabase/client'
 
 export const metadata = { title: 'Admin' }
 
@@ -41,6 +44,15 @@ export default async function AdminPage() {
         }
       })
   )
+
+  const whopReady = whopConfigured()
+  const { data: paymentRows } = await getSupabaseClient()
+    .from('billing_events')
+    .select('type,email,business_id,created_at')
+    .like('type', 'whop.%')
+    .order('created_at', { ascending: false })
+    .limit(10)
+  const payments = paymentRows ?? []
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-4 py-16 md:px-6">
@@ -117,6 +129,7 @@ export default async function AdminPage() {
                   <td className="px-4 py-3 tabular-nums">{c.creditBalance}</td>
                   <td className="px-4 py-3">
                     <CreditAdjustForm businessId={c.businessId} />
+                    {whopReady && c.editable && !c.demo ? <PaymentLinkButton businessId={c.businessId} /> : null}
                   </td>
                   <td className="px-4 py-3">
                     <Link
@@ -133,9 +146,44 @@ export default async function AdminPage() {
         </table>
       </div>
 
+      <div className="mt-10">
+        <h2 className="text-sm font-medium">Recent payments</h2>
+        <div className="mt-2 overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full text-left text-xs">
+            <thead className="border-b border-border text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2 font-medium">When</th>
+                <th className="px-4 py-2 font-medium">Event</th>
+                <th className="px-4 py-2 font-medium">Buyer</th>
+                <th className="px-4 py-2 font-medium">Client</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-3 text-muted-foreground">
+                    {process.env.WHOP_WEBHOOK_SECRET ? 'No Whop payments yet.' : 'Whop is not connected yet: add WHOP_WEBHOOK_SECRET in Vercel.'}
+                  </td>
+                </tr>
+              ) : (
+                payments.map((p, i) => (
+                  <tr key={i} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2 tabular-nums">{new Date(p.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-2">{String(p.type).replace('whop.', '')}</td>
+                    <td className="px-4 py-2">{p.email ?? 'unknown'}</td>
+                    <td className="px-4 py-2">{p.business_id ?? <span className="text-destructive">no match</span>}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <p className="mt-4 text-xs text-muted-foreground">
-        Minutes (1 credit = 1 voice minute) are recorded manually here after you confirm a Payment Request Link
-        (Elevate Pay / PingPong / Payoneer) was paid — nothing here charges a card automatically.
+        {whopReady
+          ? 'Payment links are created in Whop with the client attached; when they pay, billing turns active and minute packs are added automatically. Use the credit box only for manual corrections.'
+          : 'Whop is not fully connected yet (WHOP_API_KEY missing), so minutes are added by hand here after you confirm a payment.'}
       </p>
     </main>
   )
