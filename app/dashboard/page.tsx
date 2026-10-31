@@ -31,6 +31,7 @@ export default async function DashboardPage() {
   const showChat = services !== 'voice'
   const chatOverride = showChat && business ? await getBusinessOverride(session.businessId) : null
   const topupUrl = process.env.VOICE_TOPUP_URL
+  const whopTopup = Boolean(process.env.WHOP_API_KEY)
   const lowMinutes = balance.balance < (Number(process.env.VOICE_LOW_BALANCE_MINUTES) || 15)
 
   return (
@@ -57,12 +58,23 @@ export default async function DashboardPage() {
               </p>
             ) : null}
             <p className="mt-1 text-xs text-muted-foreground">
-              {topupUrl ? (
-                <a href={topupUrl} className="text-primary underline underline-offset-4">Buy more minutes</a>
+              {whopTopup ? (
+                <>
+                  <a href="/api/client/billing/minutes?pack=200" className="text-primary underline underline-offset-4">Buy 200 minutes ($50)</a>
+                  {' · '}
+                  <a href="/api/client/billing/minutes?pack=500" className="text-primary underline underline-offset-4">Buy 500 minutes ($110)</a>{' '}
+                  — minutes are added automatically after you pay.
+                </>
               ) : (
-                <a href={`mailto:${siteConfig.contact.email}?subject=Top up minutes — ${business?.name ?? ''}`} className="text-primary underline underline-offset-4">Reach out</a>
-              )}{' '}
-              {topupUrl ? '— pay with the email you log in with and minutes are added automatically.' : "and we'll send a payment link to top up."}
+                <>
+                  {topupUrl ? (
+                    <a href={topupUrl} className="text-primary underline underline-offset-4">Buy more minutes</a>
+                  ) : (
+                    <a href={`mailto:${siteConfig.contact.email}?subject=Top up minutes — ${business?.name ?? ''}`} className="text-primary underline underline-offset-4">Reach out</a>
+                  )}{' '}
+                  {topupUrl ? '— pay with the email you log in with and minutes are added automatically.' : "and we'll send a payment link to top up."}
+                </>
+              )}
             </p>
           </div>
         ) : null}
