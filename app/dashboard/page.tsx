@@ -8,7 +8,7 @@ import { whopConfigured } from '@/lib/billing/whop-checkout'
 
 export const dynamic = 'force-dynamic'
 
-const card = 'rounded-xl border border-border bg-card p-5'
+const card = 'card p-5'
 const link = 'text-primary underline underline-offset-4'
 
 export default async function OverviewPage() {
@@ -37,19 +37,19 @@ export default async function OverviewPage() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className={card}>
+        <div className={`${card} stat`}>
           <p className="text-sm text-muted-foreground">Receptionist</p>
           <p className="mt-2 text-xl font-semibold">{business?.demo ? 'Demo mode' : stored && !stored.active ? 'Paused' : 'Live'}</p>
           {stored?.source === 'db' ? <p className="mt-1 text-xs text-muted-foreground">Billing: {stored.billingStatus.replace('_', ' ')}</p> : null}
           {stored && !stored.active ? <p className="mt-1 text-xs text-destructive">It isn&apos;t answering right now. <Link href="/dashboard/settings" className={link}>Turn it back on</Link></p> : null}
         </div>
-        <div className={card}>
+        <div className={`${card} stat`}>
           <p className="text-sm text-muted-foreground">Leads this month</p>
           <p className="mt-2 text-xl font-semibold tabular-nums">{thisMonth}</p>
           <p className="mt-1 text-xs text-muted-foreground">{activity.length} in total · <Link href="/dashboard/leads" className={link}>see all</Link></p>
         </div>
         {showVoice ? (
-          <div className={card}>
+          <div className={`${card} stat`}>
             <p className="text-sm text-muted-foreground">Phone minutes left</p>
             <p className="mt-2 text-xl font-semibold tabular-nums">{Math.max(0, balance.balance)}</p>
             {line && lowMinutes ? <p className="mt-1 text-xs text-destructive">{balance.balance < 1 ? 'Out of minutes. ' : 'Running low. '}{line.forwardTo ? 'Calls are passed to your team when minutes run out.' : 'Callers hear a polite message when minutes run out.'}</p> : null}
@@ -58,7 +58,7 @@ export default async function OverviewPage() {
             </p>
           </div>
         ) : (
-          <div className={card}>
+          <div className={`${card} stat`}>
             <p className="text-sm text-muted-foreground">Plan</p>
             <p className="mt-2 text-xl font-semibold">Website chat</p>
             <p className="mt-1 text-xs text-muted-foreground"><Link href="/dashboard/billing" className={link}>Billing &amp; plan</Link></p>
@@ -66,7 +66,7 @@ export default async function OverviewPage() {
         )}
       </div>
 
-      <div className={card}>
+      <div className={`${card} stat`}>
         <p className="text-sm font-medium">Get set up</p>
         <ul className="mt-3 space-y-2 text-sm">
           {steps.map((s) => (
