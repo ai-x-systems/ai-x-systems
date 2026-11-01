@@ -1,6 +1,7 @@
 import { getClientSession } from '@/lib/accounts/session'
 import { listRecentActivity } from '@/lib/activity/log'
 import { DeleteButton } from '@/components/delete-button'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Leads' }
 export const dynamic = 'force-dynamic'
@@ -10,6 +11,8 @@ export default async function LeadsPage() {
   const activity = await listRecentActivity(session.businessId!, 200)
 
   return (
+    <>
+      <DashHeader title="Leads" description="Every enquiry and booking your assistant collects." />
     <div className="card p-5">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">Leads &amp; bookings ({activity.length}{activity.length === 200 ? '+' : ''})</p>
@@ -45,5 +48,6 @@ export default async function LeadsPage() {
         </ul>
       )}
     </div>
+    </>
   )
 }
