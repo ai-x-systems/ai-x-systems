@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { siteConfig, getOrganizationSchema } from '@/lib/site-config'
+import { Toaster } from '@/components/toaster'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -55,6 +56,7 @@ export default function RootLayout({
     <html lang="en" className={`bg-background ${inter.variable}`}>
       <body className="antialiased">
         {children}
+        <Toaster />
         {/* Website AI Receptionist widget — Client #1 dogfood (see docs/EMBED.md).
             Relative same-origin src so the snippet works from any origin the site
             is served from (Vercel preview/production, custom domain later). */}
