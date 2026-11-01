@@ -42,7 +42,7 @@ export default async function InquiriesPage() {
           </div>
         ) : (
           prospects.map((p) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-5">
+            <div key={p.id} className="card p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
