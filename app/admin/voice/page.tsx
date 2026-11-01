@@ -39,7 +39,7 @@ export default async function AdminVoicePage() {
         <Link href="/admin" className="text-sm text-primary underline underline-offset-4">Back to Clients</Link>
       </div>
 
-      <section className="mt-8 rounded-xl border border-border bg-card p-5 text-sm">
+      <section className="mt-8 card p-5 text-sm">
         <p className="font-medium">Webhook</p>
         <p className="mt-1 text-xs text-muted-foreground">
           In Vapi: each phone number → leave <b>Assistant</b> empty → Server URL:
@@ -50,7 +50,7 @@ export default async function AdminVoicePage() {
 
       <section className="mt-8 grid grid-cols-3 gap-4">
         {[['Minutes billed (last 200 calls)', String(minutes)], ['Client minutes worth', dollars(revenue)], ['Vapi cost to you', cost ? dollars(cost) : '—']].map(([label, value]) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p></div>
+          <div key={label} className="card p-4"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p></div>
         ))}
       </section>
       <p className="mt-2 text-xs text-muted-foreground">“Client minutes worth” uses the cents-per-minute you set on each line; the Vapi cost comes from Vapi&apos;s own end-of-call report.</p>
@@ -77,7 +77,7 @@ export default async function AdminVoicePage() {
       </section>
       <p className="mt-2 text-xs text-muted-foreground">Add minutes from <Link href="/admin" className="text-primary underline underline-offset-4">Clients</Link> (1 credit = 1 minute) after a payment clears.</p>
 
-      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+      <section className="mt-8 card p-5">
         <p className="text-sm font-medium">Shared demo line</p>
         <p className="mb-4 mt-1 text-xs text-muted-foreground">
           {demoLine ? `${demoLine.e164} currently answers as ${demoLine.businessId}. ` : 'No demo line yet. '}
@@ -86,7 +86,7 @@ export default async function AdminVoicePage() {
         <DemoLineForm previewIds={previewIds} hasLine={!!demoLine} />
       </section>
 
-      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+      <section className="mt-8 card p-5">
         <p className="mb-4 text-sm font-medium">Attach a phone line to a client</p>
         <VoiceLineForm businessIds={businesses.filter((b) => !b.config.id.startsWith('demo-')).map((b) => b.config.id)} />
       </section>
