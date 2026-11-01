@@ -2,6 +2,7 @@ import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
 import { getBusinessOverride } from '@/lib/config/overrides'
 import { IntegrationsForm } from './integrations-form'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Integrations' }
 export const dynamic = 'force-dynamic'
@@ -23,6 +24,8 @@ export default async function IntegrationsPage() {
   const override = await getBusinessOverride(session.businessId!)
 
   return (
+    <>
+    <DashHeader title="Integrations" description="Send every lead to your email, CRM or Google Sheet." />
     <IntegrationsForm
       serviceEmail={serviceAccountEmail()}
       initial={{
@@ -32,5 +35,6 @@ export default async function IntegrationsPage() {
         leadSheetTabName: i.leadSheetTabName ?? '',
       }}
     />
+    </>
   )
 }
