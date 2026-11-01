@@ -71,26 +71,26 @@ export function OnboardForm() {
     const welcome = `Hi! Your AI receptionist is set up.\n\n${chatPart}${voicePart}See your leads any time: ${result.login.url}\nEmail: ${result.login.email}\nTemporary password: ${result.login.password}\n\nReply if you'd like it connected to your CRM.`
     return (
       <div className="space-y-5 text-sm">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="card p-5">
           <p className="font-medium">Client created: {result.businessId}</p>
           <p className="mt-1 text-xs text-muted-foreground">{result.servicesParsed} service(s) and {result.faqsParsed} FAQ(s) saved. Booking is off (leads only). Save the password now — it is shown once.</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+        <div className="card p-5 space-y-2">
           <p className="font-medium">1. Website install line</p>
           <pre className="overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{result.snippet}</pre>
           <Copy text={result.snippet} label="Copy snippet" />
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 space-y-1">
+        <div className="card p-5 space-y-1">
           <p className="font-medium">2. Client login</p>
           <p className="text-xs">{result.login.url}</p>
           <p className="text-xs">Email: {result.login.email}</p>
           <p className="text-xs">Password: <code>{result.login.password}</code></p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 space-y-1">
+        <div className="card p-5 space-y-1">
           <p className="font-medium">3. Payment</p>
           {result.checkoutUrl ? <><p className="break-all text-xs">{result.checkoutUrl}</p><Copy text={result.checkoutUrl} label="Copy checkout link" /></> : <p className="text-xs text-muted-foreground">Set FREEMIUS_CHECKOUT_URL in Vercel to show your checkout link here. The client must pay using <b>{result.login.email}</b> so the payment links to them automatically.</p>}
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+        <div className="card p-5 space-y-2">
           <p className="font-medium">Ready-to-send message</p>
           <pre className="whitespace-pre-wrap rounded-lg bg-secondary p-3 text-xs">{welcome}</pre>
           <Copy text={welcome} label="Copy message" />
@@ -102,7 +102,7 @@ export function OnboardForm() {
 
   return (
     <form onSubmit={save} className="space-y-6 text-sm">
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+      <div className="card p-5 space-y-4">
         <p className="font-medium">1. The business</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-1.5"><span className="font-medium">Business name *</span><input required className={input} value={f.name} onChange={set('name')} /></label>
@@ -121,7 +121,7 @@ export function OnboardForm() {
         {note ? <p className="text-xs text-primary">{note}</p> : null}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+      <div className="card p-5 space-y-4">
         <p className="font-medium">2. What the assistant knows</p>
         <label className="space-y-1.5 block"><span className="font-medium">Opening hours <span className="font-normal text-muted-foreground">(one rule per line; empty = Mon–Fri 9–5)</span></span>
           <textarea className={input + ' min-h-20 font-mono text-xs'} placeholder={'Mon-Fri 9am-5pm\nSat 10am-2pm\nSun closed'} value={f.hoursText} onChange={set('hoursText')} /></label>
@@ -133,7 +133,7 @@ export function OnboardForm() {
           <textarea className={input + ' min-h-16 font-mono text-xs'} placeholder={'24-hour cancellation notice.'} value={f.policiesText} onChange={set('policiesText')} /></label>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+      <div className="card p-5 space-y-4">
         <p className="font-medium">3. Where leads go</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-1.5"><span className="font-medium">Lead alert email *</span><input required type="email" className={input} value={f.notifyEmail} onChange={set('notifyEmail')} /></label>
