@@ -2,6 +2,7 @@ import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
 import { getLineForBusiness } from '@/lib/voice/store'
 import { ProfileForm, PauseControl, PasswordForm, DeleteAccountRequest } from './settings-forms'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Settings' }
 export const dynamic = 'force-dynamic'
@@ -18,6 +19,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <DashHeader title="Settings" description="Your details, login and assistant." />
       {line ? (
         <div className={card}>
           <p className="text-sm font-medium">Your AI phone line</p>
