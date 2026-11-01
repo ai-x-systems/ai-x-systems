@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 type Faq = { question: string; answer: string }
 const input = 'mt-1 w-full rounded-md border border-input bg-input/30 px-3 py-2 text-sm'
@@ -20,7 +21,7 @@ export function FaqEditor({ initial }: { initial: Faq[] }) {
       const res = await fetch('/api/client/faqs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ faqs }) })
       const data = (await res.json().catch(() => ({}))) as { error?: string; count?: number }
       setMsg(res.ok ? { ok: true, text: `Saved ${data.count ?? ''} answer(s). It may take up to a minute to take effect.` } : { ok: false, text: data.error || 'Could not save.' })
-      if (res.ok) router.refresh()
+      if (res.ok) { toast('Answers saved'); router.refresh() } else toast(data.error || 'Could not save.', 'error')
     } finally { setBusy(false) }
   }
 
@@ -40,8 +41,8 @@ export function FaqEditor({ initial }: { initial: Faq[] }) {
         ))}
       </ul>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} disabled={faqs.length >= 60} className="rounded-md border border-input px-3 py-1.5 text-xs hover:bg-muted">+ Add a question</button>
-        <button type="button" onClick={save} disabled={busy} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">{busy ? 'Saving…' : 'Save answers'}</button>
+        <button type="button" onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} disabled={faqs.length >= 60} className="btn btn-outline btn-sm">+ Add a question</button>
+        <button type="button" onClick={save} disabled={busy} className="btn btn-primary">{busy ? 'Saving…' : 'Save answers'}</button>
         {msg ? <span className={`text-xs ${msg.ok ? 'text-primary' : 'text-destructive'}`}>{msg.text}</span> : null}
       </div>
     </div>
@@ -60,7 +61,7 @@ export function ChangeRequestForm() {
       const res = await fetch('/api/client/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'change_request', message }) })
       const data = (await res.json().catch(() => ({}))) as { error?: string }
       setMsg(res.ok ? { ok: true, text: "Sent. We'll make the change and confirm by email." } : { ok: false, text: data.error || 'Could not send.' })
-      if (res.ok) setMessage('')
+      if (res.ok) { setMessage(''); toast('Request sent. We will confirm by email.') } else toast(data.error || 'Could not send.', 'error')
     } finally { setBusy(false) }
   }
 
@@ -68,7 +69,7 @@ export function ChangeRequestForm() {
     <div>
       <textarea className={`${input} min-h-[96px]`} value={message} maxLength={2000} onChange={(e) => setMessage(e.target.value)} placeholder="e.g. We now close at 4pm on Fridays, and our emergency call-out fee is $120." />
       <div className="mt-3 flex items-center gap-3">
-        <button type="button" onClick={send} disabled={busy || message.trim().length < 5} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">{busy ? 'Sending…' : 'Send change request'}</button>
+        <button type="button" onClick={send} disabled={busy || message.trim().length < 5} className="btn btn-primary">{busy ? 'Sending…' : 'Send change request'}</button>
         {msg ? <span className={`text-xs ${msg.ok ? 'text-primary' : 'text-destructive'}`}>{msg.text}</span> : null}
       </div>
     </div>
