@@ -21,7 +21,7 @@ export default async function ChatPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="card p-5">
         <p className="text-sm font-medium">Put the assistant on your website</p>
         <p className="mt-1 text-xs text-muted-foreground">Paste this line into your site, before the closing body tag or in your site builder&apos;s custom-code / header box. Works on WordPress, Wix, Squarespace, Shopify and plain HTML.</p>
         <div className="mt-3"><CopyField value={installSnippet(origin, id)} multiline /></div>
@@ -29,7 +29,7 @@ export default async function ChatPage() {
         <div className="mt-2"><CopyField value={`${origin}/embed/chat/${id}`} /></div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="card p-5">
         <p className="text-sm font-medium">Make the chat match your brand</p>
         <p className="mb-4 mt-1 text-xs text-muted-foreground">Pick your colour and change the welcome text. Changes appear on your website within a minute. Leave a field empty to use the default.</p>
         <AppearanceForm
