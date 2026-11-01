@@ -38,7 +38,7 @@ export function Solution() {
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, i) => (
             <Reveal key={feature.title} delay={i * 0.05}>
-              <div className="h-full rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/30">
+              <div className="h-full card p-5 transition-colors hover:border-primary/30">
                 <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <feature.icon className="size-4" aria-hidden="true" />
                 </span>
