@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 const REASONS = ['Too expensive', "Didn't get enough leads", 'Switching to another tool', 'Closing or pausing my business', 'Other']
 
@@ -19,7 +20,7 @@ export function CancelSubscription({ scheduled, endsOn }: { scheduled: boolean; 
     try {
       const res = await fetch('/api/client/billing/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, reason: `${reason}${detail ? `: ${detail}` : ''}` }) })
       const data = (await res.json().catch(() => ({}))) as { error?: string }
-      if (res.ok) { setMsg({ ok: true, text: action === 'cancel' ? 'Your subscription will not renew.' : 'Your subscription will continue.' }); setOpen(false); router.refresh() }
+      if (res.ok) { setMsg({ ok: true, text: action === 'cancel' ? 'Your subscription will not renew.' : 'Your subscription will continue.' }); toast(action === 'cancel' ? 'Your subscription will not renew.' : 'Your subscription will continue.'); setOpen(false); router.refresh() }
       else setMsg({ ok: res.status === 202, text: data.error || 'Something went wrong. Please contact us.' })
     } finally { setBusy(false) }
   }
@@ -28,7 +29,7 @@ export function CancelSubscription({ scheduled, endsOn }: { scheduled: boolean; 
     return (
       <div>
         <p className="text-sm">Your subscription is set to end{endsOn ? ` on ${endsOn}` : ' at the end of this billing period'}. Until then everything keeps working.</p>
-        <button type="button" disabled={busy} onClick={() => send('resume')} className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">{busy ? 'Working…' : 'Keep my subscription'}</button>
+        <button type="button" disabled={busy} onClick={() => send('resume')} className="mt-3 btn btn-primary">{busy ? 'Working…' : 'Keep my subscription'}</button>
         {msg ? <p className={`mt-2 text-xs ${msg.ok ? 'text-primary' : 'text-destructive'}`}>{msg.text}</p> : null}
       </div>
     )
@@ -47,7 +48,7 @@ export function CancelSubscription({ scheduled, endsOn }: { scheduled: boolean; 
           </label>
           <input className="mt-2 w-full rounded-md border border-input bg-input/30 px-2 py-2 text-sm" value={detail} maxLength={300} onChange={(e) => setDetail(e.target.value)} placeholder="Anything else? (optional)" />
           <div className="mt-3 flex items-center gap-3">
-            <button type="button" disabled={busy} onClick={() => send('cancel')} className="rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60">{busy ? 'Cancelling…' : 'Yes, cancel at the end of the period'}</button>
+            <button type="button" disabled={busy} onClick={() => send('cancel')} className="btn btn-danger btn-sm">{busy ? 'Cancelling…' : 'Yes, cancel at the end of the period'}</button>
             <button type="button" onClick={() => setOpen(false)} className="text-xs text-muted-foreground underline underline-offset-4">Never mind</button>
           </div>
         </div>
