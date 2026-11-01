@@ -19,6 +19,8 @@ export interface CreditLedger {
     note?: string
   ): Promise<CreditBalance>;
   listAllBalances(): Promise<CreditBalance[]>;
+  /** Removes one ledger entry (an admin correcting a mistake). Scoped to the client so another client's entry can't be removed. */
+  deleteTransaction(businessId: string, transactionId: string): Promise<CreditBalance>;
 }
 
 function rowToTransaction(row: {
@@ -65,6 +67,11 @@ export function createSupabaseCreditLedger(): CreditLedger {
         .from("credit_transactions")
         .insert({ business_id: businessId, type, amount, note: note ?? null });
       if (insertError) throw insertError;
+      return this.getBalance(businessId);
+    },
+    async deleteTransaction(businessId, transactionId) {
+      const { error } = await supabase.from("credit_transactions").delete().eq("id", transactionId).eq("business_id", businessId);
+      if (error) throw error;
       return this.getBalance(businessId);
     },
     async listAllBalances() {
