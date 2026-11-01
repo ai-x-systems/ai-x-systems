@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 /** Admin: end a client's subscription (at the end of the paid month, or right now) or undo a scheduled end. */
 export function SubscriptionActions({ businessId, scheduled, canCancel }: { businessId: string; scheduled: boolean; canCancel: boolean }) {
@@ -20,7 +21,7 @@ export function SubscriptionActions({ businessId, scheduled, canCancel }: { busi
       const res = await fetch('/api/admin/billing/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ businessId, mode }) })
       const data = (await res.json().catch(() => ({}))) as { error?: string }
       setMsg(res.ok ? 'Done.' : data.error || 'Failed.')
-      if (res.ok) router.refresh()
+      if (res.ok) { toast('Subscription updated'); router.refresh() } else toast(data.error || 'Failed.', 'error')
     } finally { setBusy(false) }
   }
 
