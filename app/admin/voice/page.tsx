@@ -8,6 +8,7 @@ import { listStoredBusinesses } from '@/lib/config/business-store'
 import { findDemoLine, listCalls, listLines } from '@/lib/voice/store'
 import { VoiceLineForm } from './voice-line-form'
 import { DemoLineForm } from './demo-line-form'
+import { DeleteButton } from '@/components/delete-button'
 
 export const metadata = { title: 'Voice' }
 export const dynamic = 'force-dynamic'
@@ -58,15 +59,18 @@ export default async function AdminVoicePage() {
         <table className="w-full text-sm">
           <thead><tr className="border-b border-border text-left text-muted-foreground">
             <th className="px-4 py-3 font-medium">Client</th><th className="px-4 py-3 font-medium">Number</th>
-            <th className="px-4 py-3 font-medium">Fallback</th><th className="px-4 py-3 font-medium">Minutes left</th></tr></thead>
+            <th className="px-4 py-3 font-medium">Fallback</th><th className="px-4 py-3 font-medium">Minutes left</th><th className="px-4 py-3 font-medium"></th></tr></thead>
           <tbody>
-            {lines.length === 0 ? <tr><td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">No phone lines yet.</td></tr> :
+            {lines.length === 0 ? <tr><td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">No phone lines yet.</td></tr> :
               lines.map((l) => (
                 <tr key={l.businessId} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium">{l.businessId}{!l.enabled ? ' (disabled)' : ''}</td>
                   <td className="px-4 py-3 tabular-nums">{l.e164}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{l.forwardTo ?? '—'}</td>
                   <td className="px-4 py-3 tabular-nums">{balances.get(l.businessId)}</td>
+                  <td className="px-4 py-3">
+                    <DeleteButton endpoint={`/api/admin/voice/lines?businessId=${encodeURIComponent(l.businessId)}`} label="Remove line" warning="Callers to this number will no longer be answered. The client keeps their account and minutes." />
+                  </td>
                 </tr>))}
           </tbody>
         </table>
@@ -91,9 +95,9 @@ export default async function AdminVoicePage() {
         <table className="w-full text-sm">
           <thead><tr className="border-b border-border text-left text-muted-foreground">
             <th className="px-4 py-3 font-medium">When</th><th className="px-4 py-3 font-medium">Client</th><th className="px-4 py-3 font-medium">Caller</th>
-            <th className="px-4 py-3 font-medium">Length</th><th className="px-4 py-3 font-medium">Billed</th><th className="px-4 py-3 font-medium">Vapi cost</th></tr></thead>
+            <th className="px-4 py-3 font-medium">Length</th><th className="px-4 py-3 font-medium">Billed</th><th className="px-4 py-3 font-medium">Vapi cost</th><th className="px-4 py-3 font-medium"></th></tr></thead>
           <tbody>
-            {calls.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No calls yet.</td></tr> :
+            {calls.length === 0 ? <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">No calls yet.</td></tr> :
               calls.slice(0, 50).map((c) => (
                 <tr key={c.callId} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 text-xs">{new Date(c.createdAtISO).toLocaleString()}</td>
@@ -102,6 +106,9 @@ export default async function AdminVoicePage() {
                   <td className="px-4 py-3 tabular-nums">{c.durationSeconds}s</td>
                   <td className="px-4 py-3 tabular-nums">{c.billedMinutes} min</td>
                   <td className="px-4 py-3 tabular-nums text-xs">{c.vapiCostCents != null ? dollars(c.vapiCostCents) : '—'}</td>
+                  <td className="px-4 py-3">
+                    <DeleteButton endpoint={`/api/admin/voice/calls?callId=${encodeURIComponent(c.callId)}`} label="Delete" warning="Removes this call from the history. It does not change anyone's minutes." />
+                  </td>
                 </tr>))}
           </tbody>
         </table>
