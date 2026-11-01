@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from '@/lib/toast'
 
 const PLANS: { key: string; label: string }[] = [
   { key: 'founding', label: 'Founding: $348 today, then $149/mo' },
@@ -31,6 +32,7 @@ export function PaymentLinkButton({ businessId }: { businessId: string }) {
       const data = (await res.json().catch(() => ({}))) as { success?: boolean; url?: string; error?: string }
       if (!res.ok || !data.url) throw new Error(data.error || 'Could not create the link.')
       setUrl(data.url)
+      toast('Payment link created. Copy it below.')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not create the link.')
     } finally {
@@ -42,6 +44,7 @@ export function PaymentLinkButton({ businessId }: { businessId: string }) {
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
+      toast('Link copied')
     } catch {
       setCopied(false)
     }
@@ -55,7 +58,7 @@ export function PaymentLinkButton({ businessId }: { businessId: string }) {
             <option key={p.key} value={p.key}>{p.label}</option>
           ))}
         </select>
-        <button type="button" onClick={create} disabled={loading} className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60">
+        <button type="button" onClick={create} disabled={loading} className="btn btn-outline btn-xs">
           {loading ? 'Creating…' : 'Payment link'}
         </button>
       </div>
