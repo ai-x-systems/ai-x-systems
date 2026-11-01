@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from '@/lib/toast'
 
 /** A read-only box with a Copy button (for the website install line and share links). */
 export function CopyField({ value, multiline = false }: { value: string; multiline?: boolean }) {
   const [copied, setCopied] = useState(false)
   async function copy() {
-    try { await navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* clipboard blocked: the text is still selectable */ }
+    try { await navigator.clipboard.writeText(value); setCopied(true); toast('Copied to clipboard'); setTimeout(() => setCopied(false), 1500) } catch { /* clipboard blocked: the text is still selectable */ }
   }
   return (
     <div className="flex items-start gap-2">
@@ -15,7 +16,7 @@ export function CopyField({ value, multiline = false }: { value: string; multili
       ) : (
         <input readOnly value={value} onFocus={(e) => e.currentTarget.select()} className="min-w-0 flex-1 rounded-md border border-input bg-input/30 px-3 py-2 text-xs" />
       )}
-      <button type="button" onClick={copy} className="shrink-0 rounded-md border border-input px-3 py-2 text-xs hover:bg-muted">{copied ? 'Copied' : 'Copy'}</button>
+      <button type="button" onClick={copy} className="shrink-0 btn btn-outline btn-sm">{copied ? 'Copied' : 'Copy'}</button>
     </div>
   )
 }
