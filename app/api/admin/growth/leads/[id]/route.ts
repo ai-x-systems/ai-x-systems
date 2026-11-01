@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/accounts/session";
 import { getLead, updateLead, updateMessage, suppress } from "@/lib/growth/store";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { deleteClient } from "@/lib/admin/delete-client";
 
 export const runtime = "nodejs";
 
@@ -27,5 +28,18 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     await getSupabaseClient().from("outreach_messages").update({ status: "skipped" }).eq("lead_id", id).in("status", ["draft", "approved"]);
   }
   void updateMessage;
+  return NextResponse.json({ success: true });
+}
+
+/** Delete a prospect, its drafted emails and the private preview that was built for it. */
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!(await getAdminSession())) return NextResponse.json({ success: false, error: "Admin access required." }, { status: 403 });
+  const { id } = await ctx.params;
+  const lead = await getLead(id);
+  if (!lead) return NextResponse.json({ success: false, error: "Unknown lead." }, { status: 404 });
+  const db = getSupabaseClient();
+  await db.from("outreach_messages").delete().eq("lead_id", id);
+  await db.from("outreach_leads").delete().eq("id", id);
+  if (lead.demoBusinessId?.startsWith("demo-")) await deleteClient(lead.demoBusinessId).catch(() => undefined);
   return NextResponse.json({ success: true });
 }
