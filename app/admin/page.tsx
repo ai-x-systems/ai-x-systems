@@ -6,7 +6,6 @@ import { listStoredBusinesses } from '@/lib/config/business-store'
 import { creditLedger } from '@/lib/billing/credits'
 import { whopConfigured } from '@/lib/billing/whop-checkout'
 import { PageHeader } from '@/components/page-header'
-import { AppTopbar } from '@/components/app-topbar'
 import { LogoutButton } from '@/app/dashboard/logout-button'
 import { CreditAdjustForm } from './credit-adjust-form'
 import { CreateClientForm } from './create-client-form'
@@ -15,6 +14,7 @@ import { ClientStatusControls } from './client-status-controls'
 import { PaymentLinkButton } from './payment-link-button'
 import { DeleteButton } from '@/components/delete-button'
 import { getSupabaseClient } from '@/lib/supabase/client'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Admin' }
 
@@ -64,29 +64,8 @@ export default async function AdminPage() {
   const pendingLinks = (intakeRows ?? []).filter((r) => new Date(r.expires_at).getTime() > Date.now())
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-4 py-16 md:px-6">
-      <AppTopbar current="admin" />
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader eyebrow="Admin" title="Clients" description={`${clients.length} client account(s)`} />
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href="/admin/onboard" className="btn btn-primary btn-sm">
-            + Onboard client
-          </Link>
-          <Link href="/admin/sales" className="btn btn-outline btn-sm">
-            Sales
-          </Link>
-          <Link href="/admin/voice" className="btn btn-outline btn-sm">
-            Voice
-          </Link>
-          <Link href="/admin/growth" className="btn btn-outline btn-sm">
-            Growth
-          </Link>
-          <Link href="/admin/inquiries" className="btn btn-outline btn-sm">
-            Inquiries
-          </Link>
-          <LogoutButton role="admin" />
-        </div>
-      </div>
+    <div>
+      <DashHeader title="Clients" description={`${clients.length} client account(s)`} />
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
         <CreateClientForm />
@@ -228,6 +207,6 @@ export default async function AdminPage() {
           ? 'Payment links are created in Whop with the client attached; when they pay, billing turns active and minute packs are added automatically. Use the credit box only for manual corrections.'
           : 'Whop is not fully connected yet (WHOP_API_KEY missing), so minutes are added by hand here after you confirm a payment.'}
       </p>
-    </main>
+    </div>
   )
 }
