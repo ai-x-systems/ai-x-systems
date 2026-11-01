@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 /**
  * Two-step delete: click, read what will happen, then confirm. For big things (a whole client) the person
@@ -46,6 +47,7 @@ export function DeleteButton({
         return
       }
       setOpen(false)
+      toast('Deleted')
       router.refresh()
     } catch {
       setError('Could not reach the server.')
@@ -69,7 +71,7 @@ export function DeleteButton({
       ) : null}
       {error ? <p className="mt-2 text-destructive">{error}</p> : null}
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <button type="button" disabled={busy || mismatch} onClick={() => run(false)} className="rounded-md bg-destructive px-2 py-1 text-xs font-medium text-white disabled:opacity-50">
+        <button type="button" disabled={busy || mismatch} onClick={() => run(false)} className="btn btn-danger btn-xs">
           {busy ? 'Deleting…' : 'Delete forever'}
         </button>
         {canForce ? (
