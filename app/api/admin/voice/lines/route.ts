@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/accounts/session";
 import { getBusiness } from "@/lib/config/business-store";
 import { upsertLine } from "@/lib/voice/store";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import { normalizeE164, normalizeLineAddress } from "@/lib/voice/pure";
 
 export const runtime = "nodejs";
@@ -28,5 +29,15 @@ export async function POST(req: NextRequest) {
     const code = (err as { code?: string }).code;
     return NextResponse.json({ success: false, error: code === "23505" ? "That number is already assigned to another client." : "Could not save the line." }, { status: code === "23505" ? 409 : 500 });
   }
+  return NextResponse.json({ success: true });
+}
+
+/** Remove a phone line (the client keeps their account and minutes; callers to that number stop being answered). */
+export async function DELETE(req: NextRequest) {
+  if (!(await getAdminSession())) return NextResponse.json({ success: false, error: "Admin access required." }, { status: 403 });
+  const businessId = req.nextUrl.searchParams.get("businessId");
+  if (!businessId) return NextResponse.json({ success: false, error: "Missing client id." }, { status: 400 });
+  const { error } = await getSupabaseClient().from("voice_lines").delete().eq("business_id", businessId);
+  if (error) return NextResponse.json({ success: false, error: "Could not remove the line." }, { status: 500 });
   return NextResponse.json({ success: true });
 }
