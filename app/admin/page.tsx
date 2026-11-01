@@ -13,6 +13,7 @@ import { CreateClientForm } from './create-client-form'
 import { TestEmailButton } from './test-email-button'
 import { ClientStatusControls } from './client-status-controls'
 import { PaymentLinkButton } from './payment-link-button'
+import { DeleteButton } from '@/components/delete-button'
 import { getSupabaseClient } from '@/lib/supabase/client'
 
 export const metadata = { title: 'Admin' }
@@ -53,6 +54,13 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10)
   const payments = paymentRows ?? []
+  const { data: intakeRows } = await getSupabaseClient()
+    .from('client_intakes')
+    .select('id,business_name,client_email,services,paid,expires_at,created_at')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(20)
+  const pendingLinks = (intakeRows ?? []).filter((r) => new Date(r.expires_at).getTime() > Date.now())
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-4 py-16 md:px-6">
@@ -62,6 +70,9 @@ export default async function AdminPage() {
         <div className="flex items-center gap-4">
           <Link href="/admin/onboard" className="text-sm font-medium text-primary underline underline-offset-4">
             + Onboard client
+          </Link>
+          <Link href="/admin/sales" className="text-sm font-medium text-primary underline underline-offset-4">
+            Sales
           </Link>
           <Link href="/admin/voice" className="text-sm text-primary underline underline-offset-4">
             Voice
@@ -138,6 +149,17 @@ export default async function AdminPage() {
                     >
                       Edit info
                     </Link>
+                    {c.editable ? (
+                      <div className="mt-1">
+                        <DeleteButton
+                          endpoint={`/api/admin/clients/${c.businessId}`}
+                          label="Delete client"
+                          typeToConfirm={c.businessId}
+                          allowForce
+                          warning={`Permanently deletes ${c.businessName}: their login, phone line, calls, minutes and leads. Payment records are kept.`}
+                        />
+                      </div>
+                    ) : null}
                   </td>
                 </tr>
               ))
@@ -146,8 +168,28 @@ export default async function AdminPage() {
         </table>
       </div>
 
+      {pendingLinks.length > 0 ? (
+        <div className="mt-10">
+          <h2 className="text-sm font-medium">Setup links waiting to be used</h2>
+          <ul className="mt-2 divide-y divide-border rounded-xl border border-border bg-card text-sm">
+            {pendingLinks.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                <span>
+                  <span className="font-medium">{r.business_name}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">{r.client_email} · {r.services}{r.paid ? ' · marked paid' : ''} · expires {new Date(r.expires_at).toLocaleDateString()}</span>
+                </span>
+                <DeleteButton endpoint={`/api/admin/intakes/${r.id}`} label="Cancel link" warning="The link stops working. You can create a new one any time." />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <div className="mt-10">
-        <h2 className="text-sm font-medium">Recent payments</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium">Recent payments</h2>
+          <Link href="/admin/sales" className="text-xs text-primary underline underline-offset-4">Open full sales view</Link>
+        </div>
         <div className="mt-2 overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-border text-muted-foreground">
