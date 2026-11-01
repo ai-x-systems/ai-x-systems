@@ -9,6 +9,7 @@ import { hashIntakeToken, intakeIsUsable, looksLikeIntakeToken } from "@/lib/onb
 import { rateLimit, clientIp } from "@/lib/security/rate-limit";
 import { sendEmailTo, sendFounderAlert } from "@/lib/integrations/notify";
 import { siteConfig } from "@/lib/site-config";
+import { reconcileUnmatchedPayments } from "@/lib/billing/reconcile";
 
 export const runtime = "nodejs";
 
@@ -63,6 +64,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
     createdId = id;
     await accountStore.create({ email: row.client_email, passwordHash: await hashPassword(password), role: "client", businessId: id });
     await db.from("client_intakes").update({ business_id: id }).eq("id", row.id);
+    // Apply any Whop payment they already made with this email (billing active, minute packs credited).
+    await reconcileUnmatchedPayments(id, row.client_email).catch((e) => console.error("[intake] reconcile failed:", e));
 
     const origin = siteConfig.brand.baseUrl.replace(/\/+$/, "");
     const snippet = installSnippet(origin, id);
