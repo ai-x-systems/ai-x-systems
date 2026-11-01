@@ -13,6 +13,13 @@ export const PLAN_KEYS: PlanKey[] = ["founding", "standard", "minutes200", "minu
 /** Voice minutes added by each one-time pack (1 credit = 1 minute). */
 export const PACK_MINUTES: Partial<Record<PlanKey, number>> = { minutes200: 200, minutes500: 500 };
 
+/** What each plan costs, in dollars. Used to split a first payment into setup fee + first month, and for the sales view. */
+export const PRICING = {
+  setup: { founding: 199, standard: 299 } as Record<"founding" | "standard", number>,
+  monthly: 149,
+  packs: { minutes200: 50, minutes500: 110 } as Record<"minutes200" | "minutes500", number>,
+};
+
 export const PLAN_LABELS: Record<PlanKey, string> = {
   founding: "Founding client ($348 today, then $149/mo)",
   standard: "Standard ($448 today, then $149/mo)",
@@ -81,7 +88,21 @@ export interface WhopDecision {
 }
 
 /** Events the webhook subscribes to. Anything else is acknowledged and ignored. */
-export const WHOP_EVENTS = ["payment.succeeded", "payment.failed", "refund.created", "dispute.created"] as const;
+export const WHOP_EVENTS = [
+  "payment.succeeded",
+  "payment.failed",
+  "refund.created",
+  "dispute.created",
+  "membership.deactivated",
+  "membership.cancel_at_period_end_changed",
+] as const;
+
+/** The Whop membership (subscription) id: on a payment it is under `membership`, on a membership event it is the object's own id. */
+export function membershipIdOf(type: string, data: unknown): string | undefined {
+  if (!isObj(data)) return undefined;
+  if (type.startsWith("membership.")) return str(data.id);
+  return isObj(data.membership) ? str(data.membership.id) : undefined;
+}
 
 /**
  * What a Whop event means. It never pauses anyone: a failed renewal only marks "past due" and a
@@ -104,6 +125,13 @@ export function decideWhopAction(type: string, data: unknown, ids: Record<PlanKe
       return { ...base, note: "A refund was issued. No status or minutes were changed: review the client in /admin." };
     case "dispute.created":
       return { ...base, note: "A dispute (chargeback) was opened. Respond in Whop and review the client in /admin." };
+    case "membership.deactivated":
+      // The route only applies this when the membership really is a client's subscription (not a one-time minute pack).
+      return { ...base, status: "cancelled", note: "A subscription ended, so billing is marked cancelled and the assistant stays as it is until you pause it." };
+    case "membership.cancel_at_period_end_changed": {
+      const scheduled = isObj(data) && data.cancel_at_period_end === true;
+      return { ...base, note: scheduled ? "A client scheduled their subscription to end at the end of the current period. They keep access until then." : "A client undid their scheduled cancellation: the subscription continues." };
+    }
     default:
       return { kind: "unknown", minutes: 0, alert: false, note: `Ignored event ${type}.` };
   }
