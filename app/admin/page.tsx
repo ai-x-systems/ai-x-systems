@@ -39,6 +39,7 @@ export default async function AdminPage() {
           industry: business?.industry,
           demo: business?.demo ?? false,
           creditBalance: balance.balance,
+          history: balance.transactions.slice(-8).reverse().map((t) => ({ id: t.id, amount: t.amount, type: t.type, note: t.note ?? '', at: t.createdAtISO })),
           active: sb?.active ?? true,
           billingStatus: sb?.billingStatus ?? 'active',
           editable: sb?.source === 'db',
@@ -139,7 +140,7 @@ export default async function AdminPage() {
                   </td>
                   <td className="px-4 py-3 tabular-nums">{c.creditBalance}</td>
                   <td className="px-4 py-3">
-                    <CreditAdjustForm businessId={c.businessId} />
+                    <CreditAdjustForm businessId={c.businessId} balance={c.creditBalance} history={c.history} />
                     {whopReady && c.editable && !c.demo ? <PaymentLinkButton businessId={c.businessId} /> : null}
                   </td>
                   <td className="px-4 py-3">
