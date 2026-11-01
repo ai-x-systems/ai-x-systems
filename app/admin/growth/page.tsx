@@ -50,7 +50,7 @@ export default async function GrowthPage() {
 
       <section className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-6">
         {FUNNEL.map(([k, label]) => (
-          <div key={k} className="rounded-xl border border-border bg-card p-4">
+          <div key={k} className="card p-4">
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">{funnelCount(k)}</p>
           </div>
@@ -60,7 +60,7 @@ export default async function GrowthPage() {
         Sent today {sentToday} · last 7 days {sent7d} · reply rate {contactedEver ? Math.round((replies / contactedEver) * 100) : 0}% · inbound demo requests {inbound.length} ({inboundNew} new)
       </p>
 
-      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+      <section className="mt-8 card p-5">
         {manual ? (
           <>
             <p className="text-sm font-medium">Manual mode — nothing is sent by the system</p>
@@ -120,13 +120,13 @@ export default async function GrowthPage() {
         </table>
       </section>
 
-      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+      <section className="mt-8 card p-5">
         <p className="text-sm font-medium">Add leads by hand</p>
         <p className="mb-4 mt-1 text-xs text-muted-foreground">No Google key needed. Search Google Maps, Yelp or Facebook yourself for 10-20 businesses, paste their websites here, and the system does the rest.</p>
         <AddLeadsForm defaultIndustry={settings.industries[0] ?? ''} />
       </section>
 
-      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+      <section className="mt-8 card p-5">
         <p className="mb-4 text-sm font-medium">Targeting &amp; sending settings</p>
         <SettingsForm initial={settings} />
       </section>
