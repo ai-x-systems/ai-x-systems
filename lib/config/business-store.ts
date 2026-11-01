@@ -126,6 +126,27 @@ export async function setBusinessFlags(id: string, patch: { active?: boolean; bi
   return (data?.length ?? 0) > 0;
 }
 
+/**
+ * Changes part of a stored client's config (their own integrations, contact details) and re-validates the
+ * whole thing before saving, so a client can never save something that breaks their assistant.
+ */
+export async function updateBusinessConfig(
+  id: string,
+  change: (config: BusinessConfig) => BusinessConfig
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const db = getSupabaseClient();
+  const { data, error } = await db.from("businesses").select("config").eq("id", id).maybeSingle();
+  if (error || !data) return { ok: false, error: "This business could not be found." };
+  const current = BusinessConfigSchema.safeParse(data.config);
+  if (!current.success) return { ok: false, error: "The saved settings look invalid. Please contact us." };
+  const next = BusinessConfigSchema.safeParse(change(current.data));
+  if (!next.success) return { ok: false, error: "Some of those details look invalid." };
+  const { error: upErr } = await db.from("businesses").update({ config: next.data, updated_at: new Date().toISOString() }).eq("id", id);
+  if (upErr) return { ok: false, error: "Could not save. Please try again." };
+  cache.delete(id);
+  return { ok: true };
+}
+
 export function installSnippet(origin: string, businessId: string): string {
   return `<script src="${origin}/widget.js" data-business-id="${businessId}" defer></script>`;
 }
