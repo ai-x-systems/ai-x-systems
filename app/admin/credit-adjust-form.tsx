@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { toast } from '@/lib/toast'
 
 type Entry = { id: string; amount: number; type: string; note: string; at: string }
 
@@ -27,7 +28,8 @@ export function CreditAdjustForm({ businessId, balance, history }: { businessId:
     try {
       const res = await fetch(url, init)
       const data = (await res.json().catch(() => ({}))) as { error?: string }
-      if (!res.ok) { setError(data.error || 'Could not save.'); return false }
+      if (!res.ok) { setError(data.error || 'Could not save.'); toast(data.error || 'Could not save.', 'error'); return false }
+      toast('Minutes updated')
       router.refresh()
       return true
     } catch {
