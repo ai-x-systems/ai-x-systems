@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 type Initial = { notifyEmail: string; webhookUrl: string; leadSheet: string; leadSheetTabName: string }
 
 const input = 'mt-1 w-full rounded-md border border-input bg-input/30 px-3 py-2 text-sm'
-const btn = 'rounded-md border border-input px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-60'
+const btn = 'btn btn-outline btn-sm'
 
 export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; serviceEmail?: string }) {
   const router = useRouter()
@@ -21,6 +22,7 @@ export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; 
       const res = await fetch('/api/client/integrations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...v }) })
       const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
       setMsg({ key, ok: res.ok && data.success !== false, text: res.ok ? okText : data.error || 'Something went wrong.' })
+      if (res.ok && data.success !== false) { if (okText) toast(okText) } else toast(data.error || 'Something went wrong.', 'error')
       return res.ok
     } finally { setBusy('') }
   }
@@ -32,7 +34,7 @@ export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; 
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-border bg-card p-5">
+      <section className="card p-5">
         <p className="text-sm font-medium">Email alerts</p>
         <p className="mt-1 text-xs text-muted-foreground">Every new lead and booking is emailed here.</p>
         <label className="mt-3 block text-xs text-muted-foreground">Alert email
@@ -40,7 +42,7 @@ export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; 
         </label>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-5">
+      <section className="card p-5">
         <p className="text-sm font-medium">CRM or automation (Zapier, Make, n8n, HubSpot, GoHighLevel…)</p>
         <p className="mt-1 text-xs text-muted-foreground">
           In your tool, create a trigger of type <strong>Webhook</strong> (Zapier: &quot;Catch Hook&quot;; Make: &quot;Custom webhook&quot;), copy the address it gives you, and paste it here. Each new lead and booking is sent to it instantly.
@@ -68,7 +70,7 @@ export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; 
         </details>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-5">
+      <section className="card p-5">
         <p className="text-sm font-medium">Google Sheet</p>
         <p className="mt-1 text-xs text-muted-foreground">Every lead becomes a new row. Create a Google Sheet, click Share, and add <strong className="break-all text-foreground">{serviceEmail ?? 'our service address (ask us for it)'}</strong> as an <strong>Editor</strong>. Then paste the sheet&apos;s link here.</p>
         <label className="mt-3 block text-xs text-muted-foreground">Sheet link
@@ -84,7 +86,7 @@ export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; 
       </section>
 
       <div className="flex items-center gap-3">
-        <button type="button" onClick={save} disabled={!!busy} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">{busy === 'save' ? 'Saving…' : 'Save changes'}</button>
+        <button type="button" onClick={save} disabled={!!busy} className="btn btn-primary">{busy === 'save' ? 'Saving…' : 'Save changes'}</button>
         {note('save')}
       </div>
     </div>
