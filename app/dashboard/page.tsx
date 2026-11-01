@@ -5,6 +5,7 @@ import { creditLedger } from '@/lib/billing/credits'
 import { getLineForBusiness } from '@/lib/voice/store'
 import { listRecentActivity } from '@/lib/activity/log'
 import { whopConfigured } from '@/lib/billing/whop-checkout'
+import { DashHeader } from '@/components/dash-header'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +37,7 @@ export default async function OverviewPage() {
 
   return (
     <div className="space-y-6">
+      <DashHeader title="Overview" description="How your receptionist is doing." />
       <div className="grid gap-4 sm:grid-cols-3">
         <div className={`${card} stat`}>
           <p className="text-sm text-muted-foreground">Receptionist</p>
