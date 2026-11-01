@@ -115,7 +115,7 @@ export function QueueItem({ id, to, business, subject, body, step, manual, foote
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 text-sm">
+    <div className="card p-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div><span className="font-medium">{business}</span> <span className="text-xs text-muted-foreground">→ {to} · step {step}/3</span></div>
         <div className="flex gap-2">
