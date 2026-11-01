@@ -5,11 +5,11 @@ import { listStoredBusinesses } from '@/lib/config/business-store'
 import { loadMinutesStats, loadSales } from '@/lib/billing/sales-data'
 import { getSubscriptionInfo, type SubscriptionInfo } from '@/lib/billing/subscription'
 import { PRICING } from '@/lib/billing/whop'
-import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { DeleteButton } from '@/components/delete-button'
 import { ManualPaymentForm } from './manual-payment-form'
 import { SubscriptionActions } from './subscription-actions'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Sales' }
 export const dynamic = 'force-dynamic'
@@ -46,15 +46,8 @@ export default async function SalesPage() {
   )
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 py-16 md:px-6">
-      <AppTopbar current="admin" />
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader eyebrow="Admin" title="Sales" description="Money in, per client: setup fees, subscriptions, minutes, renewals." />
-        <div className="flex items-center gap-4">
-          <a href="/api/admin/sales/export" className="btn btn-outline btn-sm">Download CSV</a>
-          <Link href="/admin" className="btn btn-outline btn-sm">Back to Clients</Link>
-        </div>
-      </div>
+    <div>
+      <DashHeader title="Sales" description="Money in, per client: setup fees, subscriptions, minutes, renewals." actions={<a href="/api/admin/sales/export" className="btn btn-outline btn-sm">Download CSV</a>} />
 
       <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
         {card('Total revenue', money(t.revenue), `${t.payments} payment(s), before Whop fees`)}
@@ -139,6 +132,6 @@ export default async function SalesPage() {
       <div className="mt-8">
         <ManualPaymentForm clients={clients.map((b) => ({ id: b.config.id, name: b.config.name }))} />
       </div>
-    </main>
+    </div>
   )
 }
