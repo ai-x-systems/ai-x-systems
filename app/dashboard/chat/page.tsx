@@ -6,6 +6,7 @@ import { siteConfig } from '@/lib/site-config'
 import { AppearanceForm } from '@/components/appearance-form'
 import { CopyField } from '@/components/copy-field'
 import { defaultBubble, defaultChatGreeting, defaultHeadline, defaultSubtitle, resolveSuggestions } from '@/lib/config/greetings'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Website chat' }
 export const dynamic = 'force-dynamic'
@@ -21,6 +22,7 @@ export default async function ChatPage() {
 
   return (
     <div className="space-y-6">
+      <DashHeader title="Website chat" description="Put the assistant on your site and match your brand." />
       <div className="card p-5">
         <p className="text-sm font-medium">Put the assistant on your website</p>
         <p className="mt-1 text-xs text-muted-foreground">Paste this line into your site, before the closing body tag or in your site builder&apos;s custom-code / header box. Works on WordPress, Wix, Squarespace, Shopify and plain HTML.</p>
