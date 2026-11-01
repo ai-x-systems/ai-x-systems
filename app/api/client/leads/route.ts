@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getClientSession } from "@/lib/accounts/session";
 import { listRecentActivity } from "@/lib/activity/log";
+import { getSupabaseClient } from "@/lib/supabase/client";
+import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -33,4 +35,14 @@ export async function GET() {
       "Cache-Control": "no-store",
     },
   });
+}
+
+/** Client: delete one lead from their own list. */
+export async function DELETE(req: NextRequest) {
+  const session = await getClientSession();
+  if (!session?.businessId) return NextResponse.json({ success: false, error: "Sign in required." }, { status: 401 });
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) return NextResponse.json({ success: false, error: "Missing id." }, { status: 400 });
+  await getSupabaseClient().from("activity_log").delete().eq("id", id).eq("business_id", session.businessId);
+  return NextResponse.json({ success: true });
 }
