@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { classifyPlan, decideWhopAction, whopPlanIds, metadataBusinessId, paymentEmail, paymentPlanId, paymentId, formatAmount, WHOP_EVENTS } from "../lib/billing/whop.ts";
+import { classifyPlan, decideWhopAction, whopPlanIds, metadataBusinessId, paymentEmail, paymentPlanId, paymentId, formatAmount, membershipIdOf, WHOP_EVENTS, PRICING } from "../lib/billing/whop.ts";
 
 const ids = whopPlanIds({});
 assert.equal(ids.founding, "plan_cjXCgAuwSjXAJ");
@@ -59,12 +59,25 @@ for (const t of ["refund.created", "dispute.created"]) {
 }
 
 // anything else is ignored; garbage payloads never throw
+// membership events: ending a subscription marks cancelled; scheduling a cancel only alerts
+d = decideWhopAction("membership.deactivated", { id: "mem_1", status: "canceled" }, ids);
+assert.equal(d.status, "cancelled");
+assert.ok(d.alert);
+d = decideWhopAction("membership.cancel_at_period_end_changed", { id: "mem_1", cancel_at_period_end: true }, ids);
+assert.equal(d.status, undefined);
+assert.ok(d.alert);
+assert.equal(membershipIdOf("membership.deactivated", { id: "mem_9" }), "mem_9");
+assert.equal(membershipIdOf("payment.succeeded", { id: "pay_1", membership: { id: "mem_7" } }), "mem_7");
+assert.equal(membershipIdOf("payment.succeeded", { id: "pay_1" }), undefined);
+assert.equal(PRICING.setup.founding + PRICING.monthly, 348);
+assert.equal(PRICING.setup.standard + PRICING.monthly, 448);
+
 d = decideWhopAction("membership.updated", pay(ids.founding), ids);
 assert.equal(d.alert, false);
 for (const bad of [null, undefined, 5, "x", [], {}]) {
   assert.doesNotThrow(() => decideWhopAction("payment.succeeded", bad, ids));
   assert.equal(decideWhopAction("payment.succeeded", bad, ids).minutes, 0);
 }
-assert.deepEqual([...WHOP_EVENTS], ["payment.succeeded", "payment.failed", "refund.created", "dispute.created"]);
+assert.deepEqual([...WHOP_EVENTS], ["payment.succeeded", "payment.failed", "refund.created", "dispute.created", "membership.deactivated", "membership.cancel_at_period_end_changed"]);
 
 console.log("whop billing tests: all passed");
