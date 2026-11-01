@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 const WHAT = [
   { key: 'founding', label: 'Founding plan (setup + first month)' },
@@ -32,14 +33,14 @@ export function ManualPaymentForm({ clients }: { clients: { id: string; name: st
       })
       const data = (await res.json().catch(() => ({}))) as { error?: string }
       if (!res.ok) { setMsg(data.error || 'Could not save.'); return }
-      setAmount(''); setNote(''); setMsg('Saved.')
+      setAmount(''); setNote(''); setMsg('Saved.'); toast('Payment recorded')
       router.refresh()
     } finally { setBusy(false) }
   }
 
   const input = 'rounded-md border border-input bg-input/30 px-2 py-1.5 text-xs'
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="card p-5">
       <p className="text-sm font-medium">Record a payment received outside Whop</p>
       <p className="mt-1 text-xs text-muted-foreground">For bank transfers or cash. It appears in your totals and can switch billing on or add the minutes for you.</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -69,7 +70,7 @@ export function ManualPaymentForm({ clients }: { clients: { id: string; name: st
         Also apply it: set billing to active for a plan, or add the minutes for a pack
       </label>
       <div className="mt-3 flex items-center gap-3">
-        <button type="button" onClick={submit} disabled={busy} className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-60">{busy ? 'Saving…' : 'Save payment'}</button>
+        <button type="button" onClick={submit} disabled={busy} className="btn btn-primary btn-sm">{busy ? 'Saving…' : 'Save payment'}</button>
         {msg ? <span className="text-xs text-muted-foreground">{msg}</span> : null}
       </div>
     </div>
