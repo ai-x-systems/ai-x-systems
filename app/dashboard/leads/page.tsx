@@ -10,7 +10,7 @@ export default async function LeadsPage() {
   const activity = await listRecentActivity(session.businessId!, 200)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="card p-5">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">Leads &amp; bookings ({activity.length}{activity.length === 200 ? '+' : ''})</p>
         <a href="/api/client/leads" className="text-xs text-primary underline underline-offset-4">Download all (CSV)</a>
