@@ -8,6 +8,7 @@ import { getSubscriptionInfo } from '@/lib/billing/subscription'
 import { whopConfigured } from '@/lib/billing/whop-checkout'
 import { PRICING } from '@/lib/billing/whop'
 import { CancelSubscription } from './cancel-subscription'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Billing' }
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,7 @@ export default async function BillingPage() {
 
   return (
     <div className="space-y-6">
+      <DashHeader title="Billing" description="Your plan, minutes and payments." />
       <div className={card}>
         <p className="text-sm font-medium">Your plan</p>
         <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
