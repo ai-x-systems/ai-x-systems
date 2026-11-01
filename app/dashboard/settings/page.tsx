@@ -6,7 +6,7 @@ import { ProfileForm, PauseControl, PasswordForm, DeleteAccountRequest } from '.
 export const metadata = { title: 'Settings' }
 export const dynamic = 'force-dynamic'
 
-const card = 'rounded-xl border border-border bg-card p-5'
+const card = 'card p-5'
 
 export default async function SettingsPage() {
   const session = (await getClientSession())!
