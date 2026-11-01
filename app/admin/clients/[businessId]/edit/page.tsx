@@ -1,12 +1,13 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/accounts/session'
 import { getBusiness } from '@/lib/config/business-store'
 import { getBusinessOverride } from '@/lib/config/overrides'
-import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { EditBusinessConfigForm } from './edit-business-config-form'
 import { AppearanceForm } from '@/components/appearance-form'
 import { defaultChatGreeting, defaultBubble, defaultHeadline, defaultSubtitle, resolveSuggestions } from '@/lib/config/greetings'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Edit business info' }
 
@@ -27,12 +28,11 @@ export default async function EditBusinessConfigPage({
   const notifyEmail = override?.notifyEmail ?? business.integrations.notifyEmail ?? ''
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-4 py-16 md:px-6">
-      <AppTopbar current="admin" />
-      <PageHeader
-        eyebrow="Admin"
+    <div>
+      <DashHeader
         title={`Edit ${business.name}`}
         description="FAQs, notification email and chat appearance. Everything else still lives in the business's JSON file."
+        actions={<Link href="/admin" className="btn btn-outline btn-sm">Back to Clients</Link>}
       />
       <div className="mt-8">
         <EditBusinessConfigForm businessId={businessId} initialFaqs={faqs} initialNotifyEmail={notifyEmail} />
@@ -54,6 +54,6 @@ export default async function EditBusinessConfigPage({
           }}
         />
       </div>
-    </main>
+    </div>
   )
 }
