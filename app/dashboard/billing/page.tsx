@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 
 const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const day = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined)
-const card = 'rounded-xl border border-border bg-card p-5'
+const card = 'card p-5'
 const link = 'text-primary underline underline-offset-4'
 
 export default async function BillingPage() {
@@ -51,8 +51,8 @@ export default async function BillingPage() {
           <p className="mt-1 text-xs text-muted-foreground">Minutes are used by phone calls only. Website chat is unlimited.</p>
           {whop ? (
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <a href="/api/client/billing/minutes?pack=200" className="rounded-md border border-input px-3 py-2 hover:bg-muted">Buy 200 minutes · {money(PRICING.packs.minutes200)}</a>
-              <a href="/api/client/billing/minutes?pack=500" className="rounded-md border border-input px-3 py-2 hover:bg-muted">Buy 500 minutes · {money(PRICING.packs.minutes500)}</a>
+              <a href="/api/client/billing/minutes?pack=200" className="btn btn-outline">Buy 200 minutes · {money(PRICING.packs.minutes200)}</a>
+              <a href="/api/client/billing/minutes?pack=500" className="btn btn-outline">Buy 500 minutes · {money(PRICING.packs.minutes500)}</a>
             </div>
           ) : <p className="mt-3 text-xs text-muted-foreground">To add minutes, send us a message and we will send a payment link.</p>}
           <p className="mt-2 text-xs text-muted-foreground">Minutes are added automatically after you pay.</p>
