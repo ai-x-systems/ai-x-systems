@@ -40,7 +40,7 @@ export function IntakePanel() {
     const msg = `Hi! Thanks for choosing us. To set up your AI receptionist, please fill in this short form (about 5 minutes). It's pre-filled where we could, so just check the details:\n\n${result.link}\n\nThe link works for ${result.expiresInDays} days. Once you finish, you'll get your install line and your dashboard login.`
     return (
       <div className="space-y-4 text-sm">
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+        <div className="card p-5 space-y-2">
           <p className="font-medium">Link created {result.prefilled ? '(pre-filled from their website)' : '(blank form)'}</p>
           <pre className="whitespace-pre-wrap rounded-lg bg-secondary p-3 text-xs">{msg}</pre>
           <Copy text={msg} label="Copy message" />
@@ -96,13 +96,13 @@ export function PreviewPanel() {
     const msg = `Hi! I built a working preview of an AI receptionist for ${result.name} from what's public on your website. Try asking it something a customer would:\n\n${result.tryUrl}`
     return (
       <div className="space-y-4 text-sm">
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+        <div className="card p-5 space-y-2">
           <p className="font-medium">Preview ready</p>
           <a className="break-all text-xs text-primary underline underline-offset-4" href={result.tryUrl} target="_blank" rel="noreferrer">{result.tryUrl}</a>
           <pre className="whitespace-pre-wrap rounded-lg bg-secondary p-3 text-xs">{msg}</pre>
           <Copy text={msg} label="Copy message" />
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+        <div className="card p-5 space-y-2">
           <p className="font-medium">Phone demo</p>
           <p className="text-xs text-muted-foreground">There is one shared demo number. Point it at this business just before they call. Calls are capped at 2 minutes and free to them.</p>
           <Button size="sm" variant="outline" onClick={useLine}>Point the demo line at this preview</Button>
