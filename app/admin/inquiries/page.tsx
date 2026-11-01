@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getAdminSession } from '@/lib/accounts/session'
 import { listProspects } from '@/lib/leads/prospects'
-import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { ProspectStatusSelect } from './prospect-status-select'
 import { DeleteButton } from '@/components/delete-button'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Inquiries' }
 
@@ -22,18 +22,8 @@ export default async function InquiriesPage() {
   const prospects = await listProspects()
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 py-16 md:px-6">
-      <AppTopbar current="admin" />
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader
-          eyebrow="Admin"
-          title="Inquiries"
-          description={`${prospects.length} submission(s) from the demo request form`}
-        />
-        <Link href="/admin" className="text-sm text-primary underline underline-offset-4">
-          Back to Clients
-        </Link>
-      </div>
+    <div>
+      <DashHeader title="Inquiries" description={`${prospects.length} submission(s) from the demo request form`} />
 
       <div className="mt-10 space-y-4">
         {prospects.length === 0 ? (
@@ -112,6 +102,6 @@ export default async function InquiriesPage() {
           ))
         )}
       </div>
-    </main>
+    </div>
   )
 }
