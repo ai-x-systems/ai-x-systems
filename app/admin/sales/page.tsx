@@ -38,7 +38,7 @@ export default async function SalesPage() {
   const t = summary.totals
 
   const card = (label: string, value: string, hint?: string) => (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="card p-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
       {hint ? <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p> : null}
@@ -51,8 +51,8 @@ export default async function SalesPage() {
       <div className="flex items-start justify-between gap-4">
         <PageHeader eyebrow="Admin" title="Sales" description="Money in, per client: setup fees, subscriptions, minutes, renewals." />
         <div className="flex items-center gap-4">
-          <a href="/api/admin/sales/export" className="text-sm text-primary underline underline-offset-4">Download CSV</a>
-          <Link href="/admin" className="text-sm text-primary underline underline-offset-4">Back to Clients</Link>
+          <a href="/api/admin/sales/export" className="btn btn-outline btn-sm">Download CSV</a>
+          <Link href="/admin" className="btn btn-outline btn-sm">Back to Clients</Link>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export default async function SalesPage() {
       <p className="mt-2 text-xs text-muted-foreground">Renewal dates are exact when your Whop API key may read memberships, otherwise last subscription payment + 1 month. Payments made before the Whop connection appear only if you record them below.</p>
 
       {summary.unmatched.length > 0 ? (
-        <div className="mt-8 rounded-xl border border-border bg-card p-4">
+        <div className="mt-8 card p-4">
           <p className="text-sm font-medium">Payments waiting for an account ({summary.unmatched.length})</p>
           <p className="mt-1 text-xs text-muted-foreground">These were paid before the client finished setup. They are applied automatically when that email completes its setup link.</p>
           <ul className="mt-2 divide-y divide-border text-xs">
