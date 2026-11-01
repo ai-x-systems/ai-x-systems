@@ -99,3 +99,189 @@ select option:checked {
   background-color: var(--accent);
   color: var(--accent-foreground);
 }
+
+/* ════════════════════════════════════════════════════════════════════
+ * Interaction feedback, site-wide.
+ * Every button, link, field and table row now answers the pointer: hover (brighten),
+ * press (sink + shrink slightly), keyboard focus (clear ring), disabled (dimmed, not-allowed).
+ * Unlayered on purpose so it also upgrades buttons that were written with no hover styles.
+ * ════════════════════════════════════════════════════════════════════ */
+button,
+[role='button'],
+summary,
+label[for],
+input[type='checkbox'],
+input[type='radio'] {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+button,
+a,
+input,
+textarea,
+select,
+summary,
+[role='button'] {
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease,
+    transform 0.12s ease,
+    filter 0.15s ease,
+    opacity 0.15s ease;
+}
+button:not(:disabled):hover,
+[role='button']:not([aria-disabled='true']):hover {
+  filter: brightness(1.14);
+}
+button:not(:disabled):active,
+[role='button']:not([aria-disabled='true']):active {
+  transform: translateY(1px) scale(0.975);
+  filter: brightness(0.94);
+}
+a[href]:hover {
+  filter: brightness(1.14);
+}
+a[href]:active {
+  filter: brightness(0.92);
+}
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+[role='button']:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 28%, transparent);
+}
+input:hover:not(:disabled):not(:focus-visible),
+textarea:hover:not(:disabled):not(:focus-visible),
+select:hover:not(:disabled):not(:focus-visible) {
+  border-color: color-mix(in oklch, var(--foreground) 30%, transparent);
+}
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+tbody tr:hover {
+  background-color: color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+::selection {
+  background: color-mix(in oklch, var(--primary) 40%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  button:not(:disabled):active,
+  [role='button']:active {
+    transform: none;
+  }
+}
+
+/* A soft blue glow behind the app screens (admin + client dashboard). */
+.app-glow {
+  position: relative;
+  isolation: isolate;
+}
+.app-glow::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 28rem at 50% -8%, color-mix(in oklch, var(--primary) 16%, transparent), transparent 70%),
+    radial-gradient(40rem 24rem at 100% 100%, color-mix(in oklch, var(--primary) 7%, transparent), transparent 70%);
+}
+
+/* Shared building blocks so every screen looks and behaves the same. */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .btn:disabled {
+    opacity: 0.55;
+  }
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .btn-primary {
+    color: var(--primary-foreground);
+    background-image: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 65%, oklch(0.75 0.14 215)));
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.2),
+      0 4px 14px -5px color-mix(in oklch, var(--primary) 75%, transparent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.25),
+      0 8px 22px -6px color-mix(in oklch, var(--primary) 80%, transparent);
+  }
+  .btn-outline {
+    border-color: var(--input);
+    background-color: color-mix(in oklch, var(--foreground) 3%, transparent);
+  }
+  .btn-outline:hover:not(:disabled) {
+    border-color: color-mix(in oklch, var(--foreground) 35%, transparent);
+    background-color: color-mix(in oklch, var(--foreground) 9%, transparent);
+  }
+  .btn-danger {
+    color: #fff;
+    background-color: var(--destructive);
+    box-shadow: 0 4px 14px -6px color-mix(in oklch, var(--destructive) 80%, transparent);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: color-mix(in oklch, var(--foreground) 8%, transparent);
+  }
+  .card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    background-color: var(--card);
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklch, var(--primary) 45%, transparent);
+    box-shadow: 0 12px 32px -16px color-mix(in oklch, var(--primary) 60%, transparent);
+  }
+  .stat {
+    background-image: linear-gradient(180deg, color-mix(in oklch, var(--primary) 7%, transparent), transparent 70%);
+  }
+}
+/* Pressed state for the shared buttons must beat their (more specific) hover rules above. */
+.btn:not(:disabled):active {
+  transform: translateY(1px) scale(0.975);
+  box-shadow: none;
+}
