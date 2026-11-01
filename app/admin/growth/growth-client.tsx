@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { DeleteButton } from '@/components/delete-button'
 import { Button } from '@/components/ui/button'
 
 const input = 'w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm outline-none focus-visible:border-ring'
@@ -151,6 +152,7 @@ export function LeadActions({ id, stage }: { id: string; stage: string }) {
       {stage !== 'won' && <button className="text-xs text-primary underline underline-offset-4" onClick={() => act('won')}>Won</button>}
       {!closed && <button className="text-xs text-muted-foreground underline underline-offset-4" onClick={() => act('lost')}>Lost</button>}
       {!closed && <button className="text-xs text-muted-foreground underline underline-offset-4" onClick={() => act('suppress')}>Never contact</button>}
+      <DeleteButton endpoint={`/api/admin/growth/leads/${id}`} label="Delete" warning="Deletes this prospect, its drafted emails and its private preview. If you may contact them again, use Never contact instead so they are not re-added." />
     </div>
   )
 }
