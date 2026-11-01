@@ -23,8 +23,9 @@ export async function loadMinutesStats(): Promise<Map<string, MinutesStats>> {
   const [balances, calls] = await Promise.all([creditLedger.listAllBalances(), listCalls(null, 5000)]);
   const out = new Map<string, MinutesStats>();
   for (const b of balances) {
-    const bought = b.transactions.filter((t) => t.amount > 0).reduce((n, t) => n + t.amount, 0);
-    const used = -b.transactions.filter((t) => t.amount < 0).reduce((n, t) => n + t.amount, 0);
+    // Only real top-ups count as "bought" and only real calls count as "used"; manual corrections are neither.
+    const bought = b.transactions.filter((t) => t.amount > 0 && t.type !== "adjustment").reduce((n, t) => n + t.amount, 0);
+    const used = -b.transactions.filter((t) => t.amount < 0 && t.type === "usage").reduce((n, t) => n + t.amount, 0);
     out.set(b.businessId, { bought, used, left: b.balance, vapiCostCents: 0 });
   }
   for (const c of calls) {
