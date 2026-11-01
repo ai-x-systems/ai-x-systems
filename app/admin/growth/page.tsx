@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getAdminSession } from '@/lib/accounts/session'
-import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { getSettings, stageCounts, listMessages, listLeads, sentSince } from '@/lib/growth/store'
 import { growthReadiness } from '@/lib/growth/send'
 import { listProspects } from '@/lib/leads/prospects'
 import { RunButtons, SettingsForm, QueueItem, LeadActions, PreviewLinks, AddLeadsForm } from './growth-client'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Growth' }
 export const dynamic = 'force-dynamic'
@@ -38,15 +38,8 @@ export default async function GrowthPage() {
   const funnelCount = (k: string) => k === 'contacted' ? contactedEver : k === 'replied' ? replies : k === 'enriched' ? c('enriched') + c('drafted') + c('queued') + contactedEver : k === 'discovered' ? Object.values(counts).reduce((a, b) => a + b, 0) : c(k)
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 py-16 md:px-6">
-      <AppTopbar current="admin" />
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader eyebrow="Admin" title="Growth" description="Find prospects, email them, track replies — automatically." />
-        <div className="flex gap-4 text-sm">
-          <Link href="/admin" className="text-primary underline underline-offset-4">Clients</Link>
-          <Link href="/admin/inquiries" className="text-primary underline underline-offset-4">Inquiries{inboundNew ? ` (${inboundNew} new)` : ''}</Link>
-        </div>
-      </div>
+    <div>
+      <DashHeader title="Growth" description="Find prospects, email them, track replies." />
 
       <section className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-6">
         {FUNNEL.map(([k, label]) => (
@@ -130,6 +123,6 @@ export default async function GrowthPage() {
         <p className="mb-4 text-sm font-medium">Targeting &amp; sending settings</p>
         <SettingsForm initial={settings} />
       </section>
-    </main>
+    </div>
   )
 }
