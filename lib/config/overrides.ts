@@ -77,6 +77,20 @@ export async function saveBusinessOverride(
   if (error) throw error;
 }
 
+/** Saves only the lead-alert email, leaving FAQs and chat settings untouched. */
+export async function saveNotifyEmailOverride(businessId: string, email: string): Promise<boolean> {
+  const { error } = await getSupabaseClient().from("business_overrides").upsert({ business_id: businessId, notify_email: email, updated_at: new Date().toISOString() });
+  if (error) console.error("[overrides] failed to save notify email:", error);
+  return !error;
+}
+
+/** Saves only the FAQs, leaving the notification email and chat settings untouched. */
+export async function saveFaqsOverride(businessId: string, faqs: { question: string; answer: string }[]): Promise<boolean> {
+  const { error } = await getSupabaseClient().from("business_overrides").upsert({ business_id: businessId, faqs, updated_at: new Date().toISOString() });
+  if (error) console.error("[overrides] failed to save faqs:", error);
+  return !error;
+}
+
 /** Saves only the chat appearance, leaving FAQs and the notification email untouched. */
 export async function saveChatOverride(businessId: string, chat: ChatSettings): Promise<{ ok: true } | { ok: false; error: string }> {
   const supabase = getSupabaseClient();
