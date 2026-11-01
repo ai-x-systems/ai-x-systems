@@ -1,212 +1,104 @@
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getClientSession } from '@/lib/accounts/session'
-import { getStoredBusiness, installSnippet } from '@/lib/config/business-store'
+import { getStoredBusiness } from '@/lib/config/business-store'
 import { creditLedger } from '@/lib/billing/credits'
-import { getLineForBusiness, listCalls } from '@/lib/voice/store'
+import { getLineForBusiness } from '@/lib/voice/store'
 import { listRecentActivity } from '@/lib/activity/log'
-import { PageHeader } from '@/components/page-header'
-import { AppTopbar } from '@/components/app-topbar'
-import { siteConfig } from '@/lib/site-config'
-import { AppearanceForm } from '@/components/appearance-form'
-import { getBusinessOverride } from '@/lib/config/overrides'
-import { defaultBubble, defaultChatGreeting, defaultHeadline, defaultSubtitle, resolveSuggestions } from '@/lib/config/greetings'
-import { LogoutButton } from './logout-button'
+import { whopConfigured } from '@/lib/billing/whop-checkout'
 
-export const metadata = { title: 'Dashboard' }
+export const dynamic = 'force-dynamic'
 
-export default async function DashboardPage() {
-  const session = await getClientSession()
-  if (!session) redirect('/client/login')
-  if (!session.businessId) redirect('/client/login')
+const card = 'rounded-xl border border-border bg-card p-5'
+const link = 'text-primary underline underline-offset-4'
 
-  const stored = await getStoredBusiness(session.businessId)
+export default async function OverviewPage() {
+  const session = (await getClientSession())!
+  const id = session.businessId!
+  const stored = await getStoredBusiness(id)
   const business = stored?.config
-  const origin = siteConfig.brand.baseUrl.replace(/\/+$/, '')
-  const snippet = installSnippet(origin, session.businessId)
-  const balance = await creditLedger.getBalance(session.businessId)
-  const activity = await listRecentActivity(session.businessId, 25)
-  const [line, calls] = await Promise.all([getLineForBusiness(session.businessId), listCalls(session.businessId, 10)])
   const services = stored?.services ?? 'both'
+  const [balance, activity, line] = await Promise.all([creditLedger.getBalance(id), listRecentActivity(id, 2000), getLineForBusiness(id)])
   const showVoice = services !== 'chat' || !!line
-  const showChat = services !== 'voice'
-  const chatOverride = showChat && business ? await getBusinessOverride(session.businessId) : null
-  const topupUrl = process.env.VOICE_TOPUP_URL
-  const whopTopup = Boolean(process.env.WHOP_API_KEY)
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
+  const thisMonth = activity.filter((a) => new Date(a.createdAtISO) >= monthStart).length
   const lowMinutes = balance.balance < (Number(process.env.VOICE_LOW_BALANCE_MINUTES) || 15)
+  const integ = business?.integrations
+  const connected = !!(integ?.webhookUrl || integ?.leadSheetId)
+  const paid = stored?.billingStatus === 'active'
+  const whop = whopConfigured()
+
+  const steps: { done?: boolean; text: string; href: string }[] = [
+    { done: paid, text: paid ? 'Subscription active' : 'Subscription: payment not confirmed yet', href: '/dashboard/billing' },
+    ...(services !== 'voice' ? [{ text: 'Add the chat to your website', href: '/dashboard/chat' }] : []),
+    { done: connected, text: connected ? 'Leads are sent to your CRM / sheet' : 'Send new leads to your CRM or Google Sheet', href: '/dashboard/integrations' },
+    ...(showVoice ? [{ done: !!line, text: line ? `Phone line ready: ${line.e164}` : 'Phone line: we will set this up and message you', href: '/dashboard/settings' }] : []),
+  ]
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-4 py-16 md:px-6">
-      <AppTopbar current="client" />
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader
-          eyebrow={business?.name}
-          title="Dashboard"
-          description={session.email}
-        />
-        <LogoutButton role="client" />
-      </div>
-
-      <div className="mt-10 grid gap-6 sm:grid-cols-2">
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className={card}>
+          <p className="text-sm text-muted-foreground">Receptionist</p>
+          <p className="mt-2 text-xl font-semibold">{business?.demo ? 'Demo mode' : stored && !stored.active ? 'Paused' : 'Live'}</p>
+          {stored?.source === 'db' ? <p className="mt-1 text-xs text-muted-foreground">Billing: {stored.billingStatus.replace('_', ' ')}</p> : null}
+          {stored && !stored.active ? <p className="mt-1 text-xs text-destructive">It isn&apos;t answering right now. <Link href="/dashboard/settings" className={link}>Turn it back on</Link></p> : null}
+        </div>
+        <div className={card}>
+          <p className="text-sm text-muted-foreground">Leads this month</p>
+          <p className="mt-2 text-xl font-semibold tabular-nums">{thisMonth}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{activity.length} in total · <Link href="/dashboard/leads" className={link}>see all</Link></p>
+        </div>
         {showVoice ? (
-        <div className="rounded-xl border border-border bg-card p-6">
+          <div className={card}>
             <p className="text-sm text-muted-foreground">Phone minutes left</p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums">{Math.max(0, balance.balance)}</p>
-            {line && lowMinutes ? (
-              <p className="mt-1 text-xs text-destructive">
-                {balance.balance < 1 ? 'Out of minutes — ' : 'Running low — '}
-                {line.forwardTo ? 'calls are passed to your team when minutes run out.' : 'callers hear a polite message when minutes run out.'}
-              </p>
-            ) : null}
+            <p className="mt-2 text-xl font-semibold tabular-nums">{Math.max(0, balance.balance)}</p>
+            {line && lowMinutes ? <p className="mt-1 text-xs text-destructive">{balance.balance < 1 ? 'Out of minutes. ' : 'Running low. '}{line.forwardTo ? 'Calls are passed to your team when minutes run out.' : 'Callers hear a polite message when minutes run out.'}</p> : null}
             <p className="mt-1 text-xs text-muted-foreground">
-              {whopTopup ? (
-                <>
-                  <a href="/api/client/billing/minutes?pack=200" className="text-primary underline underline-offset-4">Buy 200 minutes ($50)</a>
-                  {' · '}
-                  <a href="/api/client/billing/minutes?pack=500" className="text-primary underline underline-offset-4">Buy 500 minutes ($110)</a>{' '}
-                  — minutes are added automatically after you pay.
-                </>
-              ) : (
-                <>
-                  {topupUrl ? (
-                    <a href={topupUrl} className="text-primary underline underline-offset-4">Buy more minutes</a>
-                  ) : (
-                    <a href={`mailto:${siteConfig.contact.email}?subject=Top up minutes — ${business?.name ?? ''}`} className="text-primary underline underline-offset-4">Reach out</a>
-                  )}{' '}
-                  {topupUrl ? '— pay with the email you log in with and minutes are added automatically.' : "and we'll send a payment link to top up."}
-                </>
-              )}
+              {whop ? (<><a href="/api/client/billing/minutes?pack=200" className={link}>Buy 200 ($50)</a>{' · '}<a href="/api/client/billing/minutes?pack=500" className={link}>Buy 500 ($110)</a></>) : <Link href="/dashboard/billing" className={link}>Top up</Link>}
             </p>
           </div>
-        ) : null}
-
-        <div className="rounded-xl border border-border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Receptionist status</p>
-          <p className="mt-2 text-lg font-medium">
-            {business?.demo ? 'Demo mode' : stored && !stored.active ? 'Paused' : 'Live'}
-          </p>
-          {stored?.source === 'db' && stored.billingStatus !== 'active' ? (
-            <p className="mt-1 text-xs text-muted-foreground">Billing: {stored.billingStatus.replace('_', ' ')}</p>
-          ) : null}
-          <p className="mt-1 text-xs text-muted-foreground">
-            {business?.industry ?? '—'}
-          </p>
-        </div>
+        ) : (
+          <div className={card}>
+            <p className="text-sm text-muted-foreground">Plan</p>
+            <p className="mt-2 text-xl font-semibold">Website chat</p>
+            <p className="mt-1 text-xs text-muted-foreground"><Link href="/dashboard/billing" className={link}>Billing &amp; plan</Link></p>
+          </div>
+        )}
       </div>
 
-      <div className="mt-8 rounded-xl border border-border bg-card p-6">
+      <div className={card}>
+        <p className="text-sm font-medium">Get set up</p>
+        <ul className="mt-3 space-y-2 text-sm">
+          {steps.map((s) => (
+            <li key={s.text} className="flex items-center gap-2">
+              <span aria-hidden className={`inline-flex h-5 w-5 items-center justify-center rounded-full border text-[11px] ${s.done ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'}`}>{s.done ? '✓' : '•'}</span>
+              <Link href={s.href} className={s.done ? 'text-muted-foreground' : link}>{s.text}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className={card}>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Recent leads &amp; bookings</p>
-          <a href="/api/client/leads" className="text-xs text-primary underline underline-offset-4">Download all (CSV)</a>
+          <p className="text-sm font-medium">Latest leads &amp; bookings</p>
+          <Link href="/dashboard/leads" className={`text-xs ${link}`}>View all</Link>
         </div>
         {activity.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">Nothing yet — this fills in as calls come through.</p>
+          <p className="mt-3 text-sm text-muted-foreground">Nothing yet. This fills in as customers chat or call.</p>
         ) : (
           <ul className="mt-3 divide-y divide-border">
-            {activity.map((entry) => (
-              <li key={entry.id} className="py-2.5 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">
-                    {entry.type === 'booking' ? 'Booking' : 'Lead'}
-                    {typeof entry.data.callerName === 'string' && entry.data.callerName
-                      ? ` — ${entry.data.callerName}`
-                      : ''}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(entry.createdAtISO).toLocaleString()}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-muted-foreground">
-                  {entry.type === 'booking'
-                    ? [entry.data.serviceName, entry.data.startTimeISO].filter(Boolean).join(' at ')
-                    : (entry.data.reason as string | undefined) ?? ''}
-                </p>
-                {(() => {
-                  const contact = [entry.data.callerEmail, entry.data.callerPhone].filter((v): v is string => typeof v === 'string' && v.length > 0)
-                  return contact.length ? <p className="mt-0.5 text-xs">{contact.join(' · ')}</p> : null
-                })()}
+            {activity.slice(0, 5).map((e) => (
+              <li key={e.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
+                <span>
+                  <span className="font-medium">{e.type === 'booking' ? 'Booking' : 'Lead'}{typeof e.data.callerName === 'string' && e.data.callerName ? ` — ${e.data.callerName}` : ''}</span>
+                  <span className="block text-muted-foreground">{e.type === 'booking' ? [e.data.serviceName, e.data.startTimeISO].filter(Boolean).join(' at ') : (e.data.reason as string | undefined) ?? ''}</span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">{new Date(e.createdAtISO).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
         )}
       </div>
-
-      {showChat ? (
-      <div className="mt-8 rounded-xl border border-border bg-card p-6">
-          <p className="text-sm font-medium">Put the assistant on your website</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Paste this line into your site (before the closing body tag, or in your site builder&apos;s custom-code / header box).
-          </p>
-          <pre className="mt-3 overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{snippet}</pre>
-          <p className="mt-2 text-xs text-muted-foreground">
-            No access to your site? Share this chat link anywhere: <span className="break-all">{origin}/embed/chat/{session.businessId}</span>
-          </p>
-        </div>
-      ) : null}
-
-      {showChat && business ? (
-        <div className="mt-8 rounded-xl border border-border bg-card p-6">
-          <p className="text-sm font-medium">Make the chat match your brand</p>
-          <p className="mb-4 mt-1 text-xs text-muted-foreground">
-            Pick your colour and change the welcome text. Changes appear on your website within a minute. Leave a field empty to use the default.
-          </p>
-          <AppearanceForm
-            endpoint="/api/client/appearance"
-            businessName={business.name}
-            initial={{ ...(business.chat ?? {}), ...(chatOverride?.chat ?? {}) }}
-            defaults={{
-              greeting: defaultChatGreeting(business.name, business.voice.assistantName),
-              bubble: defaultBubble(business.name),
-              headline: defaultHeadline(business.name),
-              subtitle: defaultSubtitle(business.voice.assistantName),
-              suggestions: resolveSuggestions({ ...business, chat: undefined }),
-            }}
-          />
-        </div>
-      ) : null}
-
-      {line ? (
-        <div className="mt-8 rounded-xl border border-border bg-card p-6">
-          <p className="text-sm font-medium">Your AI phone line</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">{line.e164}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Point your business line at this number (ask your phone provider to forward unanswered or after-hours calls here), or give it out directly.
-          </p>
-          {calls.length > 0 ? (
-            <ul className="mt-4 divide-y divide-border text-sm">
-              {calls.map((c) => (
-                <li key={c.callId} className="flex items-center justify-between py-2">
-                  <span className="text-muted-foreground">{new Date(c.createdAtISO).toLocaleString()}{c.caller ? ` · ${c.caller}` : ''}</span>
-                  <span className="tabular-nums">{c.durationSeconds}s · {c.billedMinutes} min</span>
-                </li>
-              ))}
-            </ul>
-          ) : <p className="mt-3 text-xs text-muted-foreground">No calls yet.</p>}
-        </div>
-      ) : null}
-
-      <div className="mt-8 rounded-xl border border-border bg-card p-6">
-        <p className="text-sm font-medium">Minutes activity</p>
-        {balance.transactions.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No activity yet.</p>
-        ) : (
-          <ul className="mt-3 divide-y divide-border">
-            {balance.transactions
-              .slice(-10)
-              .reverse()
-              .map((t) => (
-                <li key={t.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <span className="text-muted-foreground">
-                    {t.note ?? t.type} — {new Date(t.createdAtISO).toLocaleDateString()}
-                  </span>
-                  <span className={t.amount >= 0 ? 'text-primary' : 'text-foreground'}>
-                    {t.amount >= 0 ? '+' : ''}
-                    {t.amount}
-                  </span>
-                </li>
-              ))}
-          </ul>
-        )}
-      </div>
-    </main>
+    </div>
   )
 }
