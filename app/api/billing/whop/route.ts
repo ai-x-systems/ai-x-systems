@@ -6,7 +6,7 @@ import { setBusinessFlags } from "@/lib/config/business-store";
 import { sendFounderAlert } from "@/lib/integrations/notify";
 import { siteConfig } from "@/lib/site-config";
 import { creditLedger } from "@/lib/billing/credits";
-import { decideWhopAction, metadataBusinessId, paymentEmail, paymentId, whopPlanIds } from "@/lib/billing/whop";
+import { classifyPlan, decideWhopAction, membershipIdOf, metadataBusinessId, paymentEmail, paymentId, paymentPlanId, whopPlanIds } from "@/lib/billing/whop";
 
 export const runtime = "nodejs";
 
@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
   const decision = decideWhopAction(type, data, ids);
   if (!decision.alert) return NextResponse.json({ ok: true, ignored: true });
 
-  const pid = paymentId(data);
+  const isPayment = type.startsWith("payment.");
+  const pid = isPayment ? paymentId(data) : undefined;
+  const memId = membershipIdOf(type, data);
   const deliveryId = req.headers.get("webhook-id") ?? crypto.createHash("sha256").update(raw).digest("hex");
   const eventId = pid ? `whop:${type}:${pid}` : `whop:${deliveryId}`;
   const email = paymentEmail(data);
@@ -60,9 +62,24 @@ export async function POST(req: NextRequest) {
       const { data: row } = await db.from("businesses").select("id").eq("id", fromMeta).maybeSingle();
       businessId = row?.id ?? null;
     }
-    if (!businessId && email) {
+    if (!businessId && email && isPayment) {
       const { data: row } = await db.from("businesses").select("id").eq("client_email", email).maybeSingle();
       businessId = row?.id ?? null;
+    }
+    // Membership events carry no client id: find the client through the payment that created this subscription.
+    let status = decision.status;
+    if (!isPayment && memId) {
+      const { data: prior } = await db
+        .from("billing_events")
+        .select("business_id, payload")
+        .eq("type", "whop.payment.succeeded")
+        .eq("payload->data->membership->>id", memId)
+        .not("business_id", "is", null)
+        .limit(1)
+        .maybeSingle();
+      const priorPlan = classifyPlan(paymentPlanId((prior?.payload as { data?: unknown } | null)?.data), ids);
+      if (prior?.business_id && priorPlan.kind === "subscription") businessId = prior.business_id;
+      else status = undefined; // a one-time minute pack (or an unknown membership) ending must never cancel a client
     }
 
     let credited = 0;
@@ -70,13 +87,13 @@ export async function POST(req: NextRequest) {
       await creditLedger.recordTransaction(businessId, "manual_topup", decision.minutes, `Minute pack purchased (Whop ${pid ?? eventId.slice(-8)})`);
       credited = decision.minutes;
     }
-    if (businessId && decision.status) await setBusinessFlags(businessId, { billing_status: decision.status });
+    if (businessId && status) await setBusinessFlags(businessId, { billing_status: status });
     if (businessId) await db.from("billing_events").update({ business_id: businessId }).eq("event_id", eventId);
 
     const matched = businessId ? `matched client "${businessId}"` : "matched NO client: check the email, or set it by hand in /admin";
     await sendFounderAlert(`Billing: ${type}`, [
       `${decision.note} Buyer: ${email ?? "unknown"}, ${matched}.`,
-      businessId && decision.status ? `Billing status is now "${decision.status}".` : "No billing status change was made.",
+      businessId && status ? `Billing status is now "${status}".` : "No billing status change was made.",
       credited > 0
         ? `Credited ${credited} voice minutes.`
         : decision.minutes > 0
