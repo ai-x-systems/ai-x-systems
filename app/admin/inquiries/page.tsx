@@ -5,6 +5,7 @@ import { listProspects } from '@/lib/leads/prospects'
 import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { ProspectStatusSelect } from './prospect-status-select'
+import { DeleteButton } from '@/components/delete-button'
 
 export const metadata = { title: 'Inquiries' }
 
@@ -61,6 +62,7 @@ export default async function InquiriesPage() {
                 </div>
                 <div className="text-right">
                   <ProspectStatusSelect prospectId={p.id} currentStatus={p.status} />
+                  <div className="mt-1 flex justify-end"><DeleteButton endpoint={`/api/admin/prospects/${p.id}`} label="Delete" warning="Deletes this inquiry permanently." /></div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {new Date(p.createdAtISO).toLocaleDateString()}
                   </p>
