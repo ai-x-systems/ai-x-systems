@@ -24,7 +24,9 @@ import "server-only";
  * ---------------------------------------------------------------------
  */
 
-export type WebhookEventType = "lead" | "booking";
+import { isSafeWebhookUrl } from "@/lib/integrations/url-guard";
+
+export type WebhookEventType = "lead" | "booking" | "test";
 
 export interface WebhookPayload {
   event: WebhookEventType;
@@ -61,6 +63,7 @@ export async function sendWebhook(
   payload: WebhookPayload
 ): Promise<WebhookResult> {
   if (!url) return { success: false, error: "No webhook URL configured." };
+  if (!isSafeWebhookUrl(url)) return { success: false, error: "The webhook URL must be a public https address." };
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
