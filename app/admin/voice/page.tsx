@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getAdminSession } from '@/lib/accounts/session'
-import { AppTopbar } from '@/components/app-topbar'
 import { PageHeader } from '@/components/page-header'
 import { creditLedger } from '@/lib/billing/credits'
 import { listStoredBusinesses } from '@/lib/config/business-store'
@@ -9,6 +8,7 @@ import { findDemoLine, listCalls, listLines } from '@/lib/voice/store'
 import { VoiceLineForm } from './voice-line-form'
 import { DemoLineForm } from './demo-line-form'
 import { DeleteButton } from '@/components/delete-button'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Voice' }
 export const dynamic = 'force-dynamic'
@@ -32,12 +32,8 @@ export default async function AdminVoicePage() {
   const dollars = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 py-16 md:px-6">
-      <AppTopbar current="admin" />
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader eyebrow="Admin" title="Voice" description="Phone lines, prepaid minutes and call history for every client." />
-        <Link href="/admin" className="text-sm text-primary underline underline-offset-4">Back to Clients</Link>
-      </div>
+    <div>
+      <DashHeader title="Voice" description="Phone lines, prepaid minutes and call history for every client." />
 
       <section className="mt-8 card p-5 text-sm">
         <p className="font-medium">Webhook</p>
@@ -113,6 +109,6 @@ export default async function AdminVoicePage() {
           </tbody>
         </table>
       </section>
-    </main>
+    </div>
   )
 }
