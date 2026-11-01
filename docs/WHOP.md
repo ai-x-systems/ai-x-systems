@@ -20,7 +20,7 @@ Plan ids are not secrets; the defaults in `lib/billing/whop.ts` are your real id
 ## Webhook
 Whop > Developer > Webhooks > Create webhook
 - URL: `https://ai-x-systems.vercel.app/api/billing/whop`
-- Events: `payment.succeeded`, `payment.failed`, `refund.created`, `dispute.created`
+- Events: `payment.succeeded`, `payment.failed`, `refund.created`, `dispute.created`, `membership.deactivated`, `membership.cancel_at_period_end_changed`
 - Use the "send test event" button once; a test payment has no matching client, so you should see a "matched NO client" alert email, which proves signature + delivery work.
 
 ## What happens
@@ -33,3 +33,10 @@ Whop > Developer > Webhooks > Create webhook
 - If a payment matches no client, no minutes are credited; the alert tells you, and you add them by hand.
 
 Cancellations are not auto-detected yet: you will see them in Whop. They can be added once you have seen a real cancellation payload.
+
+## Added later: sales view, subscriptions, deleting
+- **/admin/sales**: revenue, MRR, setup fees, minutes sold, Vapi cost, one row per client (plan, setup paid, monthly paid, minutes bought/used/left, next renewal, end subscription), a list of every payment, a CSV download, and a form to record payments made outside Whop.
+- **API key permissions** (Whop > Developer > edit the key): create + read **Checkout configurations**, read **Plans**, and under **Membership(s)**: **Cancel memberships** and read memberships. Without the last two, "End subscription" still records the request and emails you to do it by hand in Whop; it is never lost.
+- **First payment before the account exists**: stored without a client, then applied automatically (billing active, minute packs credited) when that email finishes its setup link.
+- **Ending a subscription**: the client's Billing tab (or Admin > Sales) stops renewals at the end of the paid month. When Whop reports the subscription finished (`membership.deactivated`), billing becomes `cancelled`. A one-time minute pack ending never cancels anyone.
+- **Delete** buttons: clients (type the id; blocked while a subscription is active unless you confirm), setup links, phone lines, call history rows, growth prospects (and their preview), inquiries, manual payments. Payment records of deleted clients are kept for your accounts.
