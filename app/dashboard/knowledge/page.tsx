@@ -2,6 +2,7 @@ import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
 import { getBusinessOverride } from '@/lib/config/overrides'
 import { FaqEditor, ChangeRequestForm } from './knowledge-forms'
+import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'What it knows' }
 export const dynamic = 'force-dynamic'
@@ -17,6 +18,7 @@ export default async function KnowledgePage() {
 
   return (
     <div className="space-y-6">
+      <DashHeader title="What it knows" description="The answers your assistant gives, in chat and on the phone." />
       <div className="card p-5">
         <p className="text-sm font-medium">Questions &amp; answers</p>
         <p className="mb-4 mt-1 text-xs text-muted-foreground">What your assistant tells customers, in chat and on the phone. Write answers the way you would say them.</p>
