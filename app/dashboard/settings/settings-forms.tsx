@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/lib/toast'
 
 const input = 'mt-1 w-full rounded-md border border-input bg-input/30 px-3 py-2 text-sm'
-const primary = 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60'
+const primary = 'btn btn-primary'
 
 async function post(body: Record<string, unknown>) {
   const res = await fetch('/api/client/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -20,6 +21,7 @@ function useAction() {
     try {
       const r = await post(body)
       setMsg({ ok: r.ok, text: r.ok ? okText : r.error || 'Something went wrong.' })
+      toast(r.ok ? okText : r.error || 'Something went wrong.', r.ok ? 'success' : 'error')
       if (r.ok) after?.()
     } finally { setBusy(false) }
   }
@@ -53,7 +55,7 @@ export function PauseControl({ active }: { active: boolean }) {
   const { busy, run, note } = useAction()
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <button type="button" className={active ? 'rounded-md border border-input px-4 py-2 text-sm hover:bg-muted disabled:opacity-60' : primary} disabled={busy}
+      <button type="button" className={active ? 'btn btn-outline' : primary} disabled={busy}
         onClick={() => { if (!active || window.confirm('Pause the assistant? It will stop answering chats and calls until you turn it back on.')) run({ action: active ? 'pause' : 'resume' }, active ? 'Paused.' : 'Back on.', () => router.refresh()) }}>
         {busy ? 'Working…' : active ? 'Pause my assistant' : 'Turn my assistant back on'}
       </button>
@@ -88,7 +90,7 @@ export function DeleteAccountRequest() {
     <div className="max-w-md rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
       <p>We will delete your login, leads, call history and settings. If you have an active subscription, cancel it first on the Billing tab. We confirm by email when it is done.</p>
       <div className="mt-3 flex items-center gap-3">
-        <button type="button" disabled={busy} onClick={() => run({ action: 'delete_request' }, 'Request sent. We will confirm by email.')} className="rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60">{busy ? 'Sending…' : 'Send deletion request'}</button>
+        <button type="button" disabled={busy} onClick={() => run({ action: 'delete_request' }, 'Request sent. We will confirm by email.')} className="btn btn-danger btn-sm">{busy ? 'Sending…' : 'Send deletion request'}</button>
         <button type="button" onClick={() => setOpen(false)} className="text-xs text-muted-foreground underline underline-offset-4">Never mind</button>
         {note}
       </div>
