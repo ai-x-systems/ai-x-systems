@@ -68,20 +68,20 @@ export default async function AdminPage() {
       <AppTopbar current="admin" />
       <div className="flex items-start justify-between gap-4">
         <PageHeader eyebrow="Admin" title="Clients" description={`${clients.length} client account(s)`} />
-        <div className="flex items-center gap-4">
-          <Link href="/admin/onboard" className="text-sm font-medium text-primary underline underline-offset-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/onboard" className="btn btn-primary btn-sm">
             + Onboard client
           </Link>
-          <Link href="/admin/sales" className="text-sm font-medium text-primary underline underline-offset-4">
+          <Link href="/admin/sales" className="btn btn-outline btn-sm">
             Sales
           </Link>
-          <Link href="/admin/voice" className="text-sm text-primary underline underline-offset-4">
+          <Link href="/admin/voice" className="btn btn-outline btn-sm">
             Voice
           </Link>
-          <Link href="/admin/growth" className="text-sm text-primary underline underline-offset-4">
+          <Link href="/admin/growth" className="btn btn-outline btn-sm">
             Growth
           </Link>
-          <Link href="/admin/inquiries" className="text-sm text-primary underline underline-offset-4">
+          <Link href="/admin/inquiries" className="btn btn-outline btn-sm">
             Inquiries
           </Link>
           <LogoutButton role="admin" />
