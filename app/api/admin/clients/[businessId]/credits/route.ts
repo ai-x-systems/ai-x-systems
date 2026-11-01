@@ -27,11 +27,24 @@ export async function POST(
 
   const { businessId } = await context.params;
 
-  let body: { type?: string; amount?: number; note?: string };
+  let body: { type?: string; amount?: number; note?: string; action?: string; target?: number };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ success: false, error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  // "Set the balance to exactly N": records the difference as an adjustment (so reset-to-0 is one click).
+  if (body.action === "set") {
+    const target = Number(body.target);
+    if (!Number.isFinite(target) || target < 0 || target > 1_000_000) {
+      return NextResponse.json({ success: false, error: "Enter a balance of 0 or more." }, { status: 400 });
+    }
+    const current = (await creditLedger.getBalance(businessId)).balance;
+    const diff = target - current;
+    if (diff === 0) return NextResponse.json({ success: true, balance: await creditLedger.getBalance(businessId) });
+    const balance = await creditLedger.recordTransaction(businessId, "adjustment", diff, body.note || `Balance set to ${target} (was ${current})`);
+    return NextResponse.json({ success: true, balance });
   }
 
   if (!body.type || !ALLOWED_TYPES.includes(body.type as CreditTransactionType)) {
@@ -54,5 +67,21 @@ export async function POST(
     body.note
   );
 
+  return NextResponse.json({ success: true, balance });
+}
+
+/** Removes one entry from a client's minutes history (for a mistake, like minutes added by accident). */
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ businessId: string }> }
+) {
+  const session = await getAdminSession();
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Admin access required." }, { status: 403 });
+  }
+  const { businessId } = await context.params;
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) return NextResponse.json({ success: false, error: "Missing entry id." }, { status: 400 });
+  const balance = await creditLedger.deleteTransaction(businessId, id);
   return NextResponse.json({ success: true, balance });
 }
