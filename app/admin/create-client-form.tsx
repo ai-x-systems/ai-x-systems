@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 
 export function CreateClientForm() {
   const router = useRouter()
@@ -44,51 +43,32 @@ export function CreateClientForm() {
     }
   }
 
+  const field = 'mt-1 w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm'
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="card p-5">
       <p className="text-sm font-medium">Create a client login</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Creates the account directly — you stay logged in as admin, the client does not need to sign up
-        themselves.
+        Makes the account directly. You stay logged in as admin and the client does not need to sign up.
       </p>
-      <form onSubmit={handleSubmit} className="mt-4 flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Business ID</label>
-          <input
-            required
-            value={businessId}
-            onChange={(e) => setBusinessId(e.target.value)}
-            placeholder="e.g. ai-x-systems"
-            className="w-40 rounded-md border border-input bg-input/30 px-2 py-1.5 text-sm outline-none focus-visible:border-ring"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-56 rounded-md border border-input bg-input/30 px-2 py-1.5 text-sm outline-none focus-visible:border-ring"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Temporary password</label>
-          <input
-            type="text"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-44 rounded-md border border-input bg-input/30 px-2 py-1.5 text-sm outline-none focus-visible:border-ring"
-          />
-        </div>
-        <Button type="submit" size="sm" disabled={loading}>
+      <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+        <label className="block text-xs text-muted-foreground">
+          Business ID
+          <input required value={businessId} onChange={(e) => setBusinessId(e.target.value)} placeholder="e.g. site-audit-fast" className={field} />
+        </label>
+        <label className="block text-xs text-muted-foreground">
+          Client email
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="owner@theirbusiness.com" className={field} />
+        </label>
+        <label className="block text-xs text-muted-foreground">
+          Temporary password (8+ characters)
+          <input type="text" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className={field} />
+        </label>
+        <button type="submit" disabled={loading} className="btn btn-primary btn-sm w-full">
           {loading ? 'Creating…' : 'Create login'}
-        </Button>
+        </button>
       </form>
-      {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
-      {notice ? <p className="mt-2 text-sm text-primary">{notice}</p> : null}
+      {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+      {notice ? <p className="mt-3 text-sm text-primary">{notice}</p> : null}
     </div>
   )
 }
