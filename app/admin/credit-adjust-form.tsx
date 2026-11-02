@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { toast } from '@/lib/toast'
 
 type Entry = { id: string; amount: number; type: string; note: string; at: string }
@@ -64,14 +63,14 @@ export function CreditAdjustForm({ businessId, balance, history }: { businessId:
 
   return (
     <div className="flex flex-col gap-1.5">
-      <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-1.5">
+      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-2">
         <input
           type="number"
           placeholder="+ add / − remove"
           title="Minutes to add (plus) or remove (minus)"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="w-28 rounded-md border border-input bg-input/30 px-2 py-1 text-xs outline-none focus-visible:border-ring"
+          className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm outline-none focus-visible:border-ring"
         />
         <input
           type="text"
@@ -79,11 +78,11 @@ export function CreditAdjustForm({ businessId, balance, history }: { businessId:
           title="A label saved with this change, e.g. Payoneer PR-0142 or 'added by mistake'"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="w-40 rounded-md border border-input bg-input/30 px-2 py-1 text-xs outline-none focus-visible:border-ring"
+          className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm outline-none focus-visible:border-ring"
         />
-        <Button type="submit" size="xs" variant="outline" disabled={loading || !amount}>
-          Save
-        </Button>
+        <button type="submit" disabled={loading || !amount} className="btn btn-outline btn-sm col-span-2">
+          {loading ? 'Saving…' : 'Save change'}
+        </button>
       </form>
       <div className="flex flex-wrap items-center gap-3 text-xs">
         {balance !== 0 ? (
