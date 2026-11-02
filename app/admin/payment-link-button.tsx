@@ -51,20 +51,20 @@ export function PaymentLinkButton({ businessId }: { businessId: string }) {
   }
 
   return (
-    <div className="mt-2 flex flex-col gap-1.5">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <select className="rounded-md border border-input bg-input/30 px-2 py-1 text-xs" value={plan} onChange={(e) => setPlan(e.target.value)}>
+    <div className="mt-4 flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        <select className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" value={plan} onChange={(e) => setPlan(e.target.value)}>
           {PLANS.map((p) => (
             <option key={p.key} value={p.key}>{p.label}</option>
           ))}
         </select>
-        <button type="button" onClick={create} disabled={loading} className="btn btn-outline btn-xs">
-          {loading ? 'Creating…' : 'Payment link'}
+        <button type="button" onClick={create} disabled={loading} className="btn btn-primary btn-sm w-full">
+          {loading ? 'Creating…' : 'Create payment link'}
         </button>
       </div>
       {url ? (
         <div className="flex items-center gap-2">
-          <input readOnly value={url} className="w-56 rounded-md border border-input bg-input/30 px-2 py-1 text-xs" onFocus={(e) => e.currentTarget.select()} />
+          <input readOnly value={url} className="min-w-0 flex-1 rounded-lg border border-input bg-input/30 px-3 py-2 text-xs" onFocus={(e) => e.currentTarget.select()} />
           <button type="button" onClick={copy} className="text-xs text-primary underline underline-offset-4">{copied ? 'Copied' : 'Copy'}</button>
         </div>
       ) : null}
