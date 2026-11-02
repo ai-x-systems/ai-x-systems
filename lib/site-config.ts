@@ -56,9 +56,9 @@ const brand = {
 // ---------------------------------------------------------------------------
 
 const contact = {
-  email: 'hello@aixsystems.app',
-  supportEmail: 'support@aixsystems.app',
-  demoEmail: 'demo@aixsystems.app',
+  email: 'aixsautomation@gmail.com',
+  supportEmail: 'aixsautomation@gmail.com',
+  demoEmail: 'aixsautomation@gmail.com',
   phone: null as string | null, // TODO: add once a business line is provisioned
   address: null as string | null, // TODO: add if/when a public business address is needed
 }
