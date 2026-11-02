@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 
 export function TestEmailButton({ defaultEmail }: { defaultEmail: string }) {
   const [email, setEmail] = useState(defaultEmail)
@@ -27,25 +26,21 @@ export function TestEmailButton({ defaultEmail }: { defaultEmail: string }) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="card p-5">
       <p className="text-sm font-medium">Test email delivery</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Sends a real test email through GMAIL_USER/GMAIL_APP_PASSWORD so you can confirm delivery is working.
+        Sends a real test email through your Gmail settings so you can confirm lead and payment alerts will arrive.
       </p>
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-64 rounded-md border border-input bg-input/30 px-2 py-1.5 text-sm outline-none focus-visible:border-ring"
-        />
-        <Button type="button" size="sm" onClick={handleSend} disabled={loading}>
-          {loading ? 'Sending…' : 'Send test email'}
-        </Button>
-      </div>
+      <label className="mt-4 block text-xs text-muted-foreground">
+        Send it to
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+      </label>
+      <button type="button" onClick={handleSend} disabled={loading || !email} className="btn btn-primary btn-sm mt-3 w-full">
+        {loading ? 'Sending…' : 'Send test email'}
+      </button>
       {result ? (
-        <p className={`mt-2 text-sm ${result.success ? 'text-primary' : 'text-destructive'}`}>
-          {result.success ? 'Sent — check the inbox.' : `Failed: ${result.error}`}
+        <p className={`mt-3 text-sm ${result.success ? 'text-primary' : 'text-destructive'}`}>
+          {result.success ? 'Sent. Check the inbox.' : `Failed: ${result.error}`}
         </p>
       ) : null}
     </div>
