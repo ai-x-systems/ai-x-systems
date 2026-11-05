@@ -1,3 +1,4 @@
+import { voiceFor } from "@/lib/voice/voices";
 import "server-only";
 import type { BusinessConfig } from "@/lib/config/business-schema";
 import { buildSystemPrompt } from "@/lib/prompt/prompt-builder";
@@ -42,10 +43,7 @@ export async function buildTransientAssistant(
       messages: [{ role: "system", content: buildSystemPrompt(effective) + PHONE_ADDENDUM }],
       tools,
     },
-    voice: {
-      provider: process.env.VOICE_TTS_PROVIDER || "vapi",
-      voiceId: process.env.VOICE_TTS_VOICE_ID || "Elliot",
-    },
+    voice: voiceFor(effective.voice.voiceId),
     transcriber: { provider: "deepgram", model: process.env.VOICE_TRANSCRIBER_MODEL || "nova-3", language: "en" },
     server: { url: opts.webhookUrl },
     serverMessages: ["tool-calls", "end-of-call-report"],
