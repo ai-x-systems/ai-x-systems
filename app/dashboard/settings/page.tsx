@@ -1,7 +1,6 @@
 import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
-import { getLineForBusiness } from '@/lib/voice/store'
-import { ProfileForm, PauseControl, PasswordForm, DeleteAccountRequest } from './settings-forms'
+import { PauseControl, PasswordForm, DeleteAccountRequest } from './settings-forms'
 import { DashHeader } from '@/components/dash-header'
 
 export const metadata = { title: 'Settings' }
@@ -13,29 +12,12 @@ export default async function SettingsPage() {
   const session = (await getClientSession())!
   const stored = await getStoredBusiness(session.businessId!)
   const business = stored?.config
-  const line = await getLineForBusiness(session.businessId!)
   if (!business || !stored) return null
   const editable = stored.source === 'db'
 
   return (
     <div className="space-y-6">
-      <DashHeader title="Settings" description="Your details, login and assistant." />
-      {line ? (
-        <div className={card}>
-          <p className="text-sm font-medium">Your AI phone line</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">{line.e164}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Ask your phone provider to forward unanswered or after-hours calls to this number, or give it out directly.{line.forwardTo ? ` When minutes run out, calls go to ${line.forwardTo}.` : ''}</p>
-        </div>
-      ) : null}
-
-      <div className={card}>
-        <p className="text-sm font-medium">Business details</p>
-        <p className="mb-3 mt-1 text-xs text-muted-foreground">Used in what the assistant says about you.</p>
-        {editable ? (
-          <ProfileForm initial={{ name: business.name, phone: business.phoneNumber ?? '', address: business.contact.address ?? '', website: business.contact.website ?? '' }} />
-        ) : <p className="text-sm text-muted-foreground">These details are managed for you.</p>}
-      </div>
-
+      <DashHeader title="Settings" description="Your login, assistant on/off, and your data." />
       {editable ? (
         <div className={card}>
           <p className="text-sm font-medium">Assistant on / off</p>
