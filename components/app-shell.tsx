@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
 import {
-  BarChart3, BookOpen, CreditCard, Inbox, LayoutDashboard, ListChecks, Menu, MessageSquare,
+  BarChart3, BookOpen, Bot, Building2, CreditCard, Inbox, LayoutDashboard, ListChecks, Menu, MessageSquare,
   Phone, Plug, Rocket, Settings, UserPlus, Users, X, ExternalLink,
 } from 'lucide-react'
 
@@ -15,7 +15,7 @@ import {
 
 const ICONS = {
   overview: LayoutDashboard, clients: Users, onboard: UserPlus, sales: BarChart3, voice: Phone, growth: Rocket,
-  inbox: Inbox, leads: ListChecks, integrations: Plug, chat: MessageSquare, knowledge: BookOpen, billing: CreditCard, settings: Settings,
+  inbox: Inbox, assistant: Bot, business: Building2, leads: ListChecks, integrations: Plug, chat: MessageSquare, knowledge: BookOpen, billing: CreditCard, settings: Settings,
 } as const
 export type IconName = keyof typeof ICONS
 
