@@ -166,7 +166,7 @@ export default async function AdminPage() {
                   </Section>
                   <Section title="Manage">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/admin/clients/${c.businessId}/edit`} className="btn btn-outline btn-sm">Edit info</Link>
+                      <Link href={`/admin/clients/${c.businessId}/edit`} className="btn btn-outline btn-sm">Manage client</Link>
                     </div>
                     {c.editable ? (
                       <div className="mt-3">
