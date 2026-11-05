@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getClientSession } from "@/lib/accounts/session";
 import { accountStore } from "@/lib/accounts/store";
 import { hashPassword, verifyPassword } from "@/lib/accounts/password";
-import { getStoredBusiness, setBusinessFlags, updateBusinessConfig } from "@/lib/config/business-store";
+import { getStoredBusiness } from "@/lib/config/business-store";
+import { applyClientSettings, SETTINGS_ACTIONS } from "@/lib/config/client-settings";
 import { sendFounderAlert } from "@/lib/integrations/notify";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { siteConfig } from "@/lib/site-config";
@@ -20,23 +21,12 @@ export async function POST(req: NextRequest) {
   if (!stored || stored.source !== "db") return NextResponse.json({ success: false, error: "These settings can't be changed from here. Please contact us." }, { status: 400 });
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
 
+  if (SETTINGS_ACTIONS.some((x) => x === b.action)) {
+    const r = await applyClientSettings(businessId, b);
+    return r.ok ? NextResponse.json({ success: true }) : NextResponse.json({ success: false, error: r.error }, { status: r.status });
+  }
+
   switch (b.action) {
-    case "profile": {
-      const name = cap(b.name, 120);
-      if (!name) return NextResponse.json({ success: false, error: "Your business needs a name." }, { status: 400 });
-      const r = await updateBusinessConfig(businessId, (c) => ({
-        ...c,
-        name,
-        phoneNumber: cap(b.phone, 40) || c.phoneNumber,
-        contact: { ...c.contact, address: cap(b.address, 200) || undefined, website: cap(b.website, 200) || undefined },
-      }));
-      return r.ok ? NextResponse.json({ success: true }) : NextResponse.json({ success: false, error: r.error }, { status: 400 });
-    }
-    case "pause":
-    case "resume": {
-      await setBusinessFlags(businessId, { active: b.action === "resume" });
-      return NextResponse.json({ success: true });
-    }
     case "password": {
       if ((await rateLimit(`pw:${session.id}`, 8, 3600)).limited) return NextResponse.json({ success: false, error: "Too many attempts. Try again later." }, { status: 429 });
       const current = typeof b.current === "string" ? b.current : "";
