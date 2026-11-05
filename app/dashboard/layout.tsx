@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
+import { getLineForBusiness } from '@/lib/voice/store'
 import { AppShell, type NavGroup } from '@/components/app-shell'
 import { LogoutButton } from './logout-button'
 
@@ -14,17 +15,33 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const name = stored?.config.name ?? 'Your business'
   const status = !stored || stored.config.demo ? 'demo' : stored.active ? 'live' : 'paused'
 
+  const line = await getLineForBusiness(session.businessId)
+  const showPhone = (stored?.services ?? 'both') !== 'chat' || !!line
+
   const groups: NavGroup[] = [
     {
       label: 'Workspace',
       items: [
         { href: '/dashboard', label: 'Overview', icon: 'overview', exact: true },
         { href: '/dashboard/leads', label: 'Leads', icon: 'leads' },
-        ...(showChat ? [{ href: '/dashboard/chat', label: 'Website chat', icon: 'chat' as const }] : []),
+      ],
+    },
+    {
+      label: 'Your assistant',
+      items: [
+        { href: '/dashboard/assistant', label: 'Assistant', icon: 'assistant' },
+        { href: '/dashboard/business', label: 'Business info', icon: 'business' },
         { href: '/dashboard/knowledge', label: 'What it knows', icon: 'knowledge' },
       ],
     },
-    { label: 'Connect', items: [{ href: '/dashboard/integrations', label: 'Integrations', icon: 'integrations' }] },
+    {
+      label: 'Channels',
+      items: [
+        ...(showChat ? [{ href: '/dashboard/chat', label: 'Website chat', icon: 'chat' as const }] : []),
+        ...(showPhone ? [{ href: '/dashboard/phone', label: 'Phone line', icon: 'voice' as const }] : []),
+        { href: '/dashboard/integrations', label: 'Integrations', icon: 'integrations' },
+      ],
+    },
     {
       label: 'Account',
       items: [
