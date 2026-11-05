@@ -124,6 +124,8 @@ const VoiceSettingsSchema = z.object({
   tone: z.enum(["friendly", "professional", "warm", "concise"]),
   language: z.string(),
   greeting: z.string(),
+  /** Optional: which built-in Vapi voice answers the phone. Must be one of lib/voice/voices.ts; empty = the default. */
+  voiceId: z.string().optional(),
 });
 
 const BookingSettingsSchema = z.object({
