@@ -9,7 +9,7 @@ type Initial = { notifyEmail: string; webhookUrl: string; leadSheet: string; lea
 const input = 'mt-1 w-full rounded-md border border-input bg-input/30 px-3 py-2 text-sm'
 const btn = 'btn btn-outline btn-sm'
 
-export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; serviceEmail?: string }) {
+export function IntegrationsForm({ initial, serviceEmail, endpoint = '/api/client/integrations' }: { initial: Initial; serviceEmail?: string; endpoint?: string }) {
   const router = useRouter()
   const [v, setV] = useState(initial)
   const [busy, setBusy] = useState('')
@@ -19,7 +19,7 @@ export function IntegrationsForm({ initial, serviceEmail }: { initial: Initial; 
   async function call(action: string, key: string, okText: string) {
     setBusy(key); setMsg(null)
     try {
-      const res = await fetch('/api/client/integrations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...v }) })
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...v }) })
       const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
       setMsg({ key, ok: res.ok && data.success !== false, text: res.ok ? okText : data.error || 'Something went wrong.' })
       if (res.ok && data.success !== false) { if (okText) toast(okText) } else toast(data.error || 'Something went wrong.', 'error')
