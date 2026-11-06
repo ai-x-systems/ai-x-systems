@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
-import { getLineForBusiness } from '@/lib/voice/store'
 import { AppShell, type NavGroup } from '@/components/app-shell'
 import { LogoutButton } from './logout-button'
 
@@ -11,12 +10,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await getClientSession()
   if (!session?.businessId) redirect('/client/login')
   const stored = await getStoredBusiness(session.businessId)
-  const showChat = (stored?.services ?? 'both') !== 'voice'
+  const showChat = true // every client gets the chat code: the offer bundles chat and voice
   const name = stored?.config.name ?? 'Your business'
   const status = !stored || stored.config.demo ? 'demo' : stored.active ? 'live' : 'paused'
 
-  const line = await getLineForBusiness(session.businessId)
-  const showPhone = (stored?.services ?? 'both') !== 'chat' || !!line
+  const showPhone = true // chat-only clients can request a phone number from this page
 
   const groups: NavGroup[] = [
     {
