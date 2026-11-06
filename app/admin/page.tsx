@@ -12,6 +12,8 @@ import { TestEmailButton } from './test-email-button'
 import { ClientStatusControls } from './client-status-controls'
 import { PaymentLinkButton } from './payment-link-button'
 import { DeleteButton } from '@/components/delete-button'
+import { RequestsPanel } from './requests-panel'
+import { listRequests } from '@/lib/requests/store'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import { DashHeader } from '@/components/dash-header'
 
@@ -91,6 +93,7 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10)
   const payments = paymentRows ?? []
+  const openRequests = await listRequests({ status: 'pending' }).catch(() => [])
   const { data: intakeRows } = await getSupabaseClient()
     .from('client_intakes')
     .select('id,business_name,client_email,services,paid,expires_at,created_at')
@@ -110,6 +113,9 @@ export default async function AdminPage() {
   return (
     <div>
       <DashHeader title="Clients" description="Everyone you serve: billing, minutes and their assistant, in one place." />
+      <div className="mb-6">
+        <RequestsPanel requests={openRequests.map((r) => ({ ...r, kind: r.kind, businessName: clients.find((c) => c.businessId === r.businessId)?.businessName ?? r.businessId }))} />
+      </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Clients" value={stats.total} />
