@@ -4,6 +4,8 @@ import { getStoredBusiness, installSnippet } from '@/lib/config/business-store'
 import { getBusinessOverride } from '@/lib/config/overrides'
 import { siteConfig } from '@/lib/site-config'
 import { AppearanceForm } from '@/components/appearance-form'
+import { ChatInstallCard } from '@/components/request-forms'
+import { listRequests } from '@/lib/requests/store'
 import { CopyField } from '@/components/copy-field'
 import { defaultBubble, defaultChatGreeting, defaultHeadline, defaultSubtitle, resolveSuggestions } from '@/lib/config/greetings'
 import { DashHeader } from '@/components/dash-header'
@@ -16,9 +18,10 @@ export default async function ChatPage() {
   const id = session.businessId!
   const stored = await getStoredBusiness(id)
   const business = stored?.config
-  if (!business || stored?.services === 'voice') redirect('/dashboard')
+  if (!business) redirect('/dashboard')
   const origin = siteConfig.brand.baseUrl.replace(/\/+$/, '')
   const override = await getBusinessOverride(id)
+  const latestInstall = (await listRequests({ businessId: id }).catch(() => [])).find((r) => r.kind === 'chat_install') ?? null
 
   return (
     <div className="space-y-6">
@@ -30,6 +33,8 @@ export default async function ChatPage() {
         <p className="mt-4 text-xs text-muted-foreground">No access to your site? Share this chat link anywhere (social bio, email signature, QR code):</p>
         <div className="mt-2"><CopyField value={`${origin}/embed/chat/${id}`} /></div>
       </div>
+
+      <ChatInstallCard latest={latestInstall ? { status: latestInstall.status, createdAtISO: latestInstall.createdAtISO } : null} defaultWebsite={business.contact.website ?? ''} />
 
       <div className="card p-5">
         <p className="text-sm font-medium">Make the chat match your brand</p>
