@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { getClientSession } from '@/lib/accounts/session'
 import { getStoredBusiness } from '@/lib/config/business-store'
 import { getLineForBusiness, listCalls } from '@/lib/voice/store'
@@ -7,6 +6,8 @@ import { whopConfigured } from '@/lib/billing/whop-checkout'
 import { clockDuration, digitsOnly, formatPhone } from '@/lib/voice/format'
 import { DashHeader } from '@/components/dash-header'
 import { CopyField } from '@/components/copy-field'
+import { PhoneRequestCard } from '@/components/request-forms'
+import { listRequests } from '@/lib/requests/store'
 
 export const metadata = { title: 'Phone line' }
 export const dynamic = 'force-dynamic'
@@ -18,7 +19,7 @@ export default async function PhonePage() {
   const id = session.businessId!
   const stored = await getStoredBusiness(id)
   const [line, balance, calls] = await Promise.all([getLineForBusiness(id), creditLedger.getBalance(id), listCalls(id, 15).catch(() => [])])
-  if ((stored?.services ?? 'both') === 'chat' && !line) redirect('/dashboard')
+  const latestPhone = (await listRequests({ businessId: id }).catch(() => [])).find((r) => r.kind === 'phone') ?? null
   const whop = whopConfigured()
   const num = line ? digitsOnly(line.e164) : '1XXXXXXXXXX'
 
@@ -44,12 +45,10 @@ export default async function PhonePage() {
           ) : null}
         </div>
       ) : (
-        <div className="card p-5">
-          <p className="text-sm font-medium">Your phone line is being set up</p>
-          <p className="mt-1 text-sm text-muted-foreground">We will message you as soon as your number is ready. Nothing else is needed from you right now.</p>
-        </div>
+        <PhoneRequestCard latest={latestPhone ? { status: latestPhone.status, createdAtISO: latestPhone.createdAtISO } : null} />
       )}
 
+      {line ? (
       <div className="card p-5">
         <p className="text-sm font-medium">Send your calls to your assistant</p>
         <p className="mt-1 text-xs text-muted-foreground">Three common ways. Phone plans differ, so if a code doesn&apos;t work, ask your carrier for &quot;conditional call forwarding&quot; or look under Call forwarding in your phone&apos;s settings.</p>
@@ -72,10 +71,14 @@ export default async function PhonePage() {
         </ol>
       </div>
 
+      ) : null}
+
+      {line ? (
       <div className="card p-5">
         <p className="text-sm font-medium">Try it now</p>
         <p className="mt-1 text-sm text-muted-foreground">Call {line ? <span className="font-medium text-foreground">{formatPhone(line.e164)}</span> : 'your number'} from your own phone and ask about your opening hours. Anything the assistant gets wrong can be fixed on the <a href="/dashboard/knowledge" className={link}>What it knows</a> page.</p>
       </div>
+      ) : null}
 
       <div className="card p-5">
         <p className="text-sm font-medium">Recent calls</p>
