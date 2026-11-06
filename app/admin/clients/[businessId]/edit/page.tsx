@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { getAdminSession } from '@/lib/accounts/session'
-import { getStoredBusiness } from '@/lib/config/business-store'
+import { getStoredBusiness, installSnippet } from '@/lib/config/business-store'
 import { getBusinessOverride } from '@/lib/config/overrides'
 import { hoursToText, servicesToText } from '@/lib/config/hours-text'
 import { defaultPhoneGreeting, defaultChatGreeting, defaultBubble, defaultHeadline, defaultSubtitle, resolveSuggestions } from '@/lib/config/greetings'
@@ -20,6 +20,12 @@ import { ClientStatusControls } from '../../../client-status-controls'
 import { CreditAdjustForm } from '../../../credit-adjust-form'
 import { PaymentLinkButton } from '../../../payment-link-button'
 import { DeleteButton } from '@/components/delete-button'
+import { CopyField } from '@/components/copy-field'
+import { RequestsPanel } from '../../../requests-panel'
+import { ClientLineForm } from './client-line-form'
+import { listRequests } from '@/lib/requests/store'
+import { siteConfig } from '@/lib/site-config'
+import { vapiConfigured, voiceWebhookUrl } from '@/lib/voice/vapi-api'
 import { EditBusinessConfigForm } from './edit-business-config-form'
 
 export const metadata = { title: 'Manage client' }
@@ -39,7 +45,7 @@ function Section({ id, title, hint, children }: { id: string; title: string; hin
 }
 
 const SECTIONS = [
-  ['overview', 'Overview'], ['assistant', 'Assistant'], ['business', 'Business info'], ['knowledge', 'Knowledge'], ['chat', 'Chat look'],
+  ['overview', 'Overview'], ['assistant', 'Assistant'], ['business', 'Business info'], ['knowledge', 'Knowledge'], ['chat', 'Chat look'], ['chatcode', 'Chat code'],
   ['integrations', 'Integrations'], ['phone', 'Phone & calls'], ['billing', 'Billing'], ['leads', 'Leads'],
 ] as const
 
@@ -53,10 +59,14 @@ export default async function ManageClientPage({ params }: { params: Promise<{ b
   const editable = stored.source === 'db'
   const api = `/api/admin/clients/${businessId}`
 
-  const [override, balance, line, calls, allPayments, leads] = await Promise.all([
+  const [override, balance, line, calls, allPayments, leads, requests] = await Promise.all([
     getBusinessOverride(businessId), creditLedger.getBalance(businessId), getLineForBusiness(businessId),
-    listCalls(businessId, 10), loadPaymentLines(), listRecentActivity(businessId, 10),
+    listCalls(businessId, 10), loadPaymentLines(), listRecentActivity(businessId, 10), listRequests({ businessId }).catch(() => []),
   ])
+  const origin = siteConfig.brand.baseUrl.replace(/\/+$/, '')
+  const snippet = installSnippet(origin, businessId)
+  const chatLink = `${origin}/embed/chat/${businessId}`
+  const pendingRequests = requests.filter((r) => r.status === 'pending').map((r) => ({ ...r, businessName: c.name }))
   const payments = allPayments.filter((p) => p.businessId === businessId).reverse()
   const faqs = override?.faqs ?? c.knowledge.faqs
   const notifyEmail = override?.notifyEmail ?? c.integrations.notifyEmail ?? ''
@@ -80,6 +90,7 @@ export default async function ManageClientPage({ params }: { params: Promise<{ b
 
       <div className="space-y-12">
         <Section id="overview" title="Overview">
+          <RequestsPanel requests={pendingRequests} title="Open requests from this client" />
           <div className="card p-5">
             <div className="flex flex-wrap items-center gap-2">
               <span className={chip}>{c.demo ? 'Demo' : stored.active ? 'Live' : 'Paused'}</span>
@@ -137,13 +148,31 @@ export default async function ManageClientPage({ params }: { params: Promise<{ b
           <p className="text-sm text-muted-foreground">This business lives in your code files (config/businesses), so its assistant, hours and services are edited there. Minutes, calls and payments below still work.</p>
         )}
 
-        <Section id="phone" title="Phone & calls" hint="The line callers reach, and the last 10 calls.">
-          <div className="card p-5 text-sm">
-            {line ? (
-              <p>Line: <span className="font-semibold tabular-nums">{formatPhone(line.e164)}</span>{line.isDemoLine ? <span className={`${chip} ml-2`}>shared demo line</span> : null}{!line.enabled ? <span className={`${chip} ml-2`}>disabled</span> : null}
-                <span className="text-muted-foreground"> · fallback {line.forwardTo ? formatPhone(line.forwardTo) : 'none'} · you charge {line.sellCentsPerMinute}¢/min</span></p>
-            ) : <p className="text-muted-foreground">No phone line attached yet. Attach one on the <Link href="/admin/voice" className="text-primary underline underline-offset-4">Voice page</Link> after you buy and import a number.</p>}
+        <Section id="chatcode" title="Website chat code" hint="Paste this one line on the client's website (before the closing body tag, or in the site builder's custom-code box), or send it to them.">
+          <div className="card space-y-4 p-5">
+            <CopyField value={snippet} multiline />
+            <div>
+              <p className="mb-1 text-xs text-muted-foreground">Direct chat link (works without a website):</p>
+              <CopyField value={chatLink} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <a href={chatLink} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">Open chat preview</a>
+              {stored.clientEmail ? (
+                <a className="btn btn-outline btn-sm" href={`mailto:${stored.clientEmail}?subject=${encodeURIComponent(`Your AI chat for ${c.name}`)}&body=${encodeURIComponent(`Hi,\n\nTo add your AI chat assistant to your website, paste this line just before the closing </body> tag (or into your website builder's custom code / header box):\n\n${snippet}\n\nYou can also share this direct link: ${chatLink}\n\nIf you'd rather we do it, reply to this email or use the form in your dashboard.`)}`}>Email instructions to client</a>
+              ) : null}
+            </div>
+            {requests.some((r) => r.kind === 'chat_install') ? <p className="text-xs text-muted-foreground">Install requests from this client: {requests.filter((r) => r.kind === 'chat_install').map((r) => `${r.status} (${new Date(r.createdAtISO).toLocaleDateString()})`).join(', ')}.</p> : null}
           </div>
+        </Section>
+
+        <Section id="phone" title="Phone & calls" hint="The line callers reach, and the last 10 calls.">
+          <ClientLineForm
+            businessId={businessId}
+            hasLine={!!line}
+            vapiReady={vapiConfigured()}
+            serverUrl={voiceWebhookUrl()}
+            initial={{ number: line?.e164 ?? '', forwardTo: line?.forwardTo ?? '', vapiPhoneNumberId: line?.vapiPhoneNumberId ?? '', sellCentsPerMinute: String(line?.sellCentsPerMinute ?? 25) }}
+          />
           <div className="card overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead><tr className="border-b border-border text-muted-foreground">{['When', 'Caller', 'Length', 'Minutes billed', 'Ended'].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr></thead>
