@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getAdminSession } from '@/lib/accounts/session'
 import { listProspects } from '@/lib/leads/prospects'
+import { listRequests } from '@/lib/requests/store'
 import { AppShell, type NavGroup } from '@/components/app-shell'
 import { LogoutButton } from '@/app/dashboard/logout-button'
 
@@ -9,12 +10,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await getAdminSession()
   if (!session) redirect('/admin-login')
   const newInquiries = await listProspects().then((p) => p.filter((x) => x.status === 'new').length).catch(() => 0)
+  const openRequests = await listRequests({ status: 'pending' }).then((r) => r.length).catch(() => 0)
 
   const groups: NavGroup[] = [
     {
       label: 'Business',
       items: [
-        { href: '/admin', label: 'Clients', icon: 'clients', exact: true },
+        { href: '/admin', label: 'Clients', icon: 'clients', exact: true, badge: openRequests || undefined },
         { href: '/admin/onboard', label: 'Onboard a client', icon: 'onboard' },
         { href: '/admin/sales', label: 'Sales', icon: 'sales' },
       ],
