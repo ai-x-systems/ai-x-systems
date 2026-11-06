@@ -4,6 +4,8 @@ import { getBusiness } from "@/lib/config/business-store";
 import { upsertLine } from "@/lib/voice/store";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { normalizeE164, normalizeLineAddress } from "@/lib/voice/pure";
+import { connectNumberToWebhook, vapiConfigured } from "@/lib/voice/vapi-api";
+import { completeOpenRequests } from "@/lib/requests/store";
 
 export const runtime = "nodejs";
 
@@ -29,7 +31,14 @@ export async function POST(req: NextRequest) {
     const code = (err as { code?: string }).code;
     return NextResponse.json({ success: false, error: code === "23505" ? "That number is already assigned to another client." : "Could not save the line." }, { status: code === "23505" ? 409 : 500 });
   }
-  return NextResponse.json({ success: true });
+  // The client asked for a number and now has one: close their request, and (if Vapi's key is set) connect the number.
+  await completeOpenRequests(b.businessId, "phone").catch(() => undefined);
+  let vapi: { connected?: boolean; error?: string; warning?: string } | undefined;
+  if (b.vapiPhoneNumberId?.trim() && vapiConfigured()) {
+    const r = await connectNumberToWebhook(b.vapiPhoneNumberId);
+    vapi = r.ok ? { connected: true, warning: r.assistantAttached ? "This number still has an assistant attached in Vapi: clear the Assistant field there so calls reach your system." : undefined } : { connected: false, error: r.error };
+  }
+  return NextResponse.json({ success: true, vapi });
 }
 
 /** Remove a phone line (the client keeps their account and minutes; callers to that number stop being answered). */
