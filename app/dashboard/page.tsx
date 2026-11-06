@@ -32,9 +32,9 @@ export default async function OverviewPage() {
     { done: paid, text: paid ? 'Subscription active' : 'Subscription: payment not confirmed yet', href: '/dashboard/billing' },
     { text: `Name your assistant (it's called ${business?.voice.assistantName ?? 'Ava'} now), pick its voice and greeting`, href: '/dashboard/assistant' },
     { text: 'Check your opening hours and services', href: '/dashboard/business' },
-    ...(services !== 'voice' ? [{ text: 'Add the chat to your website', href: '/dashboard/chat' }] : []),
+    { text: 'Add the chat to your website (copy the code, or ask us to install it)', href: '/dashboard/chat' },
     { done: connected, text: connected ? 'Leads are sent to your CRM / sheet' : 'Send new leads to your CRM or Google Sheet', href: '/dashboard/integrations' },
-    ...(showVoice ? [{ done: !!line, text: line ? `Phone line ready: ${line.e164}` : 'Phone line: we will set this up and message you', href: '/dashboard/settings' }] : []),
+    { done: !!line, text: line ? `Phone line ready: ${line.e164}` : 'Get your AI phone number', href: '/dashboard/phone' },
   ]
 
   return (
