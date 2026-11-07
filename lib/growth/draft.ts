@@ -1,8 +1,11 @@
 import "server-only";
 import { getChatCompletion } from "@/lib/llm/groq-client";
 import { siteConfig } from "@/lib/site-config";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import { createMessage, hasMessageForStep, listLeads, updateLead } from "./store";
 import { buildEmail, openerIsSafe } from "./pure";
+import { getStoredBusiness } from "@/lib/config/business-store";
+import { chooseHook, hoursFacts, shortName, type LeakFacts } from "./copy";
 import type { GrowthSettings, OutreachLead } from "./types";
 
 /**
@@ -29,6 +32,39 @@ async function writeOpener(lead: OutreachLead): Promise<string | undefined> {
   return openerIsSafe(line, facts) ? line : undefined;
 }
 
+/** Everything we can honestly say about this business, from its own site and listing (and the preview built from that site). */
+async function factsFor(lead: OutreachLead): Promise<LeakFacts> {
+  let hours: ReturnType<typeof hoursFacts> = { hoursKnown: false };
+  if (lead.demoBusinessId) {
+    const preview = await getStoredBusiness(lead.demoBusinessId).catch(() => null);
+    if (preview) hours = hoursFacts(preview.config.hours, preview.config.hoursKnown !== false);
+  }
+  return {
+    ...hours,
+    claims247: lead.signals.claims247 === true,
+    phoneOnly: lead.signals.onlineBooking === false && lead.signals.chatWidget === false,
+    noChat: lead.signals.chatWidget === false,
+    reviewCount: lead.reviewCount,
+    rating: lead.rating,
+  };
+}
+
+/**
+ * Throws away emails you have NOT sent yet and writes them again with the current copy.
+ * Anything already sent, replied to, or in a follow-up stage is left alone.
+ */
+export async function redraftUnsent(settings: GrowthSettings): Promise<{ replaced: number; drafted: number }> {
+  const leads = await listLeads({ stage: "drafted", limit: 100 });
+  const db = getSupabaseClient();
+  let replaced = 0;
+  for (const lead of leads) {
+    const { data } = await db.from("outreach_messages").delete().eq("lead_id", lead.id).eq("status", "draft").select("id");
+    if (data?.length) { await updateLead(lead.id, { stage: "enriched" }); replaced++; }
+  }
+  const { drafted } = await draftBatch(settings, 100);
+  return { replaced, drafted };
+}
+
 /** Drafts step-1 emails for enriched leads (best score first) and follow-ups for contacted leads that are due. */
 export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<{ drafted: number }> {
   const demoUrl = `${siteConfig.brand.baseUrl}${siteConfig.forms.demoPath}`;
@@ -42,8 +78,10 @@ export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<
     if (!lead.email || (await hasMessageForStep(lead.id, 1))) continue;
     // Hold the email until the preview exists, or we have definitively given up on one.
     if (!lead.demoBusinessId && !lead.signals.demoSkipped) continue;
-    const opener = await writeOpener(lead);
-    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, opener, step: 1, senderName: settings.senderName, demoUrl, tryUrl: lead.demoBusinessId ? `${base}/try/${lead.demoBusinessId}` : undefined, offer: settings.offer });
+    const facts = await factsFor(lead);
+    const generic = chooseHook(facts, { short: shortName(lead.businessName), offer: settings.offer }).key === "generic";
+    const opener = generic ? await writeOpener(lead) : undefined;
+    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, opener, facts, step: 1, senderName: settings.senderName, demoUrl, tryUrl: lead.demoBusinessId ? `${base}/try/${lead.demoBusinessId}` : undefined, offer: settings.offer });
     await createMessage({ leadId: lead.id, step: 1, subject, bodyText: body, status });
     await updateLead(lead.id, { stage: auto ? "queued" : "drafted" });
     drafted++;
@@ -54,7 +92,7 @@ export async function draftBatch(settings: GrowthSettings, limit = 15): Promise<
     const next = (lead.step + 1) as 2 | 3;
     if (next > 3 || !lead.email) { await updateLead(lead.id, { next_action_at: null }); continue; }
     if (await hasMessageForStep(lead.id, next)) continue;
-    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, step: next, senderName: settings.senderName, demoUrl, tryUrl: lead.demoBusinessId ? `${base}/try/${lead.demoBusinessId}` : undefined, offer: settings.offer });
+    const { subject, body } = buildEmail({ businessName: lead.businessName, industry: lead.industry, city: lead.city, facts: await factsFor(lead), step: next, senderName: settings.senderName, demoUrl, tryUrl: lead.demoBusinessId ? `${base}/try/${lead.demoBusinessId}` : undefined, offer: settings.offer });
     await createMessage({ leadId: lead.id, step: next, subject, bodyText: body, status });
     await updateLead(lead.id, { next_action_at: null });
     drafted++;
