@@ -42,7 +42,7 @@ export async function enrichBatch(limit = 10, deadline?: number): Promise<{ enri
         const html = pages.join("\n");
         const email = extractBestEmail(html, base);
         const signals = detectSignals(html);
-        const score = scoreLead({ reviewCount: lead.reviewCount, rating: lead.rating, phone: lead.phone, chatWidget: signals.chatWidget });
+        const score = scoreLead({ reviewCount: lead.reviewCount, rating: lead.rating, phone: lead.phone, chatWidget: signals.chatWidget, claims247: signals.claims247, onlineBooking: signals.onlineBooking });
 
         if (email) {
           await updateLead(lead.id, { email, signals, score, stage: "enriched" });
