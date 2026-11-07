@@ -4,6 +4,7 @@
  */
 import crypto from "crypto";
 import type { GrowthSettings } from "./types";
+import { buildOutcomeEmail, type LeakFacts } from "./copy";
 
 // ── Email extraction ─────────────────────────────────────────────────────
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}/gi;
@@ -44,11 +45,15 @@ export function detectSignals(html: string) {
   return {
     chatWidget: /intercom|drift\.com|tawk\.to|crisp\.chat|livechat|tidio|zopim|zendesk|hubspot.*conversations|podium|birdeye|smith\.ai|ruby\.com/i.test(html),
     onlineBooking: /calendly|acuityscheduling|zocdoc|book (an )?appointment online|schedule online|book online|simplybook|setmore|booksy|jobber|housecall/i.test(html),
+    claims247: /24\/7|24 ?hours|24-hour|around the clock|emergency (service|repair|call|plumb|hvac|ac\b)|same[- ]day emergency/i.test(html),
+    hasForm: /<form[\s>]/i.test(html),
+    hasPhoneLink: /href=["']tel:/i.test(html),
+    freeEstimate: /free (estimate|quote|consultation|inspection)/i.test(html),
   };
 }
 
 export function scoreLead(input: {
-  reviewCount?: number; rating?: number; phone?: string; chatWidget?: boolean;
+  reviewCount?: number; rating?: number; phone?: string; chatWidget?: boolean; claims247?: boolean; onlineBooking?: boolean;
 }): number {
   let s = 0;
   const r = input.reviewCount ?? 0;
@@ -58,6 +63,8 @@ export function scoreLead(input: {
   if ((input.rating ?? 0) >= 4) s += 10;
   if (input.phone) s += 15;
   if (input.chatWidget === false) s += 15; // no chat today = clearest gap
+  if (input.claims247) s += 10; // sells emergency/24-7 service: after-hours calls are exactly what they live on
+  if (input.onlineBooking === false) s += 5; // phone/form only
   return s;
 }
 
@@ -87,11 +94,12 @@ export function openerIsSafe(opener: string, allowedFacts: string[]): boolean {
   return true;
 }
 
-// ── Email copy: fixed, honest templates ──────────────────────────────────
+// ── Email copy: outcome-first, built from facts about the business (see ./copy.ts) ─────
 export interface CopyInput {
   businessName: string;
   industry?: string;
   city?: string;
+  /** one safe sentence from the model; only used when there is no verifiable observation */
   opener?: string;
   step: 1 | 2 | 3;
   senderName: string;
@@ -99,48 +107,12 @@ export interface CopyInput {
   /** private preview built for this business; when present the email leads with it */
   tryUrl?: string;
   offer: GrowthSettings["offer"];
+  /** what the business's own site / listing says (hours, emergency claims, contact options, reviews) */
+  facts?: LeakFacts;
 }
 
 export function buildEmail(i: CopyInput): { subject: string; body: string } {
-  const what = i.offer === "voice"
-    ? "an AI receptionist that answers your calls and website chat 24/7, answers common questions, and sends every new enquiry straight to you"
-    : "an AI receptionist on your website that answers visitor questions 24/7, captures their details, and emails every new enquiry straight to you";
-  const where = [i.industry, i.city].filter(Boolean).join(" in ");
-  const opener = i.opener?.trim() || `I came across ${i.businessName}${where ? ` while looking at ${where}` : ""}.`;
-  const sign = `— ${i.senderName}\nAI x Systems`;
-
-  if (i.tryUrl) {
-    const phone = i.offer === "voice" ? " (or on your phone line)" : "";
-    if (i.step === 1) {
-      return {
-        subject: `A preview for ${i.businessName}`,
-        body: `${opener}\n\nI run AI x Systems. I put together a working preview of an AI receptionist for ${i.businessName}, built only from what's public on your website. Try asking it something a customer would: ${i.tryUrl}\n\nIt answers questions 24/7, takes the visitor's details and sends every enquiry straight to you. It's only a preview. If it looks useful, reply and I'll show you how it would go live on your site${phone}.\n\n${sign}`,
-      };
-    }
-    if (i.step === 2) {
-      return {
-        subject: `Re: A preview for ${i.businessName}`,
-        body: `Following up in case my note got buried. The preview is still live: ${i.tryUrl}\n\nWorth a quick look? Reply and I'll set it up properly for ${i.businessName}.\n\n${sign}`,
-      };
-    }
-  }
-
-  if (i.step === 1) {
-    return {
-      subject: `After-hours enquiries at ${i.businessName}`,
-      body: `${opener}\n\nI run AI x Systems. We install ${what}, so a visitor who shows up at 9pm doesn't leave for a competitor.\n\nWe're onboarding a small number of local businesses right now. If it's useful, I'll show you a 2-minute demo built around ${i.businessName}. Reply "demo" or pick a time here: ${i.demoUrl}\n\n${sign}`,
-    };
-  }
-  if (i.step === 2) {
-    return {
-      subject: `Re: After-hours enquiries at ${i.businessName}`,
-      body: `Following up on my note below, in case it got buried.\n\nThe short version: ${what}. There's a live example you can try in about 30 seconds here: ${i.demoUrl}\n\nWorth a quick look for ${i.businessName}? Reply "demo" and I'll set one up.\n\n${sign}`,
-    };
-  }
-  return {
-    subject: `Closing the loop, ${i.businessName}`,
-    body: `I'll stop here so I don't clutter your inbox.\n\nIf handling after-hours enquiries ever becomes a priority, the demo stays open: ${i.demoUrl}\n\n${sign}`,
-  };
+  return buildOutcomeEmail(i);
 }
 
 export function footer(address: string, unsubscribeUrl: string): string {
