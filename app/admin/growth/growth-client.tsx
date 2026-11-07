@@ -18,6 +18,7 @@ export function RunButtons({ manual }: { manual: boolean }) {
   const [result, setResult] = useState<string>('')
 
   async function run(task: string) {
+    if (task === 'redraft' && !window.confirm('Replace every email you have not sent yet with a freshly written version? Any edits you made to those drafts will be lost. Emails you already sent are not touched.')) return
     setBusy(task); setResult('')
     try {
       const data = await post('/api/admin/growth/run', { task })
@@ -29,7 +30,7 @@ export function RunButtons({ manual }: { manual: boolean }) {
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {[['all', 'Run full cycle'], ['discover', 'Find leads'], ['enrich', 'Find emails'], ['demo', 'Build previews'], ['draft', 'Write emails'], ...(manual ? [] : [['send', 'Send approved']])].map(([t, label]) => (
+        {[['all', 'Run full cycle'], ['discover', 'Find leads'], ['enrich', 'Find emails'], ['demo', 'Build previews'], ['draft', 'Write emails'], ['redraft', 'Rewrite unsent drafts'], ...(manual ? [] : [['send', 'Send approved']])].map(([t, label]) => (
           <Button key={t} size="sm" variant={t === 'all' ? 'default' : 'outline'} disabled={!!busy} onClick={() => run(t)}>
             {busy === t ? 'Running…' : label}
           </Button>
