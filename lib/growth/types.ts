@@ -20,7 +20,11 @@ export interface OutreachLead {
   email?: string;
   rating?: number;
   reviewCount?: number;
-  signals: { chatWidget?: boolean; onlineBooking?: boolean; demoAttempts?: number; demoSkipped?: boolean };
+  signals: {
+    chatWidget?: boolean; onlineBooking?: boolean; demoAttempts?: number; demoSkipped?: boolean;
+    /** read from the site's own text at enrichment: used to write a specific, honest opening line */
+    claims247?: boolean; hasForm?: boolean; hasPhoneLink?: boolean; freeEstimate?: boolean;
+  };
   score: number;
   stage: Stage;
   step: number;
